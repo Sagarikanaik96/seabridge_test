@@ -20,7 +20,8 @@ fixtures = [
 		"name","in",
  			[
 				"Request for Quotation-naming_series-options",
-				"Material Request-naming_series-options"
+				"Material Request-naming_series-options",
+				"Material Request-material_request_type-options"
 			]
 	]
 	]
@@ -29,8 +30,6 @@ fixtures = [
 
 
 
-
-Request for Quotation
 # Includes in <head>
 # ------------------
 
