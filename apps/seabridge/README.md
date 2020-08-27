@@ -1,7 +1,0 @@
-## seabridge
-
-seabridge
-
-#### License
-
-MIT
