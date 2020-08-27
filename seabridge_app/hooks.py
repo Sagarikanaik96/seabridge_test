@@ -10,7 +10,12 @@ app_icon = "octicon octicon-file-directory"
 app_color = "grey"
 app_email = "seabridge_app@gmail.com"
 app_license = "MIT"
-
+app_logo_url = '/assets/seabridge_app/images/Seabridge TFX_VL.png'
+app_include_css = "assets/seabridge_app/css/desk.min.css"
+website_context = {
+	"favicon": 	"/assets/seabridge_app/images/seaicon.png",
+	"splash_image": "/assets/seabridge_app/images/Seabridge TFX_VL.png"
+}
 
 
 fixtures = ["Server Script",
@@ -23,8 +28,22 @@ fixtures = ["Server Script",
 		]
 	]
 ]
+},
+{"dt": "Property Setter",
+        "filters": [
+	[
+		"name","in",
+ 			[
+				"Request for Quotation-naming_series-options",
+				"Material Request-naming_series-options",
+				"Material Request-material_request_type-options",
+				"Material Request Item-warehouse-in_list_view"
+			]
+	]
+	]
 }
 ]
+
 # Includes in <head>
 # ------------------
 
