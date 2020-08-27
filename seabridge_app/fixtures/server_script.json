@@ -1,0 +1,34 @@
+[
+ {
+  "allow_guest": 0,
+  "api_method": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Submit",
+  "modified": "2020-08-27 22:05:17.627201",
+  "name": "Create Opportunity",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "reference_doctype": "Request for Quotation",
+  "script": "for row in doc.suppliers:\n\ttry:\n\t    customer=frappe.db.get_value('Customer',{'is_internal_customer':1,'represents_company':doc.company},'customer_name')\n\t    company=frappe.db.get_value('Supplier',{'is_internal_supplier':1,'supplier_name':row.supplier},'represents_company')\n\t    contact_person=frappe.db.get_value('Dynamic Link',{'parenttype':'Contact','link_doctype':'Customer','link_name':customer},'parent')\n\t    if customer:\n\t\t    if company:\n        \t\t    doc1=frappe.get_doc(dict(doctype = 'Opportunity',\n        \t\t\t        opportunity_from = 'Customer',\n        \t\t        \tparty_name=customer,\n        \t\t        \tcontact_person=contact_person,\n        \t\t        \twith_items=1,\n        \t\t            contact_display=contact_person,\n        \t\t            contact_email=frappe.db.get_value('Contact Email', {'parenttype':'Contact','parent':contact_person},'email_id'),\n        \t\t            company=company,\n        \t\t        \treference_no=doc.name,\n        \t\t        \tignore_permissions='true')).insert()\n        \t\t    for val in doc.items:\n        \t\t        doc1.append('items', {\n        \t\t            'item_code': val.item_code,\n        \t\t            'qty': val.qty,\n        \t\t            'uom':val.uom\n        \t\t            })\n        \t\t        doc1.add_comment('Comment',row.supplier+' created')\n        \t\t        doc1.save()\n        \t\t    doc.add_comment('Created','  created Opportunity for '+row.supplier)\n        \t\t    \n        \t\t    value= frappe.db.get_value('Supplier',row.supplier,'represents_company')\n        \t\t    docVal=frappe.db.get_list(\"User Permission\", filters={'user':row.email_id,'for_value':value,'allow':'Company'})\n        \t\t    if not docVal:\n        \t\t        frappe.get_doc(dict(doctype = 'User Permission',\n        \t\t        user = row.email_id,\n        \t\t        allow='Company',\n        \t\t        for_value =value,\n        \t\t        apply_to_all_doctypes=1)).insert()\n        \t\t    else:\n        \t\t        pass\n\texcept KeyError:\n\t        pass",
+  "script_type": "DocType Event"
+ },
+ {
+  "allow_guest": 0,
+  "api_method": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Cancel",
+  "modified": "2020-08-27 22:05:02.322739",
+  "name": "Validate RFQ",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "reference_doctype": "Request for Quotation",
+  "script": "frappe.msgprint('Unable to cancel the document as Request for Quotation '+doc.name+' is linked with the submitted opportunity')\nraise frappe.ValidationError('Unable to cancel the document as Request for Quotation'+doc.name+'is linked with the submitted opportunity')",
+  "script_type": "DocType Event"
+ }
+]

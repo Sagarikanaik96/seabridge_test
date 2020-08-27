@@ -11,6 +11,20 @@ app_color = "grey"
 app_email = "seabridge_app@gmail.com"
 app_license = "MIT"
 
+
+
+fixtures = ["Server Script",
+
+{"dt": "Custom Field",
+		"filters": [
+         [
+             "name", "in", [
+		"Opportunity-reference_no"
+		]
+	]
+]
+}
+]
 # Includes in <head>
 # ------------------
 
