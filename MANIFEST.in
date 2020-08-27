@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include seabridge_app *.css
+recursive-include seabridge_app *.csv
+recursive-include seabridge_app *.html
+recursive-include seabridge_app *.ico
+recursive-include seabridge_app *.js
+recursive-include seabridge_app *.json
+recursive-include seabridge_app *.md
+recursive-include seabridge_app *.png
+recursive-include seabridge_app *.py
+recursive-include seabridge_app *.svg
+recursive-include seabridge_app *.txt
+recursive-exclude seabridge_app *.pyc
