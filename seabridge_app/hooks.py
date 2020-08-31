@@ -18,7 +18,7 @@ website_context = {
 }
 
 
-fixtures = ["Server Script",
+fixtures = ["Server Script","Custom Script",
 
 {"dt": "Custom Field",
 		"filters": [
