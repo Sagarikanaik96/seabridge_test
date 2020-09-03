@@ -24,7 +24,9 @@ fixtures = ["Server Script","Custom Script",
 		"filters": [
          [
              "name", "in", [
-		"Opportunity-reference_no"
+		"Opportunity-reference_no",
+		"Supplier Quotation-rfq_no",
+		"Supplier Quotation-quotation_no"
 		]
 	]
 ]
@@ -41,6 +43,10 @@ fixtures = ["Server Script","Custom Script",
 			]
 	]
 	]
+},
+{"dt": "Notification", 
+		"filters": [
+			"is_standard != 1"]
 }
 ]
 
