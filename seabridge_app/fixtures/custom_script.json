@@ -1,0 +1,35 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Custom Script",
+  "dt": "Request for Quotation",
+  "modified": "2020-09-01 18:12:14.257248",
+  "name": "Request for Quotation-Client",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "script": "frappe.ui.form.on('Request for Quotation', { \non_submit:function(frm,cdt,cdn){\n      var doc=frm.doc;\n        $.each(doc.suppliers,function(idx,supplier){\n            var company;\n            frappe.call({\n                type: \"GET\",\n                url: \"/api/method/get_company_name\",\n                args:{\n                    doctype:'Supplier',\n                    is_internal_supplier:1,\n                    supplier_name:supplier.supplier\n                },\n               async:false,\n                callback: function(r){\n                    company=r.company;\n                }\n            });\n            if(company!==null){\n                var emailTemplate='<h1><strong> Opportunity is created</strong></h1>';\n                sendEmail(doc.name,supplier.email_id,emailTemplate);\n            }\n            else{\n                 var emailTemplate1='<h1><strong>Unable to create an Opportunity because you do not have any company associated with yourself</strong></h1>';\n                sendEmail(doc.name,supplier.email_id,emailTemplate1);\n            }\n        });\n}\n});\nfunction sendEmail(name,email,template){\nfrappe.call({\n                    method: \"frappe.core.doctype.communication.email.make\",\n                    args: {\n                        subject: name,\n                        communication_medium: \"Email\",\n                        recipients: email,\n                        content: template,\n                        communication_type: \"Communication\",\n                        send_email:1,\n                        attachments:[],\n                        print_format:\"Standard\",\n                        doctype: \"Request for Quotation\",\n                        name: name,\n                        print_letterhead: 0\n                    },\n                    callback: function(rh){\n                        console.log(\"sent\");\n                    }   \n                });\n}"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Custom Script",
+  "dt": "Quotation",
+  "modified": "2020-09-04 16:04:44.919007",
+  "name": "Quotation-Client",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "script": "frappe.ui.form.on('Quotation', { \non_submit:function(frm,cdt,cdn){\n      var doc=frm.doc;\n            var email;\n            frappe.call({\n                type: \"GET\",\n                url: \"/api/method/get_email\",\n                args:{\n                    doctype:'customer',\n                    is_internal_customer:1,\n                    customer_name:doc.customer_name\n                },\n               async:false,\n                callback: function(r){\n                     email=r.email;\n                }\n            });\n            if(email!==null){\n                var emailTemplate='<h1><strong>  Supplier Quotation is created.</strong></h1>';\n                sendEmail(doc.name,email,emailTemplate);\n            }\n}\n});\nfunction sendEmail(name,email,template){\nfrappe.call({\n                    method: \"frappe.core.doctype.communication.email.make\",\n                    args: {\n                        subject: name,\n                        communication_medium: \"Email\",\n                        recipients: email,\n                        content: template,\n                        communication_type: \"Communication\",\n                        send_email:1,\n                        attachments:[],\n                        print_format:\"Standard\",\n                        doctype: \"Quotation\",\n                        name: name,\n                        print_letterhead: 0\n                    },\n                    callback: function(rh){\n                        console.log(\"sent\");\n                    }   \n                });\n}"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Custom Script",
+  "dt": "Item",
+  "modified": "2020-09-04 15:29:47.261060",
+  "name": "Item-Client",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "script": "frappe.ui.form.on('Item', {\ncompany_name:function(frm,cdt,cdn) {\n    console.log(\"name\",frappe.seession.user)\n    frappe.call({\n            type:\"POST\",\n            method:\"api/method/create_user_permission\",\n            args:{\n                doctype:\"User Permission\",\n                user:frappe.session.user,\n                allow:'Company',\n                for_value:frm.doc.company_name\n            },\n        callback(r){\n            console.log(\"created\")\n        }\n\n    })\n\t\t\n\t}\n})"
+ }
+]

@@ -18,13 +18,15 @@ website_context = {
 }
 
 
-fixtures = ["Server Script",
+fixtures = ["Server Script","Custom Script",
 
 {"dt": "Custom Field",
 		"filters": [
          [
              "name", "in", [
-		"Opportunity-reference_no"
+		"Opportunity-reference_no",
+		"Supplier Quotation-rfq_no",
+		"Supplier Quotation-quotation_no"
 		]
 	]
 ]
@@ -41,6 +43,10 @@ fixtures = ["Server Script",
 			]
 	]
 	]
+},
+{"dt": "Notification", 
+		"filters": [
+			"is_standard != 1"]
 }
 ]
 
