@@ -1,6 +1,22 @@
 [
  {
   "allow_guest": 0,
+  "api_method": "supplier_filter_list",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Insert",
+  "modified": "2020-09-09 13:55:01.027413",
+  "name": "Add filter for supplier",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "reference_doctype": null,
+  "script": "itemGroups=json.loads(frappe.form_dict.get(\"item_group\"))\nsupplierList=[]\nfor item in itemGroups:\n    itemGroupList=[]\n    groupList=[]\n    itemGroupList.append(item)\n    parent_item_group=frappe.db.get_value('Item Group',{'item_group_name':item},'parent_item_group')\n    if parent_item_group not in itemGroupList:\n        itemGroupList.append(parent_item_group)\n        \n    for group in itemGroupList:\n        groupList=frappe.db.get_list('Item Group Detail',filters={'item_group':group},fields={'parent'})\n        for row in groupList:\n            supplierList.append(row.parent)     \n        \nfrappe.response['supplierList']=supplierList",
+  "script_type": "API"
+ },
+ {
+  "allow_guest": 0,
   "api_method": null,
   "disabled": 0,
   "docstatus": 0,

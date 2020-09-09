@@ -1,9 +1,5 @@
 [
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Material Request",
   "docstatus": 0,
@@ -20,10 +16,6 @@
   "value": "PUR-REQ-"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Request for Quotation",
   "docstatus": 0,
@@ -40,10 +32,6 @@
   "value": "PUR-RFQ-"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Material Request",
   "docstatus": 0,
@@ -60,10 +48,6 @@
   "value": "Purchase"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Material Request Item",
   "docstatus": 0,
