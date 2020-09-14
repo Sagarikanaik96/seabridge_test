@@ -36,7 +36,7 @@ fixtures = ["Server Script","Custom Script",
 		"Opportunity-reference_no",
 		"Supplier Quotation-rfq_no",
 		"Supplier Quotation-quotation_no",
-		"Item - company_name",
+		"Item-company_name",
 		"Request for Quotation Item-qualifier",
 		"Supplier-item_group_detail",
 		"Supplier-item_group"
