@@ -62,6 +62,24 @@ fixtures = ["Server Script","Custom Script",
 			"is_standard != 1"]
 }
 ]
+doctype_js = {
+	"Request for Quotation" : "seabridge_app/doctype/request_for_quotation/request_for_quotation.js",
+	"Purchase Invoice" : "seabridge_app/doctype/purchase_invoice/purchase_invoice.js",
+	"Sales Invoice" : "seabridge_app/doctype/sales_invoice/sales_invoice.js",
+	"Quotation" : "seabridge_app/doctype/quotation/quotation.js"
+}
+
+doc_events = {
+    	"Sales Invoice": {
+		"on_submit": ["seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.auto_create_purchase_invoice"]
+    },
+	"Request for Quotation": {
+		"on_submit": ["seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.auto_create_opportunity"]
+	    },
+	"Quotation": {
+		"on_submit": ["seabridge_app.seabridge_app.doctype.quotation.quotation.auto_create_supplier_quotation"]
+    }
+}
 
 # Includes in <head>
 # ------------------
