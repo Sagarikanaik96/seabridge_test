@@ -10,7 +10,6 @@ class RequestforQuotation(Document):
 	pass
 
 def auto_create_opportunity(doc,method): 
-	frappe.msgprint("RFQ")
 	for row in doc.suppliers:
 		try:
 			customer=frappe.db.get_value('Customer',{'is_internal_customer':1,'represents_company':doc.company},'customer_name')
@@ -30,6 +29,8 @@ def auto_create_opportunity(doc,method):
 								contact_email=frappe.db.get_value('Contact Email', {'parenttype':'Contact','parent':contact_person},'email_id'),
 								company=company,
 								reference_no=doc.name,
+								quotation_type=doc.quotation_type,
+								opening_date=doc.opening_date,
 								ignore_permissions='true')).insert()
 					for val in doc.items:
 							opp_doc.append('items', {
@@ -45,12 +46,12 @@ def auto_create_opportunity(doc,method):
 						create_user_permission(row.email_id,'Company',companyName,False,'Item')
 						
 			else:
-				frappe.msgprint('Unable to create Opportunity as customer: '+doc.company+ ' is not associated with any company. Register the Company and submit the document: '+doc.name+'. As Customer is not associated with any company, do not let MA submit the RFQ document.')
-				raise frappe.ValidationError('Unable to create Opportunity as customer: ' +doc.company+' is not associated with any company.  ')
+				frappe.msgprint("Unable to create Opportunity as customer: "+doc.company+ " is not associated with any company. Register the Company and submit the document: "+doc.name+". As Customer is not associated with any company, don't let MA submit the RFQ document.")
+				raise frappe.ValidationError("Unable to create Opportunity as customer: " +doc.company+" is not associated with any company.")
 		except KeyError:
 			pass
 
-
+@frappe.whitelist()
 def create_user_permission(user,allow,value,check,applicable_for=''):
 #user,allow,for_value,apply_to_all_doctypes,applicable_for
     docVal=frappe.db.get_list('User Permission', filters={'user':user,'for_value':value,'allow':allow,'apply_to_all_doctypes':check,'applicable_for':applicable_for})

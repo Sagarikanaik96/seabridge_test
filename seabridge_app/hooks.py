@@ -34,12 +34,20 @@ fixtures = ["Server Script","Custom Script",
          [
              "name", "in", [
 		"Opportunity-reference_no",
+		"Opportunity-quotation_type",
+		"Opportunity-opening_date",
 		"Supplier Quotation-rfq_no",
+		"Supplier Quotation-quotation_type",
+		"Supplier Quotation-opening_date",
 		"Supplier Quotation-quotation_no",
 		"Item-company_name",
 		"Request for Quotation Item-qualifier",
 		"Supplier-item_group_detail",
-		"Supplier-item_group"
+		"Supplier-item_group",
+		"Quotation-quotation_type",
+		"Quotation-opening_date",
+		"Request for Quotation-quotation_type",
+		"Request for Quotation-opening_date"
 		]
 	]
 ]
@@ -50,9 +58,24 @@ fixtures = ["Server Script","Custom Script",
 		"name","in",
  			[
 				"Request for Quotation-naming_series-options",
+				"Request for Quotation-terms-depends_on",
+				"Request for Quotation-tc_name-depends_on",
+				"Request for Quotation-items-depends_on",
+				"Request for Quotation-suppliers-depends_on",
 				"Material Request-naming_series-options",
 				"Material Request-material_request_type-options",
-				"Material Request Item-warehouse-in_list_view"
+				"Material Request Item-warehouse-in_list_view",
+				"Supplier Quotation-items-depends_on",
+				"Supplier Quotation-total_taxes_and_charges-depends_on",
+				"Supplier Quotation-taxes-depends_on",
+				"Supplier Quotation-taxes_and_charges-depends_on",
+				"Supplier Quotation-base_total_taxes_and_charges-depends_on",
+				"Supplier Quotation-base_rounded_total-depends_on",
+				"Supplier Quotation-base_grand_total-depends_on",
+				"Supplier Quotation-base_total-depends_on",
+				"Supplier Quotation-total-depends_on",
+				"Supplier Quotation-grand_total-depends_on",
+				"Supplier Quotation-rounded_total-depends_on"		
 			]
 	]
 	]

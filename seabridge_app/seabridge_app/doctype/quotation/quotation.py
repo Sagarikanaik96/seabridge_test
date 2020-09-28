@@ -31,6 +31,8 @@ def auto_create_supplier_quotation(doc,method):
                         base_grand_total=doc.base_grand_total,
                         rounded_total=doc.rounded_total,
                         base_rounded_total=doc.base_rounded_total,
+			quotation_type=doc.quotation_type,
+			opening_date=doc.opening_date,
                         rfq_no=frappe.db.get_value('Opportunity',doc.opportunity,'reference_no')
                     )).insert(ignore_mandatory=True)
             for val in doc.items:
@@ -50,5 +52,5 @@ def auto_create_supplier_quotation(doc,method):
             sq_doc.save()
             doc.add_comment('Comment','  Supplier Quotation: '+sq_doc.name)  
     else:
-        frappe.msgprint('Unable to create Supplier Quotation as customer: '+doc.customer_name +' is not associated with any company. Register the Company and submit the document: '+doc.name+ '. As Customer is not associated with any company, do not let Vendor submit the Quotation document.')
-        raise frappe.ValidationError('Unable to create Supplier Quotation as customer: '+doc.customer_name +' is not associated with any company. Register the Company and submit the document: '+doc.name+ '. As Customer is not associated with any company, do not let Vendor submit the Quotation document.')
+        frappe.msgprint("Unable to create Supplier Quotation as customer: "+doc.customer_name +" is not associated with any company. Register the Company and submit the document: "+doc.name+ ". As Customer is not associated with any company, don't let Vendor submit the Quotation document.")
+        raise frappe.ValidationError("Unable to create Supplier Quotation as customer: "+doc.customer_name +" is not associated with any company. Register the Company and submit the document: "+doc.name+ ". As Customer is not associated with any company, don't let Vendor submit the Quotation document.")

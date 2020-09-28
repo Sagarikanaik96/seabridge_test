@@ -15,8 +15,8 @@ on_submit:function(frm,cdt,cdn){
                 }
             });
             if(email!==undefined){
-                var emailTemplate='<h1><strong>  Supplier Quotation is created.</strong></h1>';
-                sendEmail(doc.name,email,emailTemplate);
+                var emailTemplate='<h1><strong>  Supplier Quotation is successfully created.</strong></h1>';
+                sendEmail(doc.name,email,emailTemplate,doc.quotation_type);
             }
 },
 before_cancel:function(frm,cdt,cdn){
@@ -24,8 +24,9 @@ before_cancel:function(frm,cdt,cdn){
 
 }
 });
-function sendEmail(name,email,template){
-frappe.call({
+function sendEmail(name,email,template,quotation_type){
+if(quotation_type=='Open'){
+    frappe.call({
                     method: "frappe.core.doctype.communication.email.make",
                     args: {
                         subject: name,
@@ -44,4 +45,21 @@ frappe.call({
                         console.log("sent");
                     }   
                 });
+            }
+else if(quotation_type=="Sealed"){
+    frappe.call({
+        method: "frappe.core.doctype.communication.email.make",
+        args: {
+            subject: name,
+            communication_medium: "Email",
+            recipients: email,
+            content: template,
+            communication_type: "Communication",
+            send_email:1
+        },
+        callback: function(rh){
+            console.log("sent");
+        }   
+    });
+}
 }

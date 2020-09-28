@@ -1,12 +1,76 @@
 // Copyright (c) 2020, seabridge_app and contributors
 // For license information, please see license.txt
-
+var today = new Date().toISOString().slice(0, 10)
 frappe.ui.form.on('Request for Quotation', {
-	// refresh: function(frm) {
-
-	// }
-	after_save:function(frm,cdt,cdn){
+	quotation_type:function(frm,cdt,cdn){
+	    if(frappe.user_roles.includes("MA")){
+	        frm.doc.quotation_type='Open';
+	        cur_frm.refresh_field('quotation_type');
+	        frappe.throw("You don't have enough permission to create a Sealed RFQ. Please select option as Open to create the RFQ");
+        }
+	},
+	opening_date:function(frm,cdt,cdn){
+		if(frm.doc.opening_date<today){
+			frm.doc.opening_date='';
+			cur_frm.refresh_field('opening_date');
+			frappe.throw("Opening Date cannot be before today's date.");
+		}
+	},
+	refresh:function(frm,cdt,cdn){
+		if(frm.doc.quotation_type=='Sealed'&& frappe.user_roles.includes('Customer Representative')){
+			cur_frm.add_custom_button(__("Open Quotation"),function() {
+					frappe.call({
+							method: "frappe.client.get_list",
+							"async":false,
+							args: {
+							doctype: "Supplier Quotation",
+							fields: ["*"],
+							filters:{
+								"quotation_type":'Sealed',
+								"rfq_no":frm.doc.name
+								},
+								"limit_page_length":0
+							},
+						callback: function(r) {
+							for(var i=0;i<r.message.length;i++){
+							if(r.message[i].opening_date==today){
+								frappe.call({
+									"method": "frappe.client.set_value",
+									"args": {
+									"doctype": "Supplier Quotation",
+									"name": r.message[i].name,
+									"fieldname": "quotation_type",
+									"value": "Open"
+									},
+									'async': false
+								});
+								cur_frm.timeline.insert_comment(frappe.user_info().fullname+' opened the Supplier Quotation:' +r.message[i].name)
+								
+								frappe.call({
+									"method": "seabridge_app.seabridge_app.api.add_comment",
+									"args": {
+									"doctype": "Supplier Quotation",
+									"name": r.message[i].name,
+									"owner":frappe.user_info().fullname
+									},
+								});
+								}
+							else if(frm.doc.opening_date>today){
+								frappe.throw("Unable to open the "+r.message[i].name+ "as the Opening Date: "+r.message[i].opening_date+" is not reached. Please open the document on" +r.message[i].opening_date+".");
+							}
+							else if(frm.doc.opening_date<today){
+								frappe.throw("Unable to open the '+r.message[i].name+ ' as you don't have enough permission. Please login as a Customer Representative of "+r.message[i].company+" to open the document.");
+							}
+							}
+						}
+					});
+				
+			});
+		}
+	},
+	on_submit:function(frm,cdt,cdn){
 		var doc=frm.doc;
+
 		  $.each(doc.suppliers,function(idx,supplier){
 			  var company;
 			  frappe.call({
@@ -50,7 +114,6 @@ frappe.ui.form.on('Request for Quotation Item', {
 	item_code:function(frm,cdt,cdn){
 		var item_group=[];
 			item_group=get_item_group(frm.doc.items);
-			cur_frm.refresh_fields();
 			supplier_filter(frm,item_group);
 	},
 	qualifier:function(frm,cdt,cdn){
@@ -78,7 +141,6 @@ frappe.ui.form.on('Request for Quotation Item', {
 				}
 			});
 		});
-		cur_frm.refresh_fields();
 		 supplier_filter(frm,item_group,tag_supplier);
 	}
 	});
@@ -130,7 +192,6 @@ function sendEmail(name,email,template){
 	
 	function supplier_filter(frm,item_group,tag_supplier=[]){
 	var suppliers=[];
-	console.log('jdshs',item_group)
 		frappe.call({
 			method:"seabridge_app.seabridge_app.api.get_supplier_List",
 			async:false,
@@ -143,13 +204,13 @@ function sendEmail(name,email,template){
 							suppliers.push(r.message[i]);
 						}
 						frm.set_query("supplier", "suppliers", function(frm, cdt, cdn) {
-							async:false
 							return {
 								filters: {
 									supplier_name:["in",suppliers] 
 								}
 							};
 						});
+						
 				}
 		});
 	

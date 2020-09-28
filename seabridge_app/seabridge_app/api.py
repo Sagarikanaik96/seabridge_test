@@ -9,7 +9,6 @@ import json
 
 @frappe.whitelist()
 def get_email(doctype,is_internal_customer,customer_name):
-	#email=''
 	company=frappe.db.get_value(doctype,{'is_internal_customer':is_internal_customer,'customer_name':customer_name},'represents_company')
 	if company:
 		return frappe.db.get_value('User Permission',{'for_value':company,'allow':'Company'},'user')
@@ -27,7 +26,6 @@ def get_supplier_List(item_group,tag):
 	group_list=[]
 	for group in item_group_list:
 		lft,rgt=frappe.db.get_value('Item Group',{'item_group_name':group},['lft','rgt'])
-		#rgt=frappe.db.get_value('Item Group',{'item_group_name':item_group},'rgt')
 		retrieved_item_group_list=[]
 		supplier=[]
 		parentList=[]
@@ -43,3 +41,8 @@ def get_supplier_List(item_group,tag):
 						supplier_list.append(row.parent)     
 			
 	return supplier_list
+
+@frappe.whitelist()
+def add_comment(doctype,name,owner):
+	sq_doc=frappe.get_doc(doctype,name)
+	sq_doc.add_comment('Comment',owner+' opened the Supplier Quotation:' +name)
