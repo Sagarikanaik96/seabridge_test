@@ -17,6 +17,9 @@ frappe.ui.form.on('Request for Quotation', {
 		}
 	},
 	refresh:function(frm,cdt,cdn){
+		var item_group=[];
+			item_group=get_item_group(frm.doc.items);
+			supplier_filter(frm,item_group);
 		if(frm.doc.quotation_type=='Sealed'&& frappe.user_roles.includes('Customer Representative')){
 			cur_frm.add_custom_button(__("Open Quotation"),function() {
 					frappe.call({
@@ -113,9 +116,9 @@ before_cancel:function(frm,cdt,cdn){
 frappe.ui.form.on('Request for Quotation Item', {
 	item_code:function(frm,cdt,cdn){
 		var item_group=[];
-			item_group=get_item_group(frm.doc.items);
+		item_group=get_item_group(frm.doc.items);
 			supplier_filter(frm,item_group);
-	},
+//	},
 	qualifier:function(frm,cdt,cdn){
 		var item_group=[];
 		var tag_supplier=[];
