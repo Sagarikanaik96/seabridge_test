@@ -41,5 +41,48 @@
   "subject": " Supplier Quotation is successfully created.",
   "twilio_number": null,
   "value_changed": null
+ },
+ {
+  "attach_print": 0,
+  "channel": "System Notification",
+  "condition": null,
+  "date_changed": null,
+  "days_in_advance": 0,
+  "docstatus": 0,
+  "doctype": "Notification",
+  "document_type": "Sales Invoice",
+  "enabled": 1,
+  "event": "Submit",
+  "is_standard": 0,
+  "message": "Sales Invoice is successfully created.",
+  "method": null,
+  "modified": "2020-09-14 16:38:46.365774",
+  "module": null,
+  "name": "Sales Invoice is successfully created.",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "print_format": null,
+  "property_value": null,
+  "recipients": [
+   {
+    "bcc": null,
+    "cc": null,
+    "condition": null,
+    "parent": "Sales Invoice is successfully created.",
+    "parentfield": "recipients",
+    "parenttype": "Notification",
+    "receiver_by_document_field": null,
+    "receiver_by_role": "MA"
+   }
+  ],
+  "send_system_notification": 0,
+  "sender": null,
+  "sender_email": null,
+  "set_property_after_alert": null,
+  "slack_webhook_url": null,
+  "subject": "Sales Invoice is successfully created.",
+  "twilio_number": null,
+  "value_changed": null
  }
 ]

@@ -19,15 +19,35 @@ website_context = {
 
 
 fixtures = ["Server Script","Custom Script",
-
+{
+    "dt":"DocType",
+    "filters":[
+        [
+        "name","in",[
+            "Item Group Detail"
+        ]
+    ]
+]
+},
 {"dt": "Custom Field",
 		"filters": [
          [
              "name", "in", [
 		"Opportunity-reference_no",
+		"Opportunity-quotation_type",
+		"Opportunity-opening_date",
 		"Supplier Quotation-rfq_no",
+		"Supplier Quotation-quotation_type",
+		"Supplier Quotation-opening_date",
 		"Supplier Quotation-quotation_no",
-		"Item - company_name"
+		"Item-company_name",
+		"Request for Quotation Item-qualifier",
+		"Supplier-item_group_detail",
+		"Supplier-item_group",
+		"Quotation-quotation_type",
+		"Quotation-opening_date",
+		"Request for Quotation-quotation_type",
+		"Request for Quotation-opening_date"
 		]
 	]
 ]
@@ -38,9 +58,24 @@ fixtures = ["Server Script","Custom Script",
 		"name","in",
  			[
 				"Request for Quotation-naming_series-options",
+				"Request for Quotation-terms-depends_on",
+				"Request for Quotation-tc_name-depends_on",
+				"Request for Quotation-items-depends_on",
+				"Request for Quotation-suppliers-depends_on",
 				"Material Request-naming_series-options",
 				"Material Request-material_request_type-options",
-				"Material Request Item-warehouse-in_list_view"
+				"Material Request Item-warehouse-in_list_view",
+				"Supplier Quotation-items-depends_on",
+				"Supplier Quotation-total_taxes_and_charges-depends_on",
+				"Supplier Quotation-taxes-depends_on",
+				"Supplier Quotation-taxes_and_charges-depends_on",
+				"Supplier Quotation-base_total_taxes_and_charges-depends_on",
+				"Supplier Quotation-base_rounded_total-depends_on",
+				"Supplier Quotation-base_grand_total-depends_on",
+				"Supplier Quotation-base_total-depends_on",
+				"Supplier Quotation-total-depends_on",
+				"Supplier Quotation-grand_total-depends_on",
+				"Supplier Quotation-rounded_total-depends_on"		
 			]
 	]
 	]
@@ -50,6 +85,24 @@ fixtures = ["Server Script","Custom Script",
 			"is_standard != 1"]
 }
 ]
+doctype_js = {
+	"Request for Quotation" : "seabridge_app/doctype/request_for_quotation/request_for_quotation.js",
+	"Purchase Invoice" : "seabridge_app/doctype/purchase_invoice/purchase_invoice.js",
+	"Sales Invoice" : "seabridge_app/doctype/sales_invoice/sales_invoice.js",
+	"Quotation" : "seabridge_app/doctype/quotation/quotation.js"
+}
+
+doc_events = {
+    	"Sales Invoice": {
+		"on_submit": ["seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.auto_create_purchase_invoice"]
+    },
+	"Request for Quotation": {
+		"on_submit": ["seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.auto_create_opportunity"]
+	    },
+	"Quotation": {
+		"on_submit": ["seabridge_app.seabridge_app.doctype.quotation.quotation.auto_create_supplier_quotation"]
+    }
+}
 
 # Includes in <head>
 # ------------------
