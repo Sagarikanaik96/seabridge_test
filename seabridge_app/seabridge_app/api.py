@@ -11,7 +11,7 @@ import json
 def get_email(doctype,is_internal_customer,customer_name):
 	company=frappe.db.get_value(doctype,{'is_internal_customer':is_internal_customer,'customer_name':customer_name},'represents_company')
 	if company:
-		return frappe.db.get_value('User Permission',{'for_value':company,'allow':'Company'},'user')
+		return frappe.db.get_value('Company',{'company_name':company},'associate_agent')
 
 
 @frappe.whitelist()
@@ -46,3 +46,20 @@ def get_supplier_List(item_group,tag):
 def add_comment(doctype,name,owner):
 	sq_doc=frappe.get_doc(doctype,name)
 	sq_doc.add_comment('Comment',owner+' opened the Supplier Quotation:' +name)
+
+@frappe.whitelist()
+def get_user(doctype,parenttype,role,parent):
+	return frappe.db.get_value(doctype,{'parenttype':parenttype,'parent':parent,'role':role},'parent')
+
+@frappe.whitelist()
+def validate_user_permission(doctype,user,allow,value):
+	docVal=frappe.db.get_list(doctype, filters={'user':user,'for_value':value,'allow':allow})
+	if docVal:
+		frappe.get_doc(dict(
+            doctype = doctype,
+            user = user,
+            for_value = value,
+            allow=allow,
+            name=docVal[0].name,
+            apply_to_all_doctypes=1
+            )).delete()

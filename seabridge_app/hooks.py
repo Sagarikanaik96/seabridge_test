@@ -47,7 +47,10 @@ fixtures = ["Server Script","Custom Script",
 		"Quotation-quotation_type",
 		"Quotation-opening_date",
 		"Request for Quotation-quotation_type",
-		"Request for Quotation-opening_date"
+		"Request for Quotation-opening_date",
+		"Company-company_type",
+		"Company-associate_agent_company",
+		"Company-associate_agent"
 		]
 	]
 ]
@@ -75,7 +78,9 @@ fixtures = ["Server Script","Custom Script",
 				"Supplier Quotation-base_total-depends_on",
 				"Supplier Quotation-total-depends_on",
 				"Supplier Quotation-grand_total-depends_on",
-				"Supplier Quotation-rounded_total-depends_on"		
+				"Supplier Quotation-rounded_total-depends_on",
+				"Supplier Quotation-base_in_words-depends_on",
+				"Supplier Quotation-in_words-depends_on"		
 			]
 	]
 	]
@@ -83,6 +88,13 @@ fixtures = ["Server Script","Custom Script",
 {"dt": "Notification", 
 		"filters": [
 			"is_standard != 1"]
+},
+{"dt": "Role", 
+		"filters":[
+        [
+        "name","in",["Agent"]
+	]
+	]
 }
 ]
 doctype_js = {

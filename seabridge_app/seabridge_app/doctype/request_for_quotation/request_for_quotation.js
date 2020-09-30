@@ -3,7 +3,7 @@
 var today = new Date().toISOString().slice(0, 10)
 frappe.ui.form.on('Request for Quotation', {
 	quotation_type:function(frm,cdt,cdn){
-	    if(frappe.user_roles.includes("MA")){
+	    if(frappe.user_roles.includes("Agent")){
 	        frm.doc.quotation_type='Open';
 	        cur_frm.refresh_field('quotation_type');
 	        frappe.throw("You don't have enough permission to create a Sealed RFQ. Please select option as Open to create the RFQ");
@@ -17,6 +17,7 @@ frappe.ui.form.on('Request for Quotation', {
 		}
 	},
 	refresh:function(frm,cdt,cdn){
+		console.log('ggg')
 		var item_group=[];
 			item_group=get_item_group(frm.doc.items);
 			supplier_filter(frm,item_group);
@@ -89,7 +90,54 @@ frappe.ui.form.on('Request for Quotation', {
 				  }
 			  });
 			  if(company!==undefined){
-				  var emailTemplate='<h1><strong> Opportunity is created</strong></h1>';
+				  var agent;
+				  var customer;
+				frappe.call({
+					method: "frappe.client.get_value",
+					async:false,
+					args: {
+						doctype: "Company",
+						fieldname: "associate_agent",
+						filters:{
+							"company_name":frm.doc.company
+						}
+					},
+						callback: function(r) {
+							if(r.message.associate_agent!==undefined){
+								agent=r.message.associate_agent;
+							}
+						}
+				});
+				frappe.call({
+					method: "frappe.client.get_value",
+					async:false,
+					args: {
+						doctype: "Customer",
+						fieldname: "customer_name",
+						filters:{
+							"is_internal_Customer":1,
+							"represents_company":frm.doc.company
+						}
+					},
+						callback: function(r) {
+							if(r.message.customer_name!==undefined){
+								customer=r.message.customer_name;
+							}
+						}
+				});
+				  var emailTemplate=
+				  '<h1><strong>   Dear '+supplier.supplier_name+'</h5>'+
+				  '<br>'+
+				'<h3>Subject: Request For Quote</h3>'+
+				  '<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
+				  '<br>'+
+				  '<h3>Thank you, I look forward to your prompt response.</h3>'+
+				  '<br>'+
+				  '<h3>Yours sincerely,</h3>'+
+				  '<h3>'+agent+'</h3>'+
+				  '<h3>'+customer+'</h3>'+
+				  '<h3>'+frm.doc.company+'</h3>';
+
 				  sendEmail(doc.name,supplier.email_id,emailTemplate);
 			  }
 			  else{
@@ -118,7 +166,7 @@ frappe.ui.form.on('Request for Quotation Item', {
 		var item_group=[];
 		item_group=get_item_group(frm.doc.items);
 			supplier_filter(frm,item_group);
-//	},
+	},
 	qualifier:function(frm,cdt,cdn){
 		var item_group=[];
 		var tag_supplier=[];

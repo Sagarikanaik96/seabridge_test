@@ -11,11 +11,95 @@ on_submit:function(frm,cdt,cdn){
                 },
                async:false,
                 callback: function(r){
+                    console.log(r)
                     email=r.message;
                 }
             });
             if(email!==undefined){
-                var emailTemplate='<h1><strong>  Supplier Quotation is successfully created.</strong></h1>';
+		        var customer_email;
+				var customer;
+				var supplier;
+				var rfq;
+				frappe.call({
+					method: "frappe.client.get_value",
+					async:false,
+					args: {
+						doctype: "Customer",
+						fieldname: "represents_company",
+						filters:{
+							"is_internal_customer":1,
+							"customer_name":frm.doc.customer_name
+						}
+					},
+						callback: function(r) {
+                            if(r.message.represents_company!==undefined){
+                                customer=r.message.represents_company;
+                            }
+						}
+				});
+				frappe.call({
+					method: "frappe.client.get_value",
+					async:false,
+					args: {
+						doctype: "Contact",
+						fieldname: "email_id",
+						filters:{
+							"name":frm.doc.contact_person
+						}
+					},
+						callback: function(r) {
+                            if(r.message.email_id!==undefined){
+                            customer_email=r.message.email_id;
+                            }
+						}
+				});
+				frappe.call({
+					method: "frappe.client.get_value",
+					async:false,
+					args: {
+						doctype: "Supplier",
+						fieldname: "supplier_name",
+						filters:{
+							"is_internal_supplier":1,
+							"represents_company":frm.doc.company
+						}
+					},
+						callback: function(r) {
+                            if(r.message.supplier_name!==undefined){
+                                supplier=r.message.supplier_name;
+                            }
+						}
+				});
+				frappe.call({
+					method: "frappe.client.get_value",
+					async:false,
+					args: {
+						doctype: "Opportunity",
+						fieldname: "reference_no",
+						filters:{
+							"name":frm.doc.opportunity
+						}
+					},
+						callback: function(r) {
+                            if(r.message.reference_no!==undefined){
+                            	rfq=r.message.reference_no;
+                            }
+						}
+				});
+                var emailTemplate='<h3>Customer Name: '+frm.doc.customer_name+'</h3>'+
+				'<h3>Customer Company: '+customer+'</h3>'+
+				'<h3>Customer Contact: '+customer_email+'</h3>'+
+				'<h3>Agent: '+email+'</h3>'+
+				'<h3>Date: '+frm.doc.transaction_date+'</h3>'+
+				'<h3>Subject: Sales Quotation</h3>'+ 
+				'<br>'+
+				'<h3>Dear ' +email+ ' and '+frm.doc.customer_name+'</h3>'+
+				'<h3>We have received your request for quotation '+rfq+' regarding your requirements.We are pleased to inform you that we have enclosed our quotation for your favorable consideration. More details of the enclosed quote and its relevant terms and conditions are provided for your perusal.</h3>'+
+                '<br>'+
+                '<h3>We look forward to serving you.</h3>'+
+                '<h3>Thanks,</h3>'+
+                '<h3>'+supplier+'</h3>'+
+                '<h3>'+frm.doc.company+'</h3>';
                 sendEmail(doc.name,email,emailTemplate,doc.quotation_type);
             }
 },
