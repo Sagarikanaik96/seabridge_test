@@ -1,0 +1,216 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2020-10-01 17:04:34.573353",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "column_break_2",
+  "date",
+  "company_registration_details_section",
+  "company",
+  "abbr",
+  "default_currency",
+  "is_group",
+  "column_break_8",
+  "parent_company",
+  "company_type",
+  "country",
+  "vendor_registration_details_section",
+  "supplier_name",
+  "internal_supplier",
+  "represents_company",
+  "column_break_16",
+  "supplier_group",
+  "supplier_type",
+  "user_registration_details_section",
+  "email",
+  "last_name",
+  "column_break_22",
+  "first_name",
+  "send_welcome_email",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "REG-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "company_registration_details_section",
+   "fieldtype": "Section Break",
+   "label": "Company Registration Details"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Data",
+   "label": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "abbr",
+   "fieldtype": "Data",
+   "label": "Abbr",
+   "reqd": 1
+  },
+  {
+   "fieldname": "default_currency",
+   "fieldtype": "Link",
+   "label": "Default Currency",
+   "options": "Currency"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "label": "Is Group"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "parent_company",
+   "fieldtype": "Link",
+   "label": "Parent Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "company_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Company Type",
+   "options": "Vendor\nCustomer\nAgent",
+   "reqd": 1
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country"
+  },
+  {
+   "fieldname": "vendor_registration_details_section",
+   "fieldtype": "Section Break",
+   "label": "Vendor Registration Details"
+  },
+  {
+   "fieldname": "supplier_name",
+   "fieldtype": "Data",
+   "label": "Supplier Name",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\")"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "internal_supplier",
+   "fieldtype": "Check",
+   "label": "Is Internal Supplier"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "represents_company",
+   "fieldtype": "Link",
+   "label": "Represents Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier_group",
+   "fieldtype": "Link",
+   "label": "Supplier Group",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\")",
+   "options": "Supplier Group"
+  },
+  {
+   "fieldname": "supplier_type",
+   "fieldtype": "Select",
+   "label": "Supplier Type",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\")",
+   "options": "Company\nIndividual"
+  },
+  {
+   "fieldname": "user_registration_details_section",
+   "fieldtype": "Section Break",
+   "label": "User Registration Details"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "reqd": 1
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First Name",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "send_welcome_email",
+   "fieldtype": "Check",
+   "label": "Send Welcome Email"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Registration",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2020-10-02 05:06:27.376274",
+ "modified_by": "Administrator",
+ "module": "seabridge_app",
+ "name": "Registration",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

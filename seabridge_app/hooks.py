@@ -12,19 +12,22 @@ app_email = "seabridge_app@gmail.com"
 app_license = "MIT"
 app_logo_url = '/assets/seabridge_app/images/Seabridge TFX_VL.png'
 app_include_css = "assets/seabridge_app/css/desk.min.css"
+app_include_js = "assets/seabridge_app/js/seabridge_app/utils/common.js"
 website_context = {
 	"favicon": 	"/assets/seabridge_app/images/seaicon.png",
 	"splash_image": "/assets/seabridge_app/images/Seabridge TFX_VL.png"
 }
 
 
-fixtures = ["Server Script","Custom Script",
+fixtures = ["Server Script",
 {
     "dt":"DocType",
     "filters":[
         [
         "name","in",[
-            "Item Group Detail"
+            "Item Group Detail",
+            "Registration",
+            "Document Specific Naming Series"
         ]
     ]
 ]
@@ -50,7 +53,11 @@ fixtures = ["Server Script","Custom Script",
 		"Request for Quotation-opening_date",
 		"Company-company_type",
 		"Company-associate_agent_company",
-		"Company-associate_agent"
+		"Company-associate_agent",
+		"Company-naming_series_details",
+		"Company-series",
+		"User-is_system_admin",
+		"User-represents_company"
 		]
 	]
 ]
@@ -101,7 +108,15 @@ doctype_js = {
 	"Request for Quotation" : "seabridge_app/doctype/request_for_quotation/request_for_quotation.js",
 	"Purchase Invoice" : "seabridge_app/doctype/purchase_invoice/purchase_invoice.js",
 	"Sales Invoice" : "seabridge_app/doctype/sales_invoice/sales_invoice.js",
-	"Quotation" : "seabridge_app/doctype/quotation/quotation.js"
+	"Quotation" : "seabridge_app/doctype/quotation/quotation.js",
+	"Material Request" : "seabridge_app/doctype/material_request/material_request.js",
+	"Supplier" : "seabridge_app/doctype/supplier/supplier.js",
+	"Supplier Quotation" : "seabridge_app/doctype/supplier_quotation/supplier_quotation.js",
+	"Purchase Order" : "seabridge_app/doctype/purchase_order/purchase_order.js",
+	"Sales Order" : "seabridge_app/doctype/sales_order/sales_order.js",
+	"Purchase Receipt" : "seabridge_app/doctype/purchase_receipt/purchase_receipt.js",
+	"Opportunity" : "seabridge_app/doctype/opportunity/opportunity.js",
+	"Registration" : "seabridge_app/doctype/registration/registration.js"
 }
 
 doc_events = {
@@ -113,6 +128,12 @@ doc_events = {
 	    },
 	"Quotation": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.quotation.quotation.auto_create_supplier_quotation"]
+    },
+	"Registration": {
+		"on_submit": ["seabridge_app.seabridge_app.doctype.registration.registration.on_registration_submit"]
+    },
+	"Purchase Order": {
+		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.auto_create_sales_order"]
     }
 }
 
