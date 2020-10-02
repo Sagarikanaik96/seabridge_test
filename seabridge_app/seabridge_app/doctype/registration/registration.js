@@ -1,37 +1,29 @@
 // Copyright (c) 2020, seabridge_app and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Registration', 
-    'company',function(frm,cdt,cdn){
+frappe.ui.form.on('Registration',{ 
+    company:function(frm,cdt,cdn){
     let parts = frm.doc.company.split(" ");
 		let abbr = $.map(parts, function (p) {
 			return p? p.substr(0, 1) : null;
 		}).join("");
 		frm.set_value("abbr", abbr);
-})
-
-frappe.ui.form.on('Registration', {
-    on_submit:function(frm,cdt,cdn){
+},
+on_submit:function(frm,cdt,cdn){
         if(frm.doc.company_type=="Vendor"){
             frm.set_value("represents_company",frm.doc.company)
             frm.set_value("internal_supplier",1)
             msgprint('Is Supplier and Represents Company is set, please update the form!!','Alert')
         }
-    }
-})
+    },
 
-frappe.ui.form.on('Registration', {
-    before_save:function(frm,cdt,cdn){
+before_save:function(frm,cdt,cdn){
 	if(frm.doc.date==null){
         	frm.set_value("date",frappe.datetime.get_today())
 	}
-    }
-})
+    },
 
-
-frappe.ui.form.on('Registration',{
-    refresh(frm){
-	console.log("Try")
+refresh:function(frm,cdt,cdn){
         if(frm.doc.company_type=="Vendor"){
             frm.set_query("represents_company",function(){
                 return{

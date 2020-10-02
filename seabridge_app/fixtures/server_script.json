@@ -6,13 +6,13 @@
   "docstatus": 0,
   "doctype": "Server Script",
   "doctype_event": "After Save",
-  "modified": "2020-10-01 21:31:16.110172",
+  "modified": "2020-10-02 15:53:43.224115",
   "name": "On User Save",
   "parent": null,
   "parentfield": null,
   "parenttype": null,
   "reference_doctype": "User",
-  "script": "user=frappe.db.get_list(\"User Permission\",filters={'user':doc.email,'allow':'Company'},fields={'*'})\nif user:\n        frappe.msgprint(\"Previous User Permission for \"+user[0].user+\" deleted\")\n        frappe.get_doc(dict(\n                doctype = 'User Permission',\n                user = doc.email,\n                allow='Company',\n                name=user[0].name,\n                apply_to_all_doctypes=1\n                )).delete()\nif(doc.is_system_admin!=1):                \n    up_doc=frappe.get_doc(dict(doctype = 'User Permission',\n                        user=doc.email,\n                        allow=\"Company\",\n                        for_value=doc.represents_company,\n                        apply_to_all_doctypes=1\n            )).insert(ignore_mandatory=True)\n    up_doc.save()\n    \n\n",
+  "script": "user=frappe.db.get_list(\"User Permission\",filters={'user':doc.email,'allow':'Company'},fields={'*'})\nif user:\n        frappe.get_doc(dict(\n                doctype = 'User Permission',\n                user = doc.email,\n                allow='Company',\n                name=user[0].name,\n                apply_to_all_doctypes=1\n                )).delete()\n\nif(doc.is_system_admin!=1):                \n    up_doc=frappe.get_doc(dict(doctype = 'User Permission',\n                        user=doc.email,\n                        allow=\"Company\",\n                        for_value=doc.represents_company,\n                        apply_to_all_doctypes=1\n            )).insert(ignore_mandatory=True)\n    up_doc.save()\n    \n\n",
   "script_type": "DocType Event"
  },
  {

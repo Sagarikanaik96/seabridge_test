@@ -28,13 +28,6 @@ def on_registration_submit(doc,method):
         )).insert(ignore_mandatory=True)
         us_doc.save()
 
-        up_doc=frappe.get_doc(dict(doctype = 'User Permission',
-                    user=doc.email,
-                    allow="Company",
-                    for_value=doc.company,
-                    apply_to_all_doctypes=1
-        )).insert(ignore_mandatory=True)
-        up_doc.save()
 
         if doc.company_type=="Vendor":
                     su_doc=frappe.get_doc(dict(doctype = 'Supplier',

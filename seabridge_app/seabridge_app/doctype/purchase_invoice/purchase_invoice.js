@@ -1,9 +1,7 @@
 // Copyright (c) 2020, seabridge_app and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Purchase Invoice', {
-refresh: function(frm) {
-    }, 
+frappe.ui.form.on('Purchase Invoice', { 
 before_save:function(frm,cdt,cdn){
     frappe.db.get_value("Sales Invoice",frm.doc.bill_no,"base_grand_total",(c)=>{
 	    if(frm.doc.total>c.base_grand_total){
@@ -30,14 +28,11 @@ before_save:function(frm,cdt,cdn){
             }
         })
 
-}
-});
-
-var po;
-var item_val;
-var amount;
-frappe.ui.form.on('Purchase Invoice', {
-    before_submit:function(frm,cdt,cdn){
+},
+before_submit:function(frm,cdt,cdn){
+            var po;
+            var item_val;
+            var amount;
             $.each(frm.doc.items, function(idx, item){
                 po=item.purchase_order
                 item_val=item.item_code
@@ -68,12 +63,8 @@ frappe.ui.form.on('Purchase Invoice', {
                     })
                 })
             })
-    }
-})
-
-
-frappe.ui.form.on("Purchase Invoice", {
-    on_submit: function(frm) {
+    },
+on_submit: function(frm) {
         var tabletransfer= frappe.model.get_doc("Purchase Invoice", frm.doc.name)
         $.each(tabletransfer.items, function(index, row){
                
@@ -87,9 +78,9 @@ frappe.ui.form.on("Purchase Invoice", {
                                                 "value":0
                                             }
                                         });  
-        });
-}
-})
+        	});
+	}
+});
 
 
 
