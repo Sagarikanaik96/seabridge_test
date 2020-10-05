@@ -1,5 +1,6 @@
 // common file between desk and website
-
+var reference;
+var company;
 frappe.avatar = function (user, css_class, title, image_url = null) {
 	let user_info;
 	if (user) {
