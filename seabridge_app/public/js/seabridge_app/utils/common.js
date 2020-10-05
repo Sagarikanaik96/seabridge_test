@@ -1,13 +1,11 @@
 // common file between desk and website
 var reference;
 var company;
-
 frappe.avatar = function (user, css_class, title, image_url = null) {
 	let user_info;
 	if (user) {
 		// desk
 		user_info = frappe.user_info(user);
-		
 	} else {
 		// website
 		let full_name = title || frappe.get_cookie("full_name");
@@ -24,6 +22,7 @@ frappe.avatar = function (user, css_class, title, image_url = null) {
 		css_class = "avatar-small";
 	}
 
+
 	frappe.call({
                                 method: "frappe.client.get_list",
 				async:false,
@@ -37,13 +36,13 @@ frappe.avatar = function (user, css_class, title, image_url = null) {
                                 callback: function(p) {
                                     for(var i=0;i<p.message.length;i++){
                                         company=p.message[i].represents_company
-		
+
                                     }
 				}
-		})	
+			})
 
-	if(company){
-	frappe.call({
+		if(company){
+			frappe.call({
                                 method: "frappe.client.get_list",
 				async:false,
                                 args: {
@@ -56,43 +55,41 @@ frappe.avatar = function (user, css_class, title, image_url = null) {
                                 callback: function(p) {
                                     for(var i=0;i<p.message.length;i++){
                                         reference=p.message[i].company_logo
-		
+
                                     }
 				}
-		})
-	}
+			})
+		}
 
-	if (!title) {
-		if(company){
-			title = company;
-		}
-		else{
-			title = user_info.fullname;
-		}
+if (!title) {
+	if(company){
+		title = company;
 	}
-	if(reference){
-		image_url = image_url || reference;
-		const image = (window.cordova && image_url.indexOf('http') === -1) ? frappe.base_url + image_url : image_url;
-		return `<span class="avatar ${css_class}" title="${title}">
-				<span class="avatar-frame" style='background-image: url("${image}")'
-					title="${title}"></span>
-			</span>`;
-	}		
-	else {		
-		var abbr = user_info.abbr;
-		if (css_class === 'avatar-small' || css_class == 'avatar-xs') {
-			abbr = abbr.substr(0, 1);
-			
-		}
-		return `<span class="avatar ${css_class}" title="${title}">
-			<div class="standard-image" style="background-color: ${user_info.color};">
-				${abbr}</div>
-		</span>`;
+	else{
+		title = user_info.fullname;
 	}
-	
-			
-
 }
+if(reference){
+	image_url = image_url || reference;
+	const image = (window.cordova && image_url.indexOf('http') === -1) ? frappe.base_url + image_url : image_url;
+	return `<span class="avatar ${css_class}" title="${title}">
+	<span class="avatar-frame" style='background-image: url("${image}")'
+	title="${title}"></span>
+	</span>`;
+}
+else {
+	var abbr = user_info.abbr;
+	if (css_class === 'avatar-small' || css_class == 'avatar-xs') {
+		abbr = abbr.substr(0, 1);
+	}
+	return `<span class="avatar ${css_class}" title="${title}">
+	<div class="standard-image" style="background-color: ${user_info.color};">
+	${abbr}</div>
+	</span>`;
+}
+
+};
+
 frappe.ui.scroll = function(element, animate, additional_offset) {
 	var header_offset = $(".navbar").height() + $(".page-head").height();
 	var top = $(element).offset().top - header_offset - cint(additional_offset);
