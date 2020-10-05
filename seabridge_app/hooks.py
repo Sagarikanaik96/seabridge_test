@@ -27,7 +27,8 @@ fixtures = ["Server Script",
         "name","in",[
             "Item Group Detail",
             "Registration",
-            "Document Specific Naming Series"
+            "Document Specific Naming Series",
+	    "Service Completion Note"
         ]
     ]
 ]
@@ -136,7 +137,9 @@ doc_events = {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.auto_create_sales_order"]
     }
 }
-
+override_doctype_dashboards = {
+	"Purchase Order": "seabridge_app.seabridge_app.doctype.purchase_order.purchase_order_dashboard.get_dashboard_data"
+}
 # Includes in <head>
 # ------------------
 
