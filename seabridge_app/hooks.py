@@ -100,6 +100,19 @@ fixtures = ["Server Script",
         "name","in",["Agent"]
 	]
 	]
+},
+{"dt": "Print Format",
+        "filters": [
+	[
+		"name","in",
+ 			[
+				"Quotation Print Format",
+				"PO Print Format",
+				"SI Print Format",
+				"RFQ Print Format"
+			]
+	]
+]
 }
 ]
 doctype_js = {
