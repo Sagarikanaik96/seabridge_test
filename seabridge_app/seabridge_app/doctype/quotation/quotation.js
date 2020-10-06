@@ -32,9 +32,9 @@ on_submit:function(frm,cdt,cdn){
 						}
 					},
 						callback: function(r) {
-                            if(r.message.represents_company!==undefined){
-                                customer=r.message.represents_company;
-                            }
+						    if(r.message.represents_company!==undefined){
+						        customer=r.message.represents_company;
+						    }
 						}
 				});
 				frappe.call({
@@ -48,9 +48,9 @@ on_submit:function(frm,cdt,cdn){
 						}
 					},
 						callback: function(r) {
-                            if(r.message.email_id!==undefined){
-                            customer_email=r.message.email_id;
-                            }
+						    if(r.message.email_id!==undefined){
+						    customer_email=r.message.email_id;
+						    }
 						}
 				});
 				frappe.call({
@@ -65,9 +65,9 @@ on_submit:function(frm,cdt,cdn){
 						}
 					},
 						callback: function(r) {
-                            if(r.message.supplier_name!==undefined){
-                                supplier=r.message.supplier_name;
-                            }
+						    if(r.message.supplier_name!==undefined){
+						        supplier=r.message.supplier_name;
+						    }
 						}
 				});
 				frappe.call({

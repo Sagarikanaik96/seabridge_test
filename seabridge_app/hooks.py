@@ -28,7 +28,8 @@ fixtures = ["Server Script",
             "Item Group Detail",
             "Registration",
             "Document Specific Naming Series",
-	    "Service Completion Note"
+	    "Service Completion Note",
+	    "Service Completion Note Item"
         ]
     ]
 ]
@@ -69,10 +70,6 @@ fixtures = ["Server Script",
 		"name","in",
  			[
 				"Request for Quotation-naming_series-options",
-				"Request for Quotation-terms-depends_on",
-				"Request for Quotation-tc_name-depends_on",
-				"Request for Quotation-items-depends_on",
-				"Request for Quotation-suppliers-depends_on",
 				"Material Request-naming_series-options",
 				"Material Request-material_request_type-options",
 				"Material Request Item-warehouse-in_list_view",
@@ -117,7 +114,8 @@ doctype_js = {
 	"Sales Order" : "seabridge_app/doctype/sales_order/sales_order.js",
 	"Purchase Receipt" : "seabridge_app/doctype/purchase_receipt/purchase_receipt.js",
 	"Opportunity" : "seabridge_app/doctype/opportunity/opportunity.js",
-	"Registration" : "seabridge_app/doctype/registration/registration.js"
+	"Registration" : "seabridge_app/doctype/registration/registration.js",
+	"Company" : "seabridge_app/doctype/company/company.js"
 }
 
 doc_events = {
@@ -137,9 +135,7 @@ doc_events = {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.auto_create_sales_order"]
     }
 }
-override_doctype_dashboards = {
-	"Purchase Order": "seabridge_app.seabridge_app.doctype.purchase_order.purchase_order_dashboard.get_dashboard_data"
-}
+
 # Includes in <head>
 # ------------------
 
