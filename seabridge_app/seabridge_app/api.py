@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.desk.doctype.notification_settings.notification_settings import get_subscribed_documents
 import json
 
 @frappe.whitelist()
@@ -14,6 +13,13 @@ def get_email(doctype,is_internal_customer,customer_name):
 	if company:
 		return frappe.db.get_value('Company',{'company_name':company},'associate_agent')
 
+@frappe.whitelist()
+def get_agent_name(doctype,is_internal_customer,customer_name):
+	company=frappe.db.get_value(doctype,{'is_internal_customer':is_internal_customer,'customer_name':customer_name},'represents_company')
+	if company:
+		email= frappe.db.get_value('Company',{'company_name':company},'associate_agent')
+		if email:
+			return frappe.db.get_value('User',{'email':email},'full_name')
 
 @frappe.whitelist()
 def get_company_name(doctype,is_internal_supplier,supplier_name):
@@ -64,9 +70,12 @@ def validate_user_permission(doctype,user,allow,value):
             name=docVal[0].name,
             apply_to_all_doctypes=1
             )).delete()
-			
+
 @frappe.whitelist()
 def get_user_name(doctype, txt, searchfield, start, page_len, filters):
-	return frappe.db.sql("select u.name, concat(u.first_name, ' ', u.last_name) from `tabUser` u, `tabHas Role` r where u.name=r.parent and r.role= %s and u.represents_company= %s and u.enabled = 1",(filters['role'],filters['represents_company']))
-
-
+        return frappe.db.sql("""
+                select u.name, concat(u.first_name, ' ', u.last_name)
+                from tabUser u, `tabHas Role` r
+                where u.name = r.parent and r.role = 'Agent'
+                and u.enabled = 1 and u.name like %s
+        """, ("%" + txt + "%"))

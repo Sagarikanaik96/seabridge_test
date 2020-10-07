@@ -2,6 +2,13 @@
 // For license information, please see license.txt
 var today = new Date().toISOString().slice(0, 10)
 frappe.ui.form.on('Request for Quotation', {
+	quotation_type:function(frm,cdt,cdn){
+	    if(frappe.user_roles.includes("Agent")){
+	        frm.doc.quotation_type='Open';
+	        cur_frm.refresh_field('quotation_type');
+	        frappe.throw("You don't have enough permission to create a Sealed RFQ. Please select option as Open to create the RFQ");
+        }
+	},
 	opening_date:function(frm,cdt,cdn){
 		if(frm.doc.opening_date<today){
 			frm.doc.opening_date='';
@@ -96,7 +103,7 @@ frappe.ui.form.on('Request for Quotation', {
 						}
 					},
 						callback: function(r) {
-							if(r.message.associate_agent!==undefined){
+							if(r.message.associate_agent!==undefined||r.message.associate_agent!==null){
 								agent=r.message.associate_agent;
 							}
 						}
@@ -119,9 +126,8 @@ frappe.ui.form.on('Request for Quotation', {
 						}
 				});
 				  var emailTemplate=
-				  '<h1><strong>   Dear '+supplier.supplier_name+'</h5>'+
+				  '<h3> Dear '+supplier.supplier_name+',</h3>'+
 				  '<br>'+
-				'<h3>Subject: Request For Quote</h3>'+
 				  '<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
 				  '<br>'+
 				  '<h3>Thank you, I look forward to your prompt response.</h3>'+
@@ -216,7 +222,7 @@ function sendEmail(name,email,template){
 							communication_type: "Communication",
 							send_email:1,
 							attachments:[],
-							print_format:"Standard",
+							print_format:"RFQ Print Format",
 							doctype: "Request for Quotation",
 							name: name,
 							print_letterhead: 0

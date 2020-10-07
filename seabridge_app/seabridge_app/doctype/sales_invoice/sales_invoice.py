@@ -32,6 +32,7 @@ def auto_create_purchase_invoice(doc,method):
 						bill_date=datetime.datetime.strptime(doc.posting_date, "%Y-%m-%d").date(),
 						tc_name=doc.tc_name,
 						payment_terms_template=doc.payment_terms_template,
+						taxes_and_charges=tax_template,
 						terms=doc.terms,
 						total=doc.total,
 						grand_total=doc.grand_total,

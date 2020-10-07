@@ -15,6 +15,8 @@ def auto_create_supplier_quotation(doc,method):
     contact_person=frappe.db.get_value('Dynamic Link',{'parenttype':'Contact','link_doctype':'Supplier',"link_name":supplier},'parent')
     if company:
         if supplier:
+            tax_template=frappe.db.get_value('Purchase Taxes and Charges Template',{'company':doc.customer_name},'name')                    
+            tax_list=frappe.db.get_list("Purchase Taxes and Charges",filters={'parent':tax_template,'parenttype':'Purchase Taxes and Charges Template'},fields={'*'})
             sq_doc=frappe.get_doc(dict(doctype = 'Supplier Quotation',
                         supplier=supplier,
                         company=company,
@@ -25,8 +27,10 @@ def auto_create_supplier_quotation(doc,method):
                         conversion_rate=1,
                         quotation_no=doc.name,
                         tc_name=doc.tc_name,
+                        taxes_and_charges=tax_template,
                         terms=doc.terms,
                         total=doc.total,
+                        total_taxes_and_charges=doc.total_taxes_and_charges,
                         grand_total=doc.grand_total,
                         base_grand_total=doc.base_grand_total,
                         rounded_total=doc.rounded_total,
@@ -48,6 +52,17 @@ def auto_create_supplier_quotation(doc,method):
                         'description':val.description,
                     'conversion_factor':val.conversion_factor
                     })
+            for tax in tax_list:
+                sq_doc.append('taxes',{
+						'account_head':tax.account_head,
+						'charge_type':tax.charge_type,
+						'rate':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'rate'),
+                        'tax_amount':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'tax_amount'),
+                        'total':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'total'),
+                        'tax_amount_after_discount_amount':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'tax_amount_after_discount_amount'),
+                        'base_tax_amount':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'base_tax_amount'),
+                        'base_total':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'base_total')
+					})
             sq_doc.add_comment('Comment',' System created  '+sq_doc.name)
             sq_doc.save()
             doc.add_comment('Comment','  Supplier Quotation: '+sq_doc.name)  

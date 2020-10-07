@@ -11,49 +11,29 @@ on_submit:function(frm,cdt,cdn){
                 },
                async:false,
                 callback: function(r){
-                    console.log(r)
                     email=r.message;
                 }
             });
             if(email!==undefined){
-		        var customer_email;
-				var customer;
 				var supplier;
-				var rfq;
-				frappe.call({
-					method: "frappe.client.get_value",
-					async:false,
-					args: {
-						doctype: "Customer",
-						fieldname: "represents_company",
-						filters:{
-							"is_internal_customer":1,
-							"customer_name":frm.doc.customer_name
-						}
-					},
-						callback: function(r) {
-						    if(r.message.represents_company!==undefined){
-						        customer=r.message.represents_company;
-						    }
-						}
-				});
-				frappe.call({
-					method: "frappe.client.get_value",
-					async:false,
-					args: {
-						doctype: "Contact",
-						fieldname: "email_id",
-						filters:{
-							"name":frm.doc.contact_person
-						}
-					},
-						callback: function(r) {
-						    if(r.message.email_id!==undefined){
-						    customer_email=r.message.email_id;
-						    }
-						}
-				});
-				frappe.call({
+                var rfq;
+                var agent;
+                frappe.call({
+                    method:"seabridge_app.seabridge_app.api.get_agent_name",
+                    args:{
+                        doctype:'Customer',
+                        is_internal_customer:1,
+                        customer_name:doc.customer_name
+                    },
+                   async:false,
+                    callback: function(r){
+                        if(r.message!==undefined){
+                            agent=r.message;
+                        }
+                }
+                });
+
+                frappe.call({
 					method: "frappe.client.get_value",
 					async:false,
 					args: {
@@ -65,9 +45,9 @@ on_submit:function(frm,cdt,cdn){
 						}
 					},
 						callback: function(r) {
-						    if(r.message.supplier_name!==undefined){
-						        supplier=r.message.supplier_name;
-						    }
+                            if(r.message.supplier_name!==undefined){
+                                supplier=r.message.supplier_name;
+                            }
 						}
 				});
 				frappe.call({
@@ -86,21 +66,15 @@ on_submit:function(frm,cdt,cdn){
                             }
 						}
 				});
-                var emailTemplate='<h3>Customer Name: '+frm.doc.customer_name+'</h3>'+
-				'<h3>Customer Company: '+customer+'</h3>'+
-				'<h3>Customer Contact: '+customer_email+'</h3>'+
-				'<h3>Agent: '+email+'</h3>'+
-				'<h3>Date: '+frm.doc.transaction_date+'</h3>'+
-				'<h3>Subject: Sales Quotation</h3>'+ 
-				'<br>'+
-				'<h3>Dear ' +email+ ' and '+frm.doc.customer_name+'</h3>'+
+                var emailTemplate=
+				'<h3>Dear ' +agent+ ' and '+frm.doc.customer_name+',</h3>'+
 				'<h3>We have received your request for quotation '+rfq+' regarding your requirements.We are pleased to inform you that we have enclosed our quotation for your favorable consideration. More details of the enclosed quote and its relevant terms and conditions are provided for your perusal.</h3>'+
                 '<br>'+
                 '<h3>We look forward to serving you.</h3>'+
                 '<h3>Thanks,</h3>'+
                 '<h3>'+supplier+'</h3>'+
                 '<h3>'+frm.doc.company+'</h3>';
-                sendEmail(doc.name,email,emailTemplate,doc.quotation_type);
+               sendEmail(doc.name,email,emailTemplate,doc.quotation_type);
             }
 },
 before_cancel:function(frm,cdt,cdn){
@@ -136,7 +110,7 @@ if(quotation_type=='Open'){
                         communication_type: "Communication",
                         send_email:1,
                         attachments:[],
-                        print_format:"Standard",
+                        print_format:"Quotation Print Format",
                         doctype: "Quotation",
                         name: name,
                         print_letterhead: 0
