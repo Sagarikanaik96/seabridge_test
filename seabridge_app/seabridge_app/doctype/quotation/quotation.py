@@ -63,6 +63,9 @@ def auto_create_supplier_quotation(doc,method):
                     sq_doc.append('taxes',{
 						'account_head':tax.account_head,
 						'charge_type':tax.charge_type,
+                        'add_deduct_tax':'Add',
+                        'category':'Total',
+                        'description':tax.description,
 						'rate':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'rate'),
                         'tax_amount':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'tax_amount'),
                         'total':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'total'),
