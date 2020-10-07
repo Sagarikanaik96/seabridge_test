@@ -13,12 +13,19 @@ def auto_create_supplier_quotation(doc,method):
     supplier=frappe.db.get_value('Supplier',{'is_internal_supplier':1,'represents_company':doc.company},'supplier_name')
     company=frappe.db.get_value('Customer',{'is_internal_Customer':1,'customer_name':doc.customer_name},'represents_company')
     contact_person=frappe.db.get_value('Dynamic Link',{'parenttype':'Contact','link_doctype':'Supplier',"link_name":supplier},'parent')
-    if company:
-        if supplier:
-            tax_template=frappe.db.get_value('Purchase Taxes and Charges Template',{'company':doc.customer_name},'name')                    
-            tax_list=frappe.db.get_list("Purchase Taxes and Charges",filters={'parent':tax_template,'parenttype':'Purchase Taxes and Charges Template'},fields={'*'})
-            sq_doc=frappe.get_doc(dict(doctype = 'Supplier Quotation',
+    qu_name=frappe.db.get_list('Document Specific Naming Series',filters={'parent':company,'parenttype':'Company'},fields={'*'})
+    quotation_name="null"
+    for row in qu_name:
+        if row.reference_document=="Supplier Quotation":
+            quotation_name=row.series
+    if quotation_name!="null":
+        if company:
+            if supplier:
+                tax_template=frappe.db.get_value('Purchase Taxes and Charges Template',{'company':doc.customer_name},'name')                    
+                tax_list=frappe.db.get_list("Purchase Taxes and Charges",filters={'parent':tax_template,'parenttype':'Purchase Taxes and Charges Template'},fields={'*'})
+                sq_doc=frappe.get_doc(dict(doctype = 'Supplier Quotation',
                         supplier=supplier,
+                        naming_series=quotation_name,
                         company=company,
                         valid_till=doc.valid_till,
                         supplier_address=frappe.db.get_value("Dynamic Link",{"parenttype":"Address","link_doctype":"Supplier","link_name":supplier},"parent"),
@@ -39,7 +46,7 @@ def auto_create_supplier_quotation(doc,method):
 			opening_date=doc.opening_date,
                         rfq_no=frappe.db.get_value('Opportunity',doc.opportunity,'reference_no')
                     )).insert(ignore_mandatory=True)
-            for val in doc.items:
+                for val in doc.items:
                     sq_doc.append('items', {
                         'item_code':val.item_code,
                         'qty':val.qty,
@@ -52,8 +59,8 @@ def auto_create_supplier_quotation(doc,method):
                         'description':val.description,
                     'conversion_factor':val.conversion_factor
                     })
-            for tax in tax_list:
-                sq_doc.append('taxes',{
+                for tax in tax_list:
+                    sq_doc.append('taxes',{
 						'account_head':tax.account_head,
 						'charge_type':tax.charge_type,
 						'rate':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'rate'),
@@ -63,9 +70,11 @@ def auto_create_supplier_quotation(doc,method):
                         'base_tax_amount':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'base_tax_amount'),
                         'base_total':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Quotation'},'base_total')
 					})
-            sq_doc.add_comment('Comment',' System created  '+sq_doc.name)
-            sq_doc.save()
-            doc.add_comment('Comment','  Supplier Quotation: '+sq_doc.name)  
+                sq_doc.add_comment('Comment',' System created  '+sq_doc.name)
+                sq_doc.save()
+                doc.add_comment('Comment','  Supplier Quotation: '+sq_doc.name)  
+        else:
+            frappe.msgprint("Unable to create Supplier Quotation as customer: "+doc.customer_name +" is not associated with any company. Register the Company and submit the document: "+doc.name+ ". As Customer is not associated with any company, don't let Vendor submit the Quotation document.")
+            raise frappe.ValidationError("Unable to create Supplier Quotation as customer: "+doc.customer_name +" is not associated with any company. Register the Company and submit the document: "+doc.name+ ". As Customer is not associated with any company, don't let Vendor submit the Quotation document.")
     else:
-        frappe.msgprint("Unable to create Supplier Quotation as customer: "+doc.customer_name +" is not associated with any company. Register the Company and submit the document: "+doc.name+ ". As Customer is not associated with any company, don't let Vendor submit the Quotation document.")
-        raise frappe.ValidationError("Unable to create Supplier Quotation as customer: "+doc.customer_name +" is not associated with any company. Register the Company and submit the document: "+doc.name+ ". As Customer is not associated with any company, don't let Vendor submit the Quotation document.")
+        frappe.throw("Unable to save the Supplier Quotation as the naming series are unavailable . Please provide the naming series at the Company: "+company+" to save the document");

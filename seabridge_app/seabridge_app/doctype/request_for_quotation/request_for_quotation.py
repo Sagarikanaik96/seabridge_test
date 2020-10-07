@@ -16,38 +16,49 @@ def auto_create_opportunity(doc,method):
 			company=frappe.db.get_value('Supplier',{'is_internal_supplier':1,'supplier_name':row.supplier},'represents_company')
 			contact_person=frappe.db.get_value('Dynamic Link',{'parenttype':'Contact','link_doctype':'Customer','link_name':customer},'parent')
 			customer_address=frappe.db.get_value('Dynamic Link',{'parenttype':'Address','link_doctype':'Customer','link_name':customer},'parent')
-			if customer:
-				if company:
-					create_user_permission(row.email_id,'Company',company,True)
-					opp_doc=frappe.get_doc(dict(doctype = 'Opportunity',
-								opportunity_from = 'Customer',
-								party_name=customer,
-								contact_person=contact_person,
-								with_items=1,
-								customer_address=customer_address,
-								contact_display=contact_person,
-								contact_email=frappe.db.get_value('Contact Email', {'parenttype':'Contact','parent':contact_person},'email_id'),
-								company=company,
-								reference_no=doc.name,
-								quotation_type=doc.quotation_type,
-								opening_date=doc.opening_date,
-								ignore_permissions='true')).insert()
-					for val in doc.items:
-							opp_doc.append('items', {
-								'item_code': val.item_code,
-								'qty': val.qty,
-								'uom':val.uom
-								})
-							opp_doc.add_comment('Comment',row.supplier+' created')
-							opp_doc.save()
-					doc.add_comment('Created','  created Opportunity for '+row.supplier)
-					companyName=frappe.db.get_value('Item',val.item_code,'company_name')
-					if companyName:
-						create_user_permission(row.email_id,'Company',companyName,False,'Item')
-						
+
+			r_name=frappe.db.get_list('Document Specific Naming Series',filters={'parent':company,'parenttype':'Company'},fields={'*'})
+			rfq_name="null"
+			for row in r_name:
+			    if row.reference_document=="Opportunity":
+			         rfq_name=row.series
+			if rfq_name!="null":
+				if customer:
+					if company:
+						create_user_permission(row.email_id,'Company',company,True)
+						opp_doc=frappe.get_doc(dict(doctype = 'Opportunity',
+									opportunity_from = 'Customer',
+									naming_series=rfq_name,
+									party_name=customer,
+									contact_person=contact_person,
+									with_items=1,
+									customer_address=customer_address,
+									contact_display=contact_person,
+									contact_email=frappe.db.get_value('Contact Email', {'parenttype':'Contact','parent':contact_person},'email_id'),
+									company=company,
+									reference_no=doc.name,
+									quotation_type=doc.quotation_type,
+									opening_date=doc.opening_date,
+									ignore_permissions='true')).insert()
+						for val in doc.items:
+								opp_doc.append('items', {
+									'item_code': val.item_code,
+									'qty': val.qty,
+									'uom':val.uom
+									})
+								opp_doc.add_comment('Comment',row.supplier+' created')
+								opp_doc.save()
+						doc.add_comment('Created','  created Opportunity for '+row.supplier)
+						companyName=frappe.db.get_value('Item',val.item_code,'company_name')
+						if companyName:
+							create_user_permission(row.email_id,'Company',companyName,False,'Item')
+							
+				else:
+					frappe.msgprint("Unable to create Opportunity as customer: "+doc.company+ " is not associated with any company. Register the Company and submit the document: "+doc.name+". As Customer is not associated with any company, don't let MA submit the RFQ document.")
+					raise frappe.ValidationError("Unable to create Opportunity as customer: " +doc.company+" is not associated with any company.")
 			else:
-				frappe.msgprint("Unable to create Opportunity as customer: "+doc.company+ " is not associated with any company. Register the Company and submit the document: "+doc.name+". As Customer is not associated with any company, don't let MA submit the RFQ document.")
-				raise frappe.ValidationError("Unable to create Opportunity as customer: " +doc.company+" is not associated with any company.")
+				frappe.throw("Unable to save the Opportunity as the naming series are unavailable . Please provide the naming series at the Company: "+company+" to save the document");
+
 		except KeyError:
 			pass
 
