@@ -15,9 +15,9 @@ def auto_create_supplier_quotation(doc,method):
     contact_person=frappe.db.get_value('Dynamic Link',{'parenttype':'Contact','link_doctype':'Supplier',"link_name":supplier},'parent')
     qu_name=frappe.db.get_list('Document Specific Naming Series',filters={'parent':company,'parenttype':'Company'},fields={'*'})
     quotation_name="null"
-    for row in qu_name:
-        if row.reference_document=="Supplier Quotation":
-            quotation_name=row.series
+    for tup in qu_name:
+        if tup.reference_document=="Supplier Quotation":
+            quotation_name=tup.series
     if quotation_name!="null":
         if company:
             if supplier:

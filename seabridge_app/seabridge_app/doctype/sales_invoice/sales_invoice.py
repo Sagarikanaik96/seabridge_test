@@ -17,9 +17,9 @@ def auto_create_purchase_invoice(doc,method):
 	contact_person=frappe.db.get_value('Dynamic Link',{'parenttype':'Contact','link_doctype':'Supplier',"link_name":supplier},'parent')
 	pi_name=frappe.db.get_list('Document Specific Naming Series',filters={'parent':company,'parenttype':'Company'},fields={'*'})
 	purchase_invoice_name="null"
-	for row in pi_name:
-		if row.reference_document=="Purchase Invoice":
-			purchase_invoice_name=row.series
+	for tup in pi_name:
+		if tup.reference_document=="Purchase Invoice":
+			purchase_invoice_name=tup.series
 
 	if purchase_invoice_name!="null":
 		if company:

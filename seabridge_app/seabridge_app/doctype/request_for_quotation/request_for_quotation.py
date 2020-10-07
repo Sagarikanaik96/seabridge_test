@@ -19,9 +19,9 @@ def auto_create_opportunity(doc,method):
 
 			r_name=frappe.db.get_list('Document Specific Naming Series',filters={'parent':company,'parenttype':'Company'},fields={'*'})
 			rfq_name="null"
-			for row in r_name:
-			    if row.reference_document=="Opportunity":
-			         rfq_name=row.series
+			for tup in r_name:
+			    if tup.reference_document=="Opportunity":
+			         rfq_name=tup.series
 			if rfq_name!="null":
 				if customer:
 					if company:

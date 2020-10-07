@@ -14,9 +14,9 @@ def auto_create_sales_order(doc,method):
 	company=frappe.db.get_value('Supplier',{'is_internal_supplier':1,'supplier_name':doc.supplier_name},'represents_company')
 	so_name=frappe.db.get_list('Document Specific Naming Series',filters={'parent':company,'parenttype':'Company'},fields={'*'})
 	sales_order_name="null"
-	for row in so_name:
-	    if row.reference_document=="Sales Order":
-	        sales_order_name=row.series
+	for tup in so_name:
+	    if tup.reference_document=="Sales Order":
+	        sales_order_name=tup.series
 
 	if sales_order_name!="null":
 		if customer:
