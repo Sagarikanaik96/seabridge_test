@@ -2,13 +2,6 @@
 // For license information, please see license.txt
 var today = new Date().toISOString().slice(0, 10)
 frappe.ui.form.on('Request for Quotation', {
-	quotation_type:function(frm,cdt,cdn){
-	    if(frappe.user_roles.includes("Agent")){
-	        frm.doc.quotation_type='Open';
-	        cur_frm.refresh_field('quotation_type');
-	        frappe.throw("You don't have enough permission to create a Sealed RFQ. Please select option as Open to create the RFQ");
-        }
-	},
 	opening_date:function(frm,cdt,cdn){
 		if(frm.doc.opening_date<today){
 			frm.doc.opening_date='';
@@ -17,7 +10,6 @@ frappe.ui.form.on('Request for Quotation', {
 		}
 	},
 	refresh:function(frm,cdt,cdn){
-		console.log('ggg')
 		var item_group=[];
 			item_group=get_item_group(frm.doc.items);
 			supplier_filter(frm,item_group);
