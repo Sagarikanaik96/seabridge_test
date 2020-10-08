@@ -13,6 +13,7 @@ def on_registration_submit(doc,method):
         co_doc=frappe.get_doc(dict(doctype = 'Company',
                     company_name=doc.company,
                     abbr=doc.abbr,
+                    company_type=doc.company_type,		
                     default_currency=doc.default_currency,
                     country=doc.country,
                     is_group=doc.is_group,
@@ -24,6 +25,7 @@ def on_registration_submit(doc,method):
                     email=doc.email,
                     first_name=doc.first_name,
                     last_name=doc.last_name,
+                    represents_company=doc.company,
                     send_welcome_email=doc.send_welcome_email
         )).insert(ignore_mandatory=True)
         us_doc.save()
