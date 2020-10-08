@@ -29,6 +29,19 @@ before_save:function(frm,cdt,cdn){
         })
 
 },
+before_save:function(frm,cdt,cdn){
+	if(frm.doc.bill_no){
+        	frappe.db.get_value("Sales Invoice",{'name':frm.doc.bill_no}, "po_no",(c)=>{
+			if(c.po_no){
+				$.each(frm.doc.items, function(idx, item){
+					item.purchase_order=c.po_no;				
+				})
+			}
+		})
+	}
+},
+
+
 before_submit:function(frm,cdt,cdn){
             var po;
             var item_val;
