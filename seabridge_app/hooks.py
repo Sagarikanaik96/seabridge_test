@@ -59,7 +59,9 @@ fixtures = ["Server Script",
 		"Company-naming_series_details",
 		"Company-series",
 		"User-is_system_admin",
-		"User-represents_company"
+		"User-represents_company",
+		"Purchase Invoice Item-over_billing_allowance",
+		"Purchase Receipt Item-over_delivery_receipt_allowance"
 		]
 	]
 ]
