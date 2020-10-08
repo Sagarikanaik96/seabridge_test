@@ -85,7 +85,12 @@ fixtures = ["Server Script",
 				"Supplier Quotation-grand_total-depends_on",
 				"Supplier Quotation-rounded_total-depends_on",
 				"Supplier Quotation-base_in_words-depends_on",
-				"Supplier Quotation-in_words-depends_on"		
+				"Supplier Quotation-in_words-depends_on",
+				"Supplier Quotation-tc_name-depends_on",
+				"Supplier Quotation-terms-depends_on",
+				"Supplier Quotation-base_taxes_and_charges_added-depends_on",
+				"Supplier Quotation-base_taxes_and_charges_deducted-depends_on"
+						
 			]
 	]
 	]

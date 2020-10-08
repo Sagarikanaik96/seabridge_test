@@ -81,7 +81,7 @@ frappe.ui.form.on('Request for Quotation', {
 					  company=r.message;
 				  }
 			  });
-			  if(company!==undefined){
+			if(company!==undefined){
 				  var agent;
 				  var customer;
 				frappe.call({
@@ -95,7 +95,7 @@ frappe.ui.form.on('Request for Quotation', {
 						}
 					},
 						callback: function(r) {
-							if(r.message.associate_agent!==undefined||r.message.associate_agent!==null){
+							if(r.message.associate_agent!==undefined){
 								agent=r.message.associate_agent;
 							}
 						}
@@ -117,24 +117,39 @@ frappe.ui.form.on('Request for Quotation', {
 							}
 						}
 				});
-				  var emailTemplate=
-				  '<h3> Dear '+supplier.supplier_name+',</h3>'+
-				  '<br>'+
-				  '<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
-				  '<br>'+
-				  '<h3>Thank you, I look forward to your prompt response.</h3>'+
-				  '<br>'+
-				  '<h3>Yours sincerely,</h3>'+
-				  '<h3>'+agent+'</h3>'+
-				  '<h3>'+customer+'</h3>'+
-				  '<h3>'+frm.doc.company+'</h3>';
-
-				  sendEmail(doc.name,supplier.email_id,emailTemplate);
-			  }
-			  else{
+				if (agent!=null){
+					var emailTemplate=
+						'<h3> Dear '+supplier.supplier_name+',</h3>'+
+						'<br>'+
+						'<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
+						'<br>'+
+						'<h3>Thank you, I look forward to your prompt response.</h3>'+
+						'<br>'+
+						'<h3>Yours sincerely,</h3>'+
+						'<h3>'+agent+'</h3>'+
+						'<h3>'+customer+'</h3>'+
+						'<h3>'+frm.doc.company+'</h3>';
+				   
+					sendEmail(doc.name,supplier.email_id,emailTemplate);
+				}
+				else if (agent==null){
+					var emailTemplate=
+						'<h3> Dear '+supplier.supplier_name+',</h3>'+
+						'<br>'+
+						'<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
+						'<br>'+
+						'<h3>Thank you, I look forward to your prompt response.</h3>'+
+						'<br>'+
+						'<h3>Yours sincerely,</h3>'+
+						'<h3>'+customer+'</h3>'+
+						'<h3>'+frm.doc.company+'</h3>';
+					sendEmail(doc.name,supplier.email_id,emailTemplate);
+				}
+			}
+			else{
 				  var emailTemplate1='<h1><strong>Unable to create an Opportunity because you do not have any company associated with yourself</strong></h1>';
 				  sendEmail(doc.name,supplier.email_id,emailTemplate1);
-			  }
+			}
 		  });
   },
   before_save:function(frm,cdt,cdn){

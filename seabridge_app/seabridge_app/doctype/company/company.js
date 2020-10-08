@@ -35,7 +35,7 @@ associate_agent:function(frm,cdt,cdn){
       frappe.confirm(
 					__("do you want to assign the company "+frm.doc.associate_agent_company+" for the agent "+frm.doc.associate_agent+"?"),
 					function () {
-					    if(frm.doc.associate_agent!==undefined){
+					    if(frm.doc.associate_agent!==undefined && agent!==undefined){
 						 frappe.call({
                         			method: "seabridge_app.seabridge_app.api.validate_user_permission",
                         			async:false,
@@ -46,11 +46,15 @@ associate_agent:function(frm,cdt,cdn){
                         				value:frm.doc.associate_agent_company
                         			}
                             });
-                            
 						    create_user_permission(frm.doc.associate_agent,frm.doc.associate_agent_company);
 						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
 				            sendEmail(frm.doc.name,frm.doc.associate_agent,emailTemplate);
-						 }
+                         }
+                         else if(frm.doc.associate_agent!==undefined){
+                            create_user_permission(frm.doc.associate_agent,frm.doc.associate_agent_company);
+						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
+				            sendEmail(frm.doc.name,frm.doc.associate_agent,emailTemplate);
+                         }
 						
 					}
 					);

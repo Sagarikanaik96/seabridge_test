@@ -13,6 +13,11 @@ def get_email(doctype,is_internal_customer,customer_name):
 	if company:
 		return frappe.db.get_value('Company',{'company_name':company},'associate_agent')
 
+       
+@frappe.whitelist()
+def get_contact_mail(doctype,parenttype,parent):	   
+	return frappe.db.get_value(doctype, {'parenttype':parenttype,'parent':parent},'email_id')
+
 @frappe.whitelist()
 def get_agent_name(doctype,is_internal_customer,customer_name):
 	company=frappe.db.get_value(doctype,{'is_internal_customer':is_internal_customer,'customer_name':customer_name},'represents_company')

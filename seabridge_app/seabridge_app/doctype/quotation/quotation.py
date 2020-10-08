@@ -57,7 +57,8 @@ def auto_create_supplier_quotation(doc,method):
                         'base_rate':val.base_rate,
                         'base_amount':val.base_amount,
                         'description':val.description,
-                    'conversion_factor':val.conversion_factor
+                        'conversion_factor':val.conversion_factor,
+                        'warehouse':val.warehouse
                     })
                 for tax in tax_list:
                     sq_doc.append('taxes',{
