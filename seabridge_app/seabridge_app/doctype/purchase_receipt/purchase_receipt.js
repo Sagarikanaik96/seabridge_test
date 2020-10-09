@@ -19,16 +19,11 @@ frappe.ui.form.on("Purchase Receipt", {
         });
 },
 before_submit:function(frm,cdt,cdn){
-	var po;
-	var item_code;
-	var amount;
             $.each(frm.doc.items, function(idx, item){
-                po=item.purchase_order
-                item_code=item.item_code
-                frappe.model.with_doc("Purchase Order", po, function() {
-                    var tabletransfer= frappe.model.get_doc("Purchase Order", po)
+                frappe.model.with_doc("Purchase Order", item.purchase_order, function() {
+                    var tabletransfer= frappe.model.get_doc("Purchase Order", item.purchase_order)
                     $.each(tabletransfer.items, function(index, row){
-                        if(item_code==row.item_code){
+                        if(item.item_code==row.item_code){
                             if(item.qty>row.qty){
                             var diff=item.qty-row.qty
                             var min_per=100*diff/row.qty

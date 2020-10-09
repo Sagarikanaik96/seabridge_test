@@ -4,12 +4,45 @@
 frappe.ui.form.on('Purchase Order', {
     on_submit:function(frm,cdt,cdn){
           var doc=frm.doc;
+	var agent;
           frappe.db.get_value('Customer',{'is_internal_customer':1,'represents_company':doc.company},"customer_name",(r)=>{
             if(r.customer_name){
                 frappe.db.get_value("Contact",doc.supplier_name, "user",(c)=>{
                     var email=c.user;
                     if(email!=null){
-                        var emailTemplate='<h1><strong>  Purchase Order is created and Submitted Successfully.</strong></h1>';
+			var agent,agent_name;
+	frappe.call({
+					method: "frappe.client.get_value",
+					async:false,
+					args: {
+						doctype: "Company",
+						fieldname: "associate_agent",
+						filters:{
+							"company_name":frm.doc.company
+						}
+					},
+					callback: function(q) {
+                            agent=q.message.associate_agent;
+				frappe.call({
+					method: "frappe.client.get_value",
+					async:false,
+					args: {
+						doctype: "User",
+						fieldname: "full_name",
+						filters:{
+							"email":agent
+						}
+					},
+					callback: function(s) {
+                            agent_name=s.message.full_name;
+                        
+					}
+				});
+			}
+				});
+                        var emailTemplate='<h3><strong> Dear '+doc.supplier_name+',</strong></h3><br><br>'+
+			'<h3>This is to inform that the Sales Quotation is successfully converted to a confirmed order. We have attached the purchase details for the item. You can find your purchase information below.<br><br>'+
+			'Thanks,<br>'+agent_name+'<br>'+r.customer_name+'<br>'+doc.company+'</h3>';
                         sendEmail(doc.name,email,emailTemplate);
                     }
                 })
@@ -87,7 +120,7 @@ function sendEmail(name,email,template){
             communication_type: "Communication",
             send_email:1,
             attachments:[],
-            print_format:"Standard",
+            print_format:"PO Print Format",
             doctype: "Purchase Order",
             name: name,
             print_letterhead: 0

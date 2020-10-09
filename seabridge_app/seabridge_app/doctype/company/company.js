@@ -1,7 +1,6 @@
 var agent;
 frappe.ui.form.on('Company', {
 refresh:function(frm,cdt,cdn){
-	console.log('fff')
         agent=frm.doc.associate_agent;
         if(frm.doc.company_type=="Customer"){
             frm.set_query("associate_agent_company",function(){

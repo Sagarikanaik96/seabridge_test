@@ -27,40 +27,15 @@ before_save:function(frm,cdt,cdn){
                 msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
             }
         })
-	if(frm.doc.bill_no){
-        	frappe.db.get_value("Sales Invoice",{'name':frm.doc.bill_no}, "po_no",(c)=>{
-			if(c.po_no){
-				$.each(frm.doc.items, function(idx, item){
-					item.purchase_order=c.po_no;				
-				})
-			}
-		})
-	}
-
 },
 
 
-before_submit:function(frm,cdt,cdn){
-		if(frm.doc.bill_no){
-        	frappe.db.get_value("Sales Invoice",{'name':frm.doc.bill_no}, "po_no",(c)=>{
-			if(c.po_no){
-				$.each(frm.doc.items, function(idx, item){
-					item.purchase_order=c.po_no;
-					console.log(item.purchase_order)				
-				})
-			}
-		})
-	}
-            var po;
-            var item_val;
-            var amount;
+before_submit:function(frm,cdt,cdn){		
             $.each(frm.doc.items, function(idx, item){
-                po=item.purchase_order
-                item_val=item.item_code
-                frappe.model.with_doc("Purchase Order", po, function() {
-                    var tabletransfer= frappe.model.get_doc("Purchase Order", po)
+                frappe.model.with_doc("Purchase Order", item.purchase_order, function() {
+                    var tabletransfer= frappe.model.get_doc("Purchase Order", item.purchase_order)
                     $.each(tabletransfer.items, function(index, row){
-                        if(item_val==row.item_code){
+                        if(item.item_code==row.item_code){
                             if(item.amount>row.amount){
                             var diff=item.amount-row.amount
                             var min_per=100*diff/row.amount
