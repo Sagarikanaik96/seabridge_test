@@ -334,5 +334,37 @@
   "property": "depends_on",
   "property_type": "Data",
   "value": "eval:doc.quotation_type!='Sealed'"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Supplier Quotation",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "grand_total",
+  "modified": "2020-10-09 17:47:59.634464",
+  "name": "Supplier Quotation-grand_total-in_list_view",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "in_list_view",
+  "property_type": "Check",
+  "value": "0"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Supplier Quotation",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "taxes_and_charges_added",
+  "modified": "2020-10-09 18:44:11.313164",
+  "name": "Supplier Quotation-taxes_and_charges_added-depends_on",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "depends_on",
+  "property_type": "Data",
+  "value": "eval:doc.quotation_type!='Sealed'"
  }
 ]

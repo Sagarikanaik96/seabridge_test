@@ -75,6 +75,7 @@ fixtures = ["Server Script",
 				"Material Request-naming_series-options",
 				"Material Request-material_request_type-options",
 				"Material Request Item-warehouse-in_list_view",
+				"Supplier Quotation-grand_total-in_list_view",
 				"Supplier Quotation-items-depends_on",
 				"Supplier Quotation-total_taxes_and_charges-depends_on",
 				"Supplier Quotation-taxes-depends_on",
@@ -91,7 +92,8 @@ fixtures = ["Server Script",
 				"Supplier Quotation-tc_name-depends_on",
 				"Supplier Quotation-terms-depends_on",
 				"Supplier Quotation-base_taxes_and_charges_added-depends_on",
-				"Supplier Quotation-base_taxes_and_charges_deducted-depends_on"
+				"Supplier Quotation-base_taxes_and_charges_deducted-depends_on",
+				"Supplier Quotation-taxes_and_charges_added-depends_on"		
 						
 			]
 	]

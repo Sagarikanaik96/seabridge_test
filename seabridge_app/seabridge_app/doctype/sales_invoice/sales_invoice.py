@@ -65,6 +65,9 @@ def auto_create_purchase_invoice(doc,method):
 						pi_doc.append('taxes',{
 							'account_head':tax.account_head,
 							'charge_type':tax.charge_type,
+							'add_deduct_tax':'Add',
+                        	'category':'Total',
+							'description':tax.description,
 							'rate':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Sales Invoice'},'rate')
 						})
 				pi_doc.add_comment('Comment',' System created  '+pi_doc.name)
