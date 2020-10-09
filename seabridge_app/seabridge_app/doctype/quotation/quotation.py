@@ -47,6 +47,12 @@ def auto_create_supplier_quotation(doc,method):
                         rfq_no=frappe.db.get_value('Opportunity',doc.opportunity,'reference_no')
                     )).insert(ignore_mandatory=True)
                 for val in doc.items:
+                    if val.warehouse:
+                        a=val.warehouse.split('-')
+                        abbr=frappe.db.get_value('Company',{'company_name':company},'abbr')
+                        warehouse=a[0] +'- '+abbr
+                    else:
+                        warehouse=val.warehouse
                     sq_doc.append('items', {
                         'item_code':val.item_code,
                         'qty':val.qty,
@@ -58,7 +64,7 @@ def auto_create_supplier_quotation(doc,method):
                         'base_amount':val.base_amount,
                         'description':val.description,
                         'conversion_factor':val.conversion_factor,
-                        'warehouse':val.warehouse
+                        'warehouse':warehouse
                     })
                 for tax in tax_list:
                     sq_doc.append('taxes',{
