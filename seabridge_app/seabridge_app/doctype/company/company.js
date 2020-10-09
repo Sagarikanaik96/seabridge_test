@@ -1,6 +1,7 @@
 var agent;
 frappe.ui.form.on('Company', {
 refresh:function(frm,cdt,cdn){
+	console.log('fff')
         agent=frm.doc.associate_agent;
         if(frm.doc.company_type=="Customer"){
             frm.set_query("associate_agent_company",function(){
@@ -33,7 +34,7 @@ associate_agent_company:function(frm,cdt,cdn){
 associate_agent:function(frm,cdt,cdn){
     const doc = frm.doc;
       frappe.confirm(
-					__("do you want to assign the company "+frm.doc.associate_agent_company+" for the agent "+frm.doc.associate_agent+"?"),
+					__("Do you want to assign the company "+frm.doc.associate_agent_company+" for the agent "+frm.doc.associate_agent+"?"),
 					function () {
 					    if(frm.doc.associate_agent!==undefined && agent!==undefined){
 						 frappe.call({
@@ -43,15 +44,15 @@ associate_agent:function(frm,cdt,cdn){
                         				doctype: "User Permission",
                         				user: agent,
                         				allow:'Company',
-                        				value:frm.doc.associate_agent_company
+                        				value:frm.doc.company_name
                         			}
                             });
-						    create_user_permission(frm.doc.associate_agent,frm.doc.associate_agent_company);
+						    create_user_permission(frm.doc.associate_agent,frm.doc.company_name);
 						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
 				            sendEmail(frm.doc.name,frm.doc.associate_agent,emailTemplate);
                          }
                          else if(frm.doc.associate_agent!==undefined){
-                            create_user_permission(frm.doc.associate_agent,frm.doc.associate_agent_company);
+                            create_user_permission(frm.doc.associate_agent,frm.doc.company_name);
 						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
 				            sendEmail(frm.doc.name,frm.doc.associate_agent,emailTemplate);
                          }
@@ -62,7 +63,7 @@ associate_agent:function(frm,cdt,cdn){
 }
 });
 
-function create_user_permission(associate_agent,associate_agent_company){
+function create_user_permission(associate_agent,company_name){
      frappe.call({
 			method: "seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.create_user_permission",
 			async:false,
@@ -70,7 +71,7 @@ function create_user_permission(associate_agent,associate_agent_company){
 				doctype: "User Permission",
 				user: associate_agent,
 				allow:'Company',
-				value:associate_agent_company,
+				value:company_name,
 				check:1
 			}
     });
