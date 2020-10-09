@@ -27,9 +27,6 @@ before_save:function(frm,cdt,cdn){
                 msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
             }
         })
-
-},
-before_save:function(frm,cdt,cdn){
 	if(frm.doc.bill_no){
         	frappe.db.get_value("Sales Invoice",{'name':frm.doc.bill_no}, "po_no",(c)=>{
 			if(c.po_no){
@@ -39,10 +36,21 @@ before_save:function(frm,cdt,cdn){
 			}
 		})
 	}
+
 },
 
 
 before_submit:function(frm,cdt,cdn){
+		if(frm.doc.bill_no){
+        	frappe.db.get_value("Sales Invoice",{'name':frm.doc.bill_no}, "po_no",(c)=>{
+			if(c.po_no){
+				$.each(frm.doc.items, function(idx, item){
+					item.purchase_order=c.po_no;
+					console.log(item.purchase_order)				
+				})
+			}
+		})
+	}
             var po;
             var item_val;
             var amount;
@@ -69,7 +77,7 @@ before_submit:function(frm,cdt,cdn){
                             var check=item.amount-row.amount*item.over_billing_allowance/100-row.amount;
                             if(item.over_billing_allowance<min_per){
                             frappe.validated = false;
-                            msgprint('This document is over limit by <b>Amount '+check+'</b> for item <b>'+item.item_code+'</b>. Are you making another <b>Purchase Invoice</b> against the same <b>Purchase Order Item</b>? <br><br> To allow over receipt, update "Over Billing Allowance" at Purchase Invoice Item details','Limit Crossed')
+                            msgprint('This document is over limit by <b>Amount '+check+'</b> for item <b>'+item.item_code+'</b>. Are you making another <b>Purchase Invoice</b> against the same <b>Purchase Order Item</b>? <br><br> To allow over billing, update "Over Billing Allowance" at Purchase Invoice Item details','Limit Crossed')
                             }
                             }
                         }
