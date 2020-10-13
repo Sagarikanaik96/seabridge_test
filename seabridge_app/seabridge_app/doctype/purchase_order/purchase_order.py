@@ -39,7 +39,8 @@ def auto_create_sales_order(doc,method):
 						    rounded_total=doc.rounded_total,
 						    base_rounded_total=doc.base_rounded_total,
 						    payment_terms_template=doc.payment_terms_template,
-						    tc_name=doc.tc_name
+						    tc_name=doc.tc_name,
+						    terms=doc.terms
 						)).insert(ignore_mandatory=True)
 					for val in doc.items:
 						so_doc.append('items', {
