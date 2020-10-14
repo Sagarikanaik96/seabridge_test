@@ -30,14 +30,23 @@ def on_registration_submit(doc,method):
         )).insert(ignore_mandatory=True)
         us_doc.save()
 
-
-        if doc.company_type=="Vendor":
-                    su_doc=frappe.get_doc(dict(doctype = 'Supplier',
-                    supplier_name=doc.supplier_name,
-                    supplier_group=doc.supplier_group,
-                    supplier_type=doc.supplier_type,
-                    country=doc.country,
-                    is_internal_supplier=1,
+        if doc.company_type!="Customer":
+                    if doc.supplier_name:
+                        su_doc=frappe.get_doc(dict(doctype = 'Supplier',
+                        supplier_name=doc.supplier_name,
+                        supplier_group=doc.supplier_group,
+                        supplier_type=doc.supplier_type,
+                        country=doc.country,
+                        is_internal_supplier=1,
+                        represents_company=doc.company
+                        )).insert(ignore_mandatory=True)
+                        su_doc.save()
+        if doc.company_type=="Customer":
+                    cu_doc=frappe.get_doc(dict(doctype = 'Customer',
+                    customer_name=doc.customer_name,
+                    customer_group=doc.customer_group,
+                    customer_type=doc.customer_type,
+                    is_internal_customer=1,
                     represents_company=doc.company
                     )).insert(ignore_mandatory=True)
-                    su_doc.save()
+                    cu_doc.save()
