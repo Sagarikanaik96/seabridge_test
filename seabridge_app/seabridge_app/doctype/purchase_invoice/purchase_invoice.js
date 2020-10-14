@@ -27,6 +27,11 @@ before_save:function(frm,cdt,cdn){
                 msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
             }
         })
+	frappe.db.get_value("Sales Invoice",frm.doc.bill_no,"po_no",(c)=>{
+		$.each(frm.doc.items, function(idx, item){
+			item.purchase_order=c.po_no;
+		})
+	})
 },
 
 

@@ -28,6 +28,16 @@ def on_registration_submit(doc,method):
                     represents_company=doc.company,
                     send_welcome_email=doc.send_welcome_email
         )).insert(ignore_mandatory=True)
+        if doc.company_type=="Agent":
+            us_doc.append('roles', {
+                    'role':"Agent"
+	    })
+        if doc.company_type=="Customer":
+            us_doc.append('roles', {
+                    'role':"customer"
+	    })
+
+        us_doc.save()
         us_doc.save()
 
         if doc.company_type!="Customer":

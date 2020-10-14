@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "naming_series:",
- "creation": "2020-10-01 17:04:34.573353",
+ "creation": "2020-10-14 22:01:20.377839",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -25,13 +25,19 @@
   "column_break_16",
   "supplier_group",
   "supplier_type",
+  "customer_registration_details_section",
+  "customer_name",
+  "customer_group",
+  "column_break_23",
+  "customer_type",
+  "is_internal_customer",
+  "represents_companys",
   "user_registration_details_section",
   "email",
   "last_name",
   "column_break_22",
   "first_name",
-  "send_welcome_email",
-  "amended_from"
+  "send_welcome_email"
  ],
  "fields": [
   {
@@ -94,7 +100,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Company Type",
-   "options": "Vendor\nCustomer\nAgent",
+   "options": "\nVendor\nCustomer\nAgent",
    "reqd": 1
   },
   {
@@ -179,18 +185,52 @@
    "label": "Send Welcome Email"
   },
   {
-   "fieldname": "amended_from",
+   "fieldname": "customer_registration_details_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Registration Details"
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Customer\")"
+  },
+  {
+   "fieldname": "customer_group",
    "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Registration",
-   "print_hide": 1,
-   "read_only": 1
+   "label": "Customer Group",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Customer\")",
+   "options": "Customer Group"
+  },
+  {
+   "fieldname": "customer_type",
+   "fieldtype": "Select",
+   "label": "Customer Type",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Customer\")",
+   "options": "Company\nIndividual"
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "is_internal_customer",
+   "fieldtype": "Check",
+   "label": "Is Internal Customer"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "represents_companys",
+   "fieldtype": "Link",
+   "label": "Represents Companys",
+   "options": "Company"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-10-02 05:06:27.376274",
+ "modified": "2020-10-14 22:22:02.310413",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Registration",

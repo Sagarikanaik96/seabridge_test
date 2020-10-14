@@ -26,7 +26,6 @@ on_submit:function(frm,cdt,cdn){
     },
 
 before_submit:function(frm,cdt,cdn){
-	console.log("Before Submit")
         if(frm.doc.company_type=="Vendor" || frm.doc.company_type=="Agent"){
 		if(frm.doc.customer_name){
 			msgprint('Unable to create the Customer as Company Type is '+frm.doc.company_type,'Alert')
@@ -48,7 +47,6 @@ before_save:function(frm,cdt,cdn){
     },
 
 refresh:function(frm,cdt,cdn){
-	console.log("abcd")
         if(frm.doc.company_type=="Vendor"){
             frm.set_query("represents_company",function(){
                 return{
@@ -68,7 +66,6 @@ refresh:function(frm,cdt,cdn){
     
     },
 before_cancel:function(frm,cdt,cdn){
-	console.log("Inside Cancel")
 	var comp_count=0;
   frappe.call({
             method: "frappe.client.get_list",
@@ -83,7 +80,6 @@ before_cancel:function(frm,cdt,cdn){
             callback: function(r) {
                 for(var i=0;i<r.message.length;i++){
 		if(r.message[i].company_name==frm.doc.company){
-			console.log(r.message[i].company_name)
 			comp_count++
 		}
                 }
@@ -109,7 +105,6 @@ before_cancel:function(frm,cdt,cdn){
             callback: function(r) {
                 for(var i=0;i<r.message.length;i++){
 		if(r.message[i].supplier_name==frm.doc.supplier_name){
-			console.log(r.message[i].company_name)
 			supp_count++
 		}
                 }
@@ -135,7 +130,6 @@ before_cancel:function(frm,cdt,cdn){
             callback: function(r) {
                 for(var i=0;i<r.message.length;i++){
 		if(r.message[i].email==frm.doc.email){
-			console.log(r.message[i].company_name)
 			user_count++
 		}
                 }

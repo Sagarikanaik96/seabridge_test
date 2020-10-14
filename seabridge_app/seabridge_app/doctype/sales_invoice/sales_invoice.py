@@ -59,8 +59,7 @@ def auto_create_purchase_invoice(doc,method):
 							'base_rate':val.base_rate,
 							'base_amount':val.base_amount,
 							'description':val.description,
-							'conversion_factor':val.conversion_factor,
-							'purchase_order':doc.po_no
+							'conversion_factor':val.conversion_factor
 						})
 				for tax in tax_list:
 						pi_doc.append('taxes',{
