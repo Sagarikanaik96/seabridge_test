@@ -27,17 +27,24 @@
   "supplier_type",
   "customer_registration_details_section",
   "customer_name",
-  "customer_group",
-  "column_break_23",
-  "customer_type",
   "is_internal_customer",
   "represents_companys",
+  "column_break_23",
+  "customer_group",
+  "customer_type",
+  "management_agent_registration_details_section",
+  "agent_company",
+  "agent_user",
+  "column_break_30",
+  "start_date",
+  "end_date",
   "user_registration_details_section",
   "email",
   "last_name",
   "column_break_22",
   "first_name",
-  "send_welcome_email"
+  "send_welcome_email",
+  "amended_from"
  ],
  "fields": [
   {
@@ -150,7 +157,7 @@
    "fieldtype": "Select",
    "label": "Supplier Type",
    "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\")",
-   "options": "Company\nIndividual"
+   "options": "\nCompany\nIndividual"
   },
   {
    "fieldname": "user_registration_details_section",
@@ -207,7 +214,7 @@
    "fieldtype": "Select",
    "label": "Customer Type",
    "mandatory_depends_on": "eval:(doc.company_type==\"Customer\")",
-   "options": "Company\nIndividual"
+   "options": "\nCompany\nIndividual"
   },
   {
    "fieldname": "column_break_23",
@@ -224,13 +231,57 @@
    "allow_on_submit": 1,
    "fieldname": "represents_companys",
    "fieldtype": "Link",
-   "label": "Represents Companys",
+   "label": "Represents Company",
    "options": "Company"
+  },
+  {
+   "depends_on": "eval:doc.company_type=='Customer'",
+   "fieldname": "management_agent_registration_details_section",
+   "fieldtype": "Section Break",
+   "label": "Management Agent Registration Details"
+  },
+  {
+   "fieldname": "agent_company",
+   "fieldtype": "Link",
+   "label": "Agent Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "agent_user",
+   "fieldtype": "Link",
+   "label": "Agent User",
+   "mandatory_depends_on": "eval:doc.agent_company!=undefined",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_break_30",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "mandatory_depends_on": "eval:doc.agent_company!=undefined"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date",
+   "mandatory_depends_on": "eval:doc.agent_company!=undefined"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Registration",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-10-14 22:22:02.310413",
+ "modified": "2020-10-15 18:34:57.969158",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Registration",

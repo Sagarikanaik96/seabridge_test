@@ -17,7 +17,11 @@ def on_registration_submit(doc,method):
                     default_currency=doc.default_currency,
                     country=doc.country,
                     is_group=doc.is_group,
-                    parent_company=doc.parent_company
+                    parent_company=doc.parent_company,
+                    associate_agent_company=doc.agent_company,
+                    associate_agent=doc.agent_user,
+                    start_date=doc.start_date,
+                    end_date=doc.end_date
         )).insert(ignore_mandatory=True)
         co_doc.save()
 
@@ -37,7 +41,6 @@ def on_registration_submit(doc,method):
                     'role':"customer"
 	    })
 
-        us_doc.save()
         us_doc.save()
 
         if doc.company_type!="Customer":

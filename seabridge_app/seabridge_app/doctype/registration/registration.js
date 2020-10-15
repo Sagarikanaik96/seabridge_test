@@ -1,6 +1,6 @@
 // Copyright (c) 2020, seabridge_app and contributors
 // For license information, please see license.txt
-
+var agent;
 frappe.ui.form.on('Registration',{ 
     company:function(frm,cdt,cdn){
     let parts = frm.doc.company.split(" ");
@@ -9,6 +9,50 @@ frappe.ui.form.on('Registration',{
 		}).join("");
 		frm.set_value("abbr", abbr);
 },
+
+agent_company:function(frm,cdt,cdn){
+    if(frm.doc.agent_user!==undefined){
+        frm.doc.agent_user='';
+        cur_frm.refresh_fields("agent_user");
+    }
+       frm.set_query("agent_user", function() {
+            return {
+                    query: "seabridge_app.seabridge_app.api.get_user_name",
+                    filters:{
+                        "represents_company":frm.doc.agent_company,
+                        "role":"Agent"
+                    }
+            };
+        });
+},
+refresh:function(frm,cdt,cdn){
+	agent=frm.doc.agent_user;
+        if(frm.doc.company_type=="Vendor"){
+            frm.set_query("represents_company",function(){
+                return{
+                    filters: [
+                        ["Company","company_name", "in", frm.doc.company]
+                    ]
+                }
+            });
+            frm.set_query("parent_company",function(){
+                return{
+                    filters: [
+                        ["Company","is_group", "=", 1]
+                    ]
+                }
+            });
+        }
+            frm.set_query("agent_company",function(){
+                return{
+                    filters: {
+                        "company_type":'Agent'
+                    }
+                };
+             });
+    
+    },
+
 on_submit:function(frm,cdt,cdn){
         if(frm.doc.company_type=="Vendor" || frm.doc.company_type=="Agent"){
 		if(frm.doc.supplier_name){
@@ -22,6 +66,36 @@ on_submit:function(frm,cdt,cdn){
 		    frm.set_value("is_internal_customer",1)
 		    msgprint('Is Internal Customer and Represents Company is set, please update the form!!','Alert')
         }
+   	const doc = frm.doc;
+      frappe.confirm(
+					__("Do you want to assign the company "+frm.doc.agent_company+" for the agent "+frm.doc.agent_user+"?"),
+					function () {
+					    if(frm.doc.agent_user!==undefined && agent!==undefined){
+						 frappe.call({
+                        			method: "seabridge_app.seabridge_app.api.validate_user_permission",
+                        			async:false,
+                        			args: {
+                        				doctype: "User Permission",
+                        				user: agent,
+                        				allow:'Company',
+                        				value:frm.doc.company
+                        			}
+                            });
+						    create_user_permission(frm.doc.agent_user,frm.doc.company);
+				
+						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.agent_company+'</strong></h1>';
+				            sendEmail(frm.doc.name,frm.doc.agent_user,emailTemplate);
+                         }
+                         else if(frm.doc.agent_user!==undefined){
+                            create_user_permission(frm.doc.agent_user,frm.doc.company);
+
+						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.agent_company+'</strong></h1>';
+				            sendEmail(frm.doc.name,frm.doc.agent_user,emailTemplate);
+                         }
+						
+					}
+					);
+      
 	
     },
 
@@ -46,25 +120,7 @@ before_save:function(frm,cdt,cdn){
 	}
     },
 
-refresh:function(frm,cdt,cdn){
-        if(frm.doc.company_type=="Vendor"){
-            frm.set_query("represents_company",function(){
-                return{
-                    filters: [
-                        ["Company","company_name", "in", frm.doc.company]
-                    ]
-                }
-            });
-            frm.set_query("parent_company",function(){
-                return{
-                    filters: [
-                        ["Company","is_group", "=", 1]
-                    ]
-                }
-            });
-        }
-    
-    },
+
 before_cancel:function(frm,cdt,cdn){
 	var comp_count=0;
   frappe.call({
@@ -141,4 +197,35 @@ before_cancel:function(frm,cdt,cdn){
                 }
 }
 })
+
+function create_user_permission(agent_user,company){
+     frappe.call({
+			method: "seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.create_user_permission",
+			async:false,
+			args: {
+				doctype: "User Permission",
+				user: agent_user,
+				allow:'Company',
+				value:company,
+				check:1
+			}
+    });
+}
+
+function sendEmail(name,email,template){
+    frappe.call({
+                    method: "frappe.core.doctype.communication.email.make",
+                    args: {
+                        subject: name,
+                        communication_medium: "Email",
+                        recipients: email,
+                        content: template,
+                        communication_type: "Communication",
+                        send_email:1
+                    },
+                    callback: function(rh){
+                        console.log("sent");
+                    }   
+                });
+            }
 
