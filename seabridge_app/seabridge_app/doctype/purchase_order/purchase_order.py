@@ -13,6 +13,7 @@ def auto_create_sales_order(doc,method):
 	customer=frappe.db.get_value('Customer',{'is_internal_customer':1,'represents_company':doc.company},'customer_name')
 	company=frappe.db.get_value('Supplier',{'is_internal_supplier':1,'supplier_name':doc.supplier_name},'represents_company')
 	so_name=frappe.db.get_list('Document Specific Naming Series',filters={'parent':company,'parenttype':'Company'},fields={'*'})
+	warehouse=frappe.db.get_value('Company',{'company_name':doc.supplier_name},'default_warehouse')
 	sales_order_name="null"
 	for tup in so_name:
 	    if tup.reference_document=="Sales Order":
@@ -32,6 +33,7 @@ def auto_create_sales_order(doc,method):
 						    contact_person=frappe.db.get_value('Dynamic Link',{'parenttype':'Contact','link_doctype':'Customer',"link_name":customer},'parent'),
 						    taxes_and_charges=frappe.db.get_value('Sales Taxes and Charges Template',{'company':doc.supplier_name},'name'),
 						    po_no=doc.name,
+						    set_warehouse=warehouse,
 						    po_date=doc.transaction_date,
 						    total=doc.total,
 						    grand_total=doc.grand_total,

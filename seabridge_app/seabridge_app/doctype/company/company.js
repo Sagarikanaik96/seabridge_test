@@ -10,6 +10,13 @@ refresh:function(frm,cdt,cdn){
                     }
                 };
              });
+		frm.set_query("default_warehouse",function(){
+                return{
+                    filters: {
+                        "company":frm.doc.company_name
+                    }
+                };
+             });
         }
         
     },
@@ -47,11 +54,13 @@ associate_agent:function(frm,cdt,cdn){
                         			}
                             });
 						    create_user_permission(frm.doc.associate_agent,frm.doc.company_name);
+				
 						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
 				            sendEmail(frm.doc.name,frm.doc.associate_agent,emailTemplate);
                          }
                          else if(frm.doc.associate_agent!==undefined){
                             create_user_permission(frm.doc.associate_agent,frm.doc.company_name);
+
 						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
 				            sendEmail(frm.doc.name,frm.doc.associate_agent,emailTemplate);
                          }
