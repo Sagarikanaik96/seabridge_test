@@ -56,7 +56,8 @@ def auto_create_sales_order(doc,method):
 						    'base_rate':val.base_rate,
 						    'base_amount':val.base_amount,
 						    'description':val.description,
-						'conversion_factor':val.conversion_factor
+						    'warehouse':warehouse,
+						    'conversion_factor':val.conversion_factor
 						})
 					for row in tax:
 					    so_doc.append('taxes',{
