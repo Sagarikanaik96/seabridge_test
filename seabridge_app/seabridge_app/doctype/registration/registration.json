@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "naming_series:",
- "creation": "2020-10-14 22:01:20.377839",
+ "creation": "2020-10-19 16:17:43.539529",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -43,8 +43,7 @@
   "last_name",
   "column_break_22",
   "first_name",
-  "send_welcome_email",
-  "amended_from"
+  "send_welcome_email"
  ],
  "fields": [
   {
@@ -268,20 +267,11 @@
    "fieldtype": "Date",
    "label": "End Date",
    "mandatory_depends_on": "eval:doc.agent_company!=undefined"
-  },
-  {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Registration",
-   "print_hide": 1,
-   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-10-15 18:34:57.969158",
+ "modified": "2020-10-20 13:13:41.533454",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Registration",

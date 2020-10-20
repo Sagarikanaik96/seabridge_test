@@ -14,6 +14,7 @@ def auto_create_supplier_quotation(doc,method):
     company=frappe.db.get_value('Customer',{'is_internal_Customer':1,'customer_name':doc.customer_name},'represents_company')
     contact_person=frappe.db.get_value('Dynamic Link',{'parenttype':'Contact','link_doctype':'Supplier',"link_name":supplier},'parent')
     qu_name=frappe.db.get_list('Document Specific Naming Series',filters={'parent':company,'parenttype':'Company'},fields={'*'})
+    warehouse=frappe.db.get_value('Company',{'company_name':company},'default_warehouse')
     quotation_name="null"
     for tup in qu_name:
         if tup.reference_document=="Supplier Quotation":
@@ -47,12 +48,6 @@ def auto_create_supplier_quotation(doc,method):
                         rfq_no=frappe.db.get_value('Opportunity',doc.opportunity,'reference_no')
                     )).insert(ignore_mandatory=True)
                 for val in doc.items:
-                    if val.warehouse:
-                        a=val.warehouse.split('-')
-                        abbr=frappe.db.get_value('Company',{'company_name':company},'abbr')
-                        warehouse=a[0] +'- '+abbr
-                    else:
-                        warehouse=val.warehouse
                     sq_doc.append('items', {
                         'item_code':val.item_code,
                         'qty':val.qty,

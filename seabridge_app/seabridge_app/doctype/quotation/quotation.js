@@ -107,6 +107,17 @@ before_cancel:function(frm,cdt,cdn){
             frappe.throw(('Unable to cancel the document as document as Quotation '+frm.doc.name+' is linked with the supplier quotation.'))
 
 },
+before_submit:function(frm,cdt,cdn){
+    frappe.db.get_value('Customer',{'is_internal_Customer':1,'customer_name':frm.doc.customer_name},'represents_company',(s)=>{
+	frappe.db.get_value("Company",s.represents_company, "default_warehouse",(c)=>{
+		if(c.default_warehouse==undefined)
+		{	
+			frappe.validated=false;
+			msgprint('Please maintain a default warehouse at Company '+s.represents_company,'Alert')	
+		}
+	})
+})
+},
 before_save:function(frm,cdt,cdn){
         var count=0;
         frappe.model.with_doc("Company", frm.doc.company, function() {
