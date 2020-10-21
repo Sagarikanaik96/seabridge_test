@@ -63,3 +63,9 @@ def on_registration_submit(doc,method):
                     represents_company=doc.company
                     )).insert(ignore_mandatory=True)
                     cu_doc.save()
+
+        if doc.company_type=="Agent":
+                    ag_doc=frappe.get_doc(dict(doctype = 'Agent',
+                    agent_company=doc.company,
+                    company_type="Agent")).insert()
+                    ag_doc.save()
