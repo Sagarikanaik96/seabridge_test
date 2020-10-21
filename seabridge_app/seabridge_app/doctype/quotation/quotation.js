@@ -107,6 +107,17 @@ before_cancel:function(frm,cdt,cdn){
             frappe.throw(('Unable to cancel the document as document as Quotation '+frm.doc.name+' is linked with the supplier quotation.'))
 
 },
+before_submit:function(frm,cdt,cdn){
+    frappe.db.get_value('Customer',{'is_internal_Customer':1,'customer_name':frm.doc.customer_name},'represents_company',(s)=>{
+	frappe.db.get_value("Company",s.represents_company, "default_warehouse",(c)=>{
+		if(c.default_warehouse==undefined)
+		{	
+			frappe.validated=false;
+			msgprint('Please maintain a default warehouse at Company '+s.represents_company,'Alert')	
+		}
+	})
+})
+},
 before_save:function(frm,cdt,cdn){
         var count=0;
         frappe.model.with_doc("Company", frm.doc.company, function() {
@@ -122,6 +133,15 @@ before_save:function(frm,cdt,cdn){
                 msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
             }
         })
+
+	var flag=0;
+	$.each(frm.doc.items, function(idx, item){
+	            if (item.parent_item_group != "Services"){
+		flag=1;
+            }
+        })
+	if(flag==1){ frm.set_df_property("total_net_weight", "hidden", 0);
+	} else {  frm.set_df_property("total_net_weight", "hidden", 1);  }
     }
 });
 function sendEmail(name,email,template,quotation_type){
@@ -163,3 +183,22 @@ else if(quotation_type=="Sealed"){
     });
 }
 }
+
+
+frappe.ui.form.on("Quotation Item", "item_code",function(frm, doctype, name) {
+      var row = locals[doctype][name];
+        frappe.db.get_value("Item",row.item_code, "item_group",(s)=>{
+         // console.log(s) 
+          frappe.db.get_value("Item Group",s.item_group,"parent_item_group",(a)=>{
+             // console.log(a) 
+		if(s.item_group=="Services"){
+		row.parent_item_group="Services";
+		}else
+			{
+                row.parent_item_group=a.parent_item_group;
+		}
+            })
+        })
+        
+})
+

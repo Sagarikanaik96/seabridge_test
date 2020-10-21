@@ -61,7 +61,15 @@ fixtures = ["Server Script",
 		"User-is_system_admin",
 		"User-represents_company",
 		"Purchase Invoice Item-over_billing_allowance",
-		"Purchase Receipt Item-over_delivery_receipt_allowance"
+		"Purchase Receipt Item-over_delivery_receipt_allowance",
+		"Purchase Order Item-parent_item_group",
+		"Purchase Invoice Item-parent_item_group",
+		"Sales Order Item-parent_item_group",
+		"Sales Invoice Item-parent_item_group",
+		"Supplier Quotation Item-parent_item_group",
+		"Quotation Item-parent_item_group",
+		"purchase Receipt Item-parent_item_group",
+		"Blanket Order-supplier_quotation"
 		]
 	]
 ]
@@ -137,7 +145,8 @@ doctype_js = {
 	"Purchase Receipt" : "seabridge_app/doctype/purchase_receipt/purchase_receipt.js",
 	"Opportunity" : "seabridge_app/doctype/opportunity/opportunity.js",
 	"Registration" : "seabridge_app/doctype/registration/registration.js",
-	"Company" : "seabridge_app/doctype/company/company.js"
+	"Company" : "seabridge_app/doctype/company/company.js",
+	"Blanket Order" : "seabridge_app/doctype/blanket_order/blanket_order.js"
 }
 
 doc_events = {

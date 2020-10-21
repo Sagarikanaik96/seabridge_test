@@ -34,6 +34,7 @@
    }
   ],
   "send_system_notification": 0,
+  "send_to_all_assignees": 0,
   "sender": null,
   "sender_email": null,
   "set_property_after_alert": "",
@@ -77,6 +78,7 @@
    }
   ],
   "send_system_notification": 0,
+  "send_to_all_assignees": 0,
   "sender": null,
   "sender_email": null,
   "set_property_after_alert": null,
