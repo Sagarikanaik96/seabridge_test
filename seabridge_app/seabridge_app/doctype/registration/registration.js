@@ -35,14 +35,15 @@ refresh:function(frm,cdt,cdn){
                     ]
                 }
             });
-            frm.set_query("parent_company",function(){
+            
+        }
+	frm.set_query("parent_company",function(){
                 return{
                     filters: [
                         ["Company","is_group", "=", 1]
                     ]
                 }
             });
-        }
             frm.set_query("agent_company",function(){
                 return{
                     filters: {
@@ -58,18 +59,16 @@ on_submit:function(frm,cdt,cdn){
 		if(frm.doc.supplier_name){
 		    frm.set_value("represents_company",frm.doc.company)
 		    frm.set_value("internal_supplier",1)
-		    msgprint('Is Internal Supplier and Represents Company is set, please update the form!!','Alert')
+		    msgprint(frm.doc.supplier_name+', '+frm.doc.company+' and '+frm.doc.first_name+' is created successfully. Please check Is Internal Supplier and update Represents Company as '+frm.doc.company,'Alert')
 		}
         }
 	if(frm.doc.company_type=="Customer"){
 		    frm.set_value("represents_companys",frm.doc.company)
 		    frm.set_value("is_internal_customer",1)
-		    msgprint('Is Internal Customer and Represents Company is set, please update the form!!','Alert')
+		    msgprint(frm.doc.customer_name+', '+frm.doc.company+' and '+frm.doc.first_name+' is created successfully. Please check Is Internal Customer and update Represents Company as '+frm.doc.company,'Alert')
         }
    	const doc = frm.doc;
-      frappe.confirm(
-					__("Do you want to assign the company "+frm.doc.agent_company+" for the agent "+frm.doc.agent_user+"?"),
-					function () {
+       
 					    if(frm.doc.agent_user!==undefined && agent!==undefined){
 						 frappe.call({
                         			method: "seabridge_app.seabridge_app.api.validate_user_permission",
@@ -93,8 +92,8 @@ on_submit:function(frm,cdt,cdn){
 				            sendEmail(frm.doc.name,frm.doc.agent_user,emailTemplate);
                          }
 						
-					}
-					);
+					
+					
       
 	
     },

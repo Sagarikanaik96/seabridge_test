@@ -29,7 +29,9 @@ fixtures = ["Server Script",
             "Registration",
             "Document Specific Naming Series",
 	    "Service Completion Note",
-	    "Service Completion Note Item"
+	    "Service Completion Note Item",
+	    "Agent",
+	    "API Integration"
         ]
     ]
 ]
@@ -69,7 +71,8 @@ fixtures = ["Server Script",
 		"Supplier Quotation Item-parent_item_group",
 		"Quotation Item-parent_item_group",
 		"purchase Receipt Item-parent_item_group",
-		"Blanket Order-supplier_quotation"
+		"Blanket Order-supplier_quotation",
+		"Company-company"
 		]
 	]
 ]
@@ -101,7 +104,8 @@ fixtures = ["Server Script",
 				"Supplier Quotation-terms-depends_on",
 				"Supplier Quotation-base_taxes_and_charges_added-depends_on",
 				"Supplier Quotation-base_taxes_and_charges_deducted-depends_on",
-				"Supplier Quotation-taxes_and_charges_added-depends_on"		
+				"Supplier Quotation-taxes_and_charges_added-depends_on",
+				"Company-party_name"		
 						
 			]
 	]
@@ -146,7 +150,8 @@ doctype_js = {
 	"Opportunity" : "seabridge_app/doctype/opportunity/opportunity.js",
 	"Registration" : "seabridge_app/doctype/registration/registration.js",
 	"Company" : "seabridge_app/doctype/company/company.js",
-	"Blanket Order" : "seabridge_app/doctype/blanket_order/blanket_order.js"
+	"Blanket Order" : "seabridge_app/doctype/blanket_order/blanket_order.js",
+	"Contract" : "seabridge_app/doctype/contract/contract.js"
 }
 
 doc_events = {

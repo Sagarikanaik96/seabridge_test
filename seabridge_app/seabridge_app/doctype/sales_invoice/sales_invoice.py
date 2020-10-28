@@ -79,4 +79,15 @@ def auto_create_purchase_invoice(doc,method):
 	else:
 		frappe.throw("Unable to save the Purchase Invoice as the naming series are unavailable . Please provide the naming series at the Company: "+company+" to save the document");
 
+	doc_posted=False
+	try:
+		headers=frappe.db.get_list("API Integration",fields={'*'})
+		conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
+		document={"buyer_name": doc.customer_name, "buyer_permid": "123","seller_name": doc.company,"seller_permid": "222","document_id": doc.name,"document _type": "I","document _date": doc.posting_date,"document due_date": doc.due_date,"amount_total": doc.grand_total,"currency_name": "SGD","source": "community_erpnext","stage": "AP"}	
+		print(conn.post_request(document))
+		doc_posted=True
+	except Exception:
+		print(Exception)
+		doc_posted=False
+
 

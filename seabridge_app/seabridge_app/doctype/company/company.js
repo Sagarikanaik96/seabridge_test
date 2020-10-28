@@ -2,14 +2,15 @@ var agent;
 frappe.ui.form.on('Company', {
 refresh:function(frm,cdt,cdn){
         agent=frm.doc.associate_agent;
+		console.log("Agent "+agent)
         if(frm.doc.company_type=="Customer"){
-            frm.set_query("associate_agent_company",function(){
-                return{
-                    filters: {
-                        "company_type":'Agent'
-                    }
-                };
-             });
+            //frm.set_query("associate_agent_company",function(){
+                //return{
+                    //filters: {
+                        //"company_type":'Agent'
+                    //}
+                //};
+            // });
 		frm.set_query("default_warehouse",function(){
                 return{
                     filters: {
@@ -18,6 +19,47 @@ refresh:function(frm,cdt,cdn){
                 };
              });
         }
+	if(frm.doc.end_date<=frappe.datetime.nowdate()){
+		if(frm.doc.associate_agent){
+			delete_user_permission(agent,frm.doc.company_name);
+		}
+	}
+	frappe.call({
+            method: "frappe.client.get_list",
+            args: {
+                doctype: "Contract",
+                fields: ["start_date","end_date","party_name","name"],
+                filters:{
+                    "company":frm.doc.company_name
+                },
+            },
+            callback: function(r) {
+                for(var i=0;i<r.message.length;i++){
+			if(r.message[i].start_date==frm.doc.start_date && r.message[i].end_date==frm.doc.end_date)
+			{
+				
+			}
+			else{
+				if(r.message[i].start_date>=frappe.datetime.nowdate() && r.message[i].end_date>frappe.datetime.nowdate())
+				{
+					frappe.call({
+						    "method": "frappe.client.set_value",
+						    "args": {
+						        "doctype": "Company",
+						        "name": frm.doc.name,
+						        "fieldname": {
+								"end_date":r.message[i].end_date,
+								"start_date": r.message[i].start_date,
+								"associate_agent_company":r.message[i].party_name
+							},
+						    }
+						})
+				}
+
+			}
+                }
+            }
+        })
         
     },
 associate_agent_company:function(frm,cdt,cdn){
@@ -38,11 +80,16 @@ associate_agent_company:function(frm,cdt,cdn){
 
 },
 associate_agent:function(frm,cdt,cdn){
+	console.log("Associate Agent "+agent)
+	if(agent){
+
+	}
     const doc = frm.doc;
       frappe.confirm(
 					__("Do you want to assign the company "+frm.doc.associate_agent_company+" for the agent "+frm.doc.associate_agent+"?"),
 					function () {
 					    if(frm.doc.associate_agent!==undefined && agent!==undefined){
+						delete_user_permission(agent,frm.doc.company_name);
 						 frappe.call({
                         			method: "seabridge_app.seabridge_app.api.validate_user_permission",
                         			async:false,
@@ -84,6 +131,22 @@ function create_user_permission(associate_agent,company_name){
 			}
     });
 }
+
+function delete_user_permission(associate_agent,company_name){
+	console.log(associate_agent+" Deleting3 "+company_name)
+     frappe.call({
+			method: "seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.delete_user_permission",
+			async:false,
+			args: {
+				doctype: "User Permission",
+				user: associate_agent,
+				allow:'Company',
+				value:company_name,
+				check:1
+			}
+    });
+}
+
 
 function sendEmail(name,email,template){
     frappe.call({
