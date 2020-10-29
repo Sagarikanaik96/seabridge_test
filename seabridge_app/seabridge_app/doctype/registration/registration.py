@@ -21,7 +21,8 @@ def on_registration_submit(doc,method):
                     associate_agent_company=doc.agent_company,
                     associate_agent=doc.agent_user,
                     start_date=doc.start_date,
-                    end_date=doc.end_date
+                    end_date=doc.end_date,
+		    notify_email=doc.email
         )).insert(ignore_mandatory=True)
         co_doc.save()
 

@@ -72,7 +72,8 @@ fixtures = ["Server Script",
 		"Quotation Item-parent_item_group",
 		"purchase Receipt Item-parent_item_group",
 		"Blanket Order-supplier_quotation",
-		"Company-company"
+		"Contract-company",
+		"Company-notify_email"
 		]
 	]
 ]
