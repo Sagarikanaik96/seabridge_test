@@ -6,12 +6,15 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 import datetime
+from frappe.core.doctype.communication.email import make
+from frappe.frappeclient import FrappeOAuth2Client
 
 class SalesInvoice(Document):
 	pass
 
 
 def auto_create_purchase_invoice(doc,method):
+	
 	supplier=frappe.db.get_value('Supplier',{'is_internal_supplier':1,'represents_company':doc.company},'supplier_name')
 	company=frappe.db.get_value('Customer',{'is_internal_Customer':1,'customer_name':doc.customer_name},'represents_company')
 	contact_person=frappe.db.get_value('Dynamic Link',{'parenttype':'Contact','link_doctype':'Supplier',"link_name":supplier},'parent')
@@ -80,8 +83,9 @@ def auto_create_purchase_invoice(doc,method):
 		frappe.throw("Unable to save the Purchase Invoice as the naming series are unavailable . Please provide the naming series at the Company: "+company+" to save the document");
 
 	doc_posted=False
+	headers=frappe.db.get_list("API Integration",fields={'*'})
 	try:
-		headers=frappe.db.get_list("API Integration",fields={'*'})
+
 		conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
 		document={"buyer_name": doc.customer_name, "buyer_permid": "123","seller_name": doc.company,"seller_permid": "222","document_id": doc.name,"document _type": "I","document _date": doc.posting_date,"document due_date": doc.due_date,"amount_total": doc.grand_total,"currency_name": "SGD","source": "community_erpnext","stage": "AP"}	
 		print(conn.post_request(document))
@@ -89,5 +93,13 @@ def auto_create_purchase_invoice(doc,method):
 	except Exception:
 		print(Exception)
 		doc_posted=False
+		message="The post of Sales Invoice Document : "+doc.name+" is unsuccessful."
+		make(
+			subject = doc.name,
+			recipients = headers[0].email,
+			communication_medium = "Email",
+			content = message,
+			send_email = True
+		)
 
 
