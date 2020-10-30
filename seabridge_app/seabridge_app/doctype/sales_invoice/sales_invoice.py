@@ -84,22 +84,23 @@ def auto_create_purchase_invoice(doc,method):
 
 	doc_posted=False
 	headers=frappe.db.get_list("API Integration",fields={'*'})
-	try:
+	if headers:
+		try:
 
-		conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
-		document={"buyer_name": doc.customer_name, "buyer_permid": "123","seller_name": doc.company,"seller_permid": "222","document_id": doc.name,"document _type": "I","document _date": doc.posting_date,"document due_date": doc.due_date,"amount_total": doc.grand_total,"currency_name": "SGD","source": "community_erpnext","stage": "AP"}	
-		print(conn.post_request(document))
-		doc_posted=True
-	except Exception:
-		print(Exception)
-		doc_posted=False
-		message="The post of Sales Invoice Document : "+doc.name+" is unsuccessful."
-		make(
-			subject = doc.name,
-			recipients = headers[0].email,
-			communication_medium = "Email",
-			content = message,
-			send_email = True
-		)
-
+			conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
+			document={"buyer_name": doc.customer_name, "buyer_permid": "123","seller_name": doc.company,"seller_permid": "222","document_id": doc.name,"document _type": "I","document _date": doc.posting_date,"document due_date": doc.due_date,"amount_total": doc.grand_total,"currency_name": "SGD","source": "community_erpnext","stage": "AP"}	
+			print(conn.post_request(document))
+			doc_posted=True
+		except Exception:
+			print(Exception)
+			doc_posted=False
+			message="The post of Sales Invoice Document : "+doc.name+" is unsuccessful."
+			make(
+				subject = doc.name,
+				recipients = headers[0].email,
+				communication_medium = "Email",
+				content = message,
+				send_email = True
+			)
+	print(doc_posted)
 
