@@ -106,7 +106,8 @@ fixtures = ["Server Script",
 				"Supplier Quotation-base_taxes_and_charges_added-depends_on",
 				"Supplier Quotation-base_taxes_and_charges_deducted-depends_on",
 				"Supplier Quotation-taxes_and_charges_added-depends_on",
-				"Company-party_name"		
+				"Contract-party_name-label",
+				"Contract-party_user-hidden"		
 						
 			]
 	]

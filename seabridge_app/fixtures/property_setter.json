@@ -366,5 +366,37 @@
   "property": "depends_on",
   "property_type": "Data",
   "value": "eval:doc.quotation_type!='Sealed'"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Contract",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "party_user",
+  "modified": "2020-10-23 19:47:43.038284",
+  "name": "Contract-party_user-hidden",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "hidden",
+  "property_type": "Check",
+  "value": "1"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Contract",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "party_name",
+  "modified": "2020-10-23 20:26:48.856931",
+  "name": "Contract-party_name-label",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "label",
+  "property_type": "Data",
+  "value": "Party Company"
  }
 ]
