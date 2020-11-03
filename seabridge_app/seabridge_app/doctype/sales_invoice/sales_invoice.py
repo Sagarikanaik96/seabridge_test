@@ -8,6 +8,7 @@ from frappe.model.document import Document
 import datetime
 from frappe.core.doctype.communication.email import make
 from frappe.frappeclient import FrappeOAuth2Client
+from frappe.utils.error import make_error_snapshot
 
 class SalesInvoice(Document):
 	pass
@@ -91,6 +92,7 @@ def auto_create_purchase_invoice(doc,method):
 			document={"buyer_name": doc.customer_name, "buyer_permid": "123","seller_name": doc.company,"seller_permid": "222","document_id": doc.name,"document _type": "I","document _date": doc.posting_date,"document due_date": doc.due_date,"amount_total": doc.grand_total,"currency_name": "SGD","source": "community_erpnext","stage": "AP"}	
 			print(conn.post_request(document))
 			doc_posted=True
+			doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.') 
 		except Exception:
 			print(Exception)
 			doc_posted=False
@@ -102,5 +104,7 @@ def auto_create_purchase_invoice(doc,method):
 				content = message,
 				send_email = True
 			)
+			doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url) 
+			frappe.log_error(frappe.get_traceback())
 	print(doc_posted)
 
