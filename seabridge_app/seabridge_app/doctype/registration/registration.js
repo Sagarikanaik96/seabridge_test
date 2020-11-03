@@ -44,13 +44,22 @@ refresh:function(frm,cdt,cdn){
                     ]
                 }
             });
-            frm.set_query("agent_company",function(){
+            /*frm.set_query("agent_company",function(){
                 return{
                     filters: {
                         "company_type":'Agent'
                     }
                 };
-             });
+             });*/
+	frm.set_query("agent_user", function() {
+            return {
+                    query: "seabridge_app.seabridge_app.api.get_user_filter",
+                    filters:{
+                        "represents_company":frm.doc.agent_company
+                    },
+                
+            };
+        });
     
     },
 
@@ -59,13 +68,11 @@ on_submit:function(frm,cdt,cdn){
 		if(frm.doc.supplier_name){
 		    frm.set_value("represents_company",frm.doc.company)
 		    frm.set_value("internal_supplier",1)
-		    msgprint(frm.doc.supplier_name+', '+frm.doc.company+' and '+frm.doc.first_name+' is created successfully. Please check Is Internal Supplier and update Represents Company as '+frm.doc.company,'Alert')
 		}
         }
 	if(frm.doc.company_type=="Customer"){
 		    frm.set_value("represents_companys",frm.doc.company)
 		    frm.set_value("is_internal_customer",1)
-		    msgprint(frm.doc.customer_name+', '+frm.doc.company+' and '+frm.doc.first_name+' is created successfully. Please check Is Internal Customer and update Represents Company as '+frm.doc.company,'Alert')
         }
    	const doc = frm.doc;
        
@@ -102,12 +109,19 @@ before_submit:function(frm,cdt,cdn){
         if(frm.doc.company_type=="Vendor" || frm.doc.company_type=="Agent"){
 		if(frm.doc.customer_name){
 			msgprint('Unable to create the Customer as Company Type is '+frm.doc.company_type,'Alert')
-		}	
+		}
+		frm.set_value("customer_name", "")
+		frm.set_value("customer_group", "")
+		frm.set_value("customer_type", "")
+		
         }
 	if(frm.doc.company_type=="Customer"){
 		if(frm.doc.supplier_name){
 			msgprint('Unable to create the Supplier as Company Type is '+frm.doc.company_type,'Alert')
 		}
+		frm.set_value("supplier_name", "")
+		frm.set_value("supplier_group", "")
+		frm.set_value("supplier_type", "")
 		
         }
 	

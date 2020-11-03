@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 import json
+from frappe.desk.reportview import build_match_conditions, get_filters_cond
 
 @frappe.whitelist()
 def get_email(doctype,is_internal_customer,customer_name):
@@ -84,3 +85,17 @@ def get_user_name(doctype, txt, searchfield, start, page_len, filters):
                 where u.name = r.parent and r.role = 'Agent'
                 and u.enabled = 1 and u.name like %s
         """, ("%" + txt + "%"))
+
+
+@frappe.whitelist()
+def get_user_filter(doctype, txt, searchfield, start, page_len, filters):
+        agent_company=filters['represents_company']
+        return frappe.db.sql("""
+                select u.name, concat(u.first_name, ' ', u.last_name)
+                from tabUser u, `tabHas Role` r
+                where u.name = r.parent and r.role = 'Agent'
+                and u.enabled = 1 and  u.represents_company=%s
+        """,(agent_company))
+        
+      
+       

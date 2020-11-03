@@ -73,7 +73,9 @@ fixtures = ["Server Script",
 		"purchase Receipt Item-parent_item_group",
 		"Blanket Order-supplier_quotation",
 		"Contract-company",
-		"Company-notify_email"
+		"Company-notify_email",
+		"Company-start_date",
+		"Company-end_date"
 		]
 	]
 ]
@@ -107,7 +109,8 @@ fixtures = ["Server Script",
 				"Supplier Quotation-base_taxes_and_charges_deducted-depends_on",
 				"Supplier Quotation-taxes_and_charges_added-depends_on",
 				"Contract-party_name-label",
-				"Contract-party_user-hidden"		
+				"Contract-party_user-hidden",
+				"Contract-party_type-options"		
 						
 			]
 	]

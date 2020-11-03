@@ -26,7 +26,8 @@ console.log(frappe.datetime.nowdate())
 						        "name": s.name,
 						        "fieldname": {
 								"end_date":frm.doc.end_date,
-								"start_date": frm.doc.start_date
+								"start_date": frm.doc.start_date,
+								"associate_agent_company":frm.doc.party_name
 							},
 						    }
 						})
@@ -37,6 +38,8 @@ console.log(frappe.datetime.nowdate())
 			})
 		}
 		else{
+			
+
 			frappe.db.get_value('Registration',{'company':frm.doc.company},"name",(s)=>{
 				
 				frappe.call({
@@ -44,61 +47,39 @@ console.log(frappe.datetime.nowdate())
 		                    "args": {
 		                        "doctype": "Registration",
 		                        "name": s.name,
-		                        "fieldname": "end_date",
-		                        "value": frm.doc.end_date
+		                        "fieldname": {
+						"end_date":frm.doc.end_date,
+						"start_date": frm.doc.start_date,
+						"agent_company":frm.doc.party_name
+					}
 		                    }
 		                })		
 			})
 			
 			frappe.db.get_value('Company',{'company_name':frm.doc.company},"name",(s)=>{
 				
-				frappe.call({
-		                    "method": "frappe.client.set_value",
-		                    "args": {
-		                        "doctype": "Company",
-		                        "name": s.name,
-		                        "fieldname": "end_date",
-		                        "value": frm.doc.end_date
-		                    }
-		                })		
-			})
 				
-		}
-	})
-	frappe.db.get_value('Registration',{'company':frm.doc.company},"start_date",(r)=>{
-		
-		if(r.start_date){
-		
-		}
-		else{
-			frappe.db.get_value('Registration',{'company':frm.doc.company},"name",(s)=>{
-				
-				frappe.call({
-		                    "method": "frappe.client.set_value",
-		                    "args": {
-		                        "doctype": "Registration",
-		                        "name": s.name,
-		                        "fieldname": "start_date",
-		                        "value": frm.doc.start_date
-		                    }
-		                })		
-			})
 
-			frappe.db.get_value('Company',{'company_name':frm.doc.company},"name",(s)=>{
-				
+
 				frappe.call({
 		                    "method": "frappe.client.set_value",
 		                    "args": {
 		                        "doctype": "Company",
 		                        "name": s.name,
-		                        "fieldname": "start_date",
-		                        "value": frm.doc.start_date
+		                        "fieldname": {
+						"end_date":frm.doc.end_date,
+						"start_date": frm.doc.start_date,
+						"associate_agent_company":frm.doc.party_name,
+						"notify_email":frappe.session.user
+						
+					}
 		                    }
 		                })		
 			})
 				
 		}
 	})
+	
 }
 });
 
