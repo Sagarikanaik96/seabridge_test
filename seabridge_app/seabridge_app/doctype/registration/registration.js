@@ -44,13 +44,7 @@ refresh:function(frm,cdt,cdn){
                     ]
                 }
             });
-            /*frm.set_query("agent_company",function(){
-                return{
-                    filters: {
-                        "company_type":'Agent'
-                    }
-                };
-             });*/
+            
 	frm.set_query("agent_user", function() {
             return {
                     query: "seabridge_app.seabridge_app.api.get_user_filter",
@@ -60,6 +54,7 @@ refresh:function(frm,cdt,cdn){
                 
             };
         });
+	 
     
     },
 
@@ -74,6 +69,8 @@ on_submit:function(frm,cdt,cdn){
 		    frm.set_value("represents_companys",frm.doc.company)
 		    frm.set_value("is_internal_customer",1)
         }
+},
+agent_user:function(frm,cdt,cdn){
    	const doc = frm.doc;
        
 					    if(frm.doc.agent_user!==undefined && agent!==undefined){
@@ -87,6 +84,18 @@ on_submit:function(frm,cdt,cdn){
                         				value:frm.doc.company
                         			}
                             });
+				        frappe.db.get_value("Company",frm.doc.company, "name",(s)=>{
+					frappe.call({
+                                            async: false,
+                                            "method": "frappe.client.set_value",
+                                            "args": {
+                                                "doctype": "Company",
+                                                "name":s.name ,
+                                                "fieldname": "associate_agent",
+                                                "value":frm.doc.agent_user
+                                            }
+                                        });
+					})
 						    create_user_permission(frm.doc.agent_user,frm.doc.company);
 				
 						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.agent_company+'</strong></h1>';

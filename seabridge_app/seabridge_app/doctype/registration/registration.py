@@ -73,7 +73,7 @@ def on_registration_submit(doc,method):
 
         if doc.company_type!="Customer":
                     if doc.supplier_name:
-                        frappe.msgprint(doc.supplier_name+', '+doc.company+' and '+doc.first_name+' is created successfully. Please check Is Internal Supplier and update Represents Company as '+doc.company,'Alert')
+                        frappe.msgprint('Supplier ' +doc.supplier_name+', Company '+doc.company+' and User '+doc.first_name+' is created successfully. Please check Is Internal Supplier and update Represents Company as '+doc.company,'Alert')
 
         if doc.company_type=="Customer":
-                    frappe.msgprint(doc.customer_name+', '+doc.company+' and '+doc.first_name+' is created successfully. Please check Is Internal Customer and update Represents Company as '+doc.company,'Alert')
+                    frappe.msgprint('Customer '+doc.customer_name+', Company '+doc.company+' and User '+doc.first_name+' is created successfully. Please check Is Internal Customer and update Represents Company as '+doc.company,'Alert')
