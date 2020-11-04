@@ -77,7 +77,8 @@ fixtures = ["Server Script",
 		"Company-start_date",
 		"Company-end_date",
 		"Company-default_warehouse",
-		"Company-management_agent_registration_details"
+		"Company-management_agent_registration_details",
+		"Company-column_break_13"
 		]
 	]
 ]
