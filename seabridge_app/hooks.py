@@ -75,7 +75,9 @@ fixtures = ["Server Script",
 		"Contract-company",
 		"Company-notify_email",
 		"Company-start_date",
-		"Company-end_date"
+		"Company-end_date",
+		"Company-default_warehouse",
+		"Company-management_agent_registration_details"
 		]
 	]
 ]
@@ -110,7 +112,8 @@ fixtures = ["Server Script",
 				"Supplier Quotation-taxes_and_charges_added-depends_on",
 				"Contract-party_name-label",
 				"Contract-party_user-hidden",
-				"Contract-party_type-options"		
+				"Contract-party_type-options",
+				"Contract-party_type-default"		
 						
 			]
 	]
