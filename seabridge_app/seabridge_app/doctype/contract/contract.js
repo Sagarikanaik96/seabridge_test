@@ -8,7 +8,7 @@ refresh:function(frm,cdt,cdn){
                 };
              });
 },
-after_save:function(frm,cdt,cdn){
+on_submit:function(frm,cdt,cdn){
 console.log(frappe.datetime.nowdate())
 	 frappe.db.get_value('Registration',{'company':frm.doc.company},"end_date",(r)=>{
 		console.log(r.end_date)
