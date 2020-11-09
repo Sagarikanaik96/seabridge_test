@@ -1,0 +1,121 @@
+{
+ "actions": [],
+ "creation": "2020-11-02 15:42:57.309034",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "invoice_document",
+  "due_date",
+  "supplier_name",
+  "status",
+  "invoice_amount",
+  "debit_note",
+  "debit_note_amount",
+  "outstanding_amount",
+  "payment_transaction_amount",
+  "payment_cheque_details_section",
+  "cheque_no",
+  "column_break_12",
+  "cheque_date"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "invoice_document",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Invoice Document",
+   "options": "Purchase Invoice",
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Due Date"
+  },
+  {
+   "columns": 2,
+   "fieldname": "supplier_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": " Supplier Name",
+   "options": "Supplier"
+  },
+  {
+   "columns": 1,
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nDraft\nReturn\nDebit Note Issued\nSubmitted\nPaid\nUnpaid\nOverdue\nCancelled"
+  },
+  {
+   "columns": 1,
+   "fieldname": "invoice_amount",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Invoice Amount",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Outstanding Amount"
+  },
+  {
+   "fieldname": "debit_note",
+   "fieldtype": "Link",
+   "label": "Debit Note",
+   "options": "Purchase Invoice"
+  },
+  {
+   "fieldname": "debit_note_amount",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Debit Note Amount"
+  },
+  {
+   "fieldname": "payment_transaction_amount",
+   "fieldtype": "Float",
+   "label": " Payment Transaction Amount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "payment_cheque_details_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Cheque Details"
+  },
+  {
+   "fieldname": "cheque_no",
+   "fieldtype": "Data",
+   "label": "Cheque/Reference No",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cheque_date",
+   "fieldtype": "Date",
+   "label": "Cheque/Reference Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2020-11-09 15:55:59.838570",
+ "modified_by": "Administrator",
+ "module": "seabridge_app",
+ "name": "Bank Payment Advice Details",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -12,7 +12,8 @@ app_email = "seabridge_app@gmail.com"
 app_license = "MIT"
 app_logo_url = '/assets/seabridge_app/images/Seabridge TFX_VL.png'
 app_include_css = "assets/seabridge_app/css/desk.min.css"
-app_include_js = "assets/seabridge_app/js/seabridge_app/utils/common.js"
+#app_include_js = "assets/seabridge_app/js/seabridge_app/utils/common.js"
+app_include_js = "assets/seabridge_app/js/seabridge_app/form/multi_select_dialog.js"
 website_context = {
 	"favicon": 	"/assets/seabridge_app/images/seaicon.png",
 	"splash_image": "/assets/seabridge_app/images/Seabridge TFX_VL.png"
@@ -31,7 +32,9 @@ fixtures = ["Server Script",
 	    "Service Completion Note",
 	    "Service Completion Note Item",
 	    "Agent",
-	    "API Integration"
+	    "API Integration",
+	    "Bank Payment Advice",
+	    "Bank Payment Advice Details"
         ]
     ]
 ]
@@ -178,6 +181,9 @@ doc_events = {
     },
 	"Purchase Order": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.auto_create_sales_order"]
+    },
+	"Bank Payment Advice": {
+		"on_submit": ["seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.auto_create_payment_entry"]
     }
 }
 
