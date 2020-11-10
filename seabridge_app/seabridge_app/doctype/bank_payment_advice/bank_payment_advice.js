@@ -3,6 +3,10 @@
 
 frappe.ui.form.on('Bank Payment Advice', {
 refresh:function(frm,cdt,cdn){
+
+		
+
+
    frm.set_query("bank_account",function(){
                 return{
                     filters: [
@@ -10,7 +14,10 @@ refresh:function(frm,cdt,cdn){
                     ]
                 }
             }); 
-    
+var hideTheButtonWrapper = $('*[data-fieldname="bank_payment_advice_details"]');
+hideTheButtonWrapper .find('.grid-add-row').hide();
+
+
 	frm.add_custom_button(__('Get Invoices'), function(){
 var select={}
 	 let dialogObj= new frappe.ui.form.MultiSelectDialog({
@@ -18,13 +25,15 @@ var select={}
  target: frm,
 setters: {
  supplier: "",
+ status:"",
+ company:"",
  due_date:"",
  outstanding_amount:""
  },
  date_field: "transaction_date",
  get_query() {
  return {
- filters: { docstatus: ['=', 1] , status: ['!=',"Paid"]}
+ filters: { docstatus: ['=', 1] , outstanding_amount: ['>', 0]}
  }
  },
  action(selections) {
@@ -57,7 +66,7 @@ select=selections
 			        child.status = r.message[i].status;
 			        child.invoice_amount = r.message[i].grand_total;
 			        child.outstanding_amount=r.message[i].outstanding_amount;
-			        
+			        child.payment_transaction_amount=r.message[i].outstanding_amount;
 			         frappe.call({
             method: "frappe.client.get_list",
 		async:false,
@@ -126,3 +135,5 @@ frappe.ui.form.on("Bank Payment Advice Details", "payment_transaction_amount",fu
 	
     }
     })
+
+

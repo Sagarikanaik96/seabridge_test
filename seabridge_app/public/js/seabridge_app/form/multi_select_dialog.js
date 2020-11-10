@@ -761,7 +761,6 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 			fields.push({ fieldtype: "Section Break" });
 			fields = fields.concat(this.data_fields);
 		}
-		console.log("Fields"+fields)
 
 		let doctype_plural = this.doctype.plural();
 
@@ -1055,7 +1054,18 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 				var value = me.dialog.fields_dict[setter].get_value();
 				if (me.dialog.fields_dict[setter].df.fieldtype == "Data" && value) {
 					filters[setter] = ["like", "%" + value + "%"];
-				} else {
+				}
+				else if (me.dialog.fields_dict[setter].df.fieldtype == "Date" && value) {
+					filters[setter] = ["<=", ""+value];
+					me.args[setter] = filters[setter];
+					filter_fields.push(setter);
+				}
+				else if (me.dialog.fields_dict[setter].df.fieldtype == "Currency" && value) {
+					filters[setter] = ["<=", ""+value];
+					me.args[setter] = filters[setter];
+					filter_fields.push(setter);
+				}
+				 else {
 					filters[setter] = value || undefined;
 					me.args[setter] = filters[setter];
 					filter_fields.push(setter);
