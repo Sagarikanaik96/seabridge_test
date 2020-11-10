@@ -25,7 +25,6 @@ var select={}
  target: frm,
 setters: {
  supplier: "",
- status:"",
  company:"",
  due_date:"",
  outstanding_amount:""
@@ -33,7 +32,7 @@ setters: {
  date_field: "transaction_date",
  get_query() {
  return {
- filters: { docstatus: ['=', 1] , outstanding_amount: ['>', 0]}
+ filters: { outstanding_amount: ['>', 0], docstatus: ['=', 1] ,status: ['not in', "Paid,Return"] }
  }
  },
  action(selections) {
