@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "naming_series:",
- "creation": "2020-11-09 13:39:28.533288",
+ "creation": "2020-11-11 20:24:39.320735",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -13,7 +13,9 @@
   "bank_account",
   "section_break_6",
   "bank_payment_advice_details",
-  "amended_from"
+  "amended_from",
+  "filter_list",
+  "fields_multicheck"
  ],
  "fields": [
   {
@@ -67,11 +69,23 @@
    "options": "Bank Payment Advice",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "filter_list",
+   "fieldtype": "HTML",
+   "hidden": 1,
+   "label": "Filter List"
+  },
+  {
+   "fieldname": "fields_multicheck",
+   "fieldtype": "HTML",
+   "hidden": 1,
+   "label": "Fields Multicheck"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-11-10 21:21:09.433237",
+ "modified": "2020-11-12 02:12:32.164734",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Bank Payment Advice",

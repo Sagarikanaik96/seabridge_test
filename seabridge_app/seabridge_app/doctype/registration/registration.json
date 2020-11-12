@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "naming_series:",
- "creation": "2020-10-21 18:54:33.369377",
+ "creation": "2020-11-11 20:24:31.593544",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -256,7 +256,7 @@
   },
   {
    "allow_on_submit": 1,
-   "depends_on": "eval:doc.docstatus==1",
+   "depends_on": "eval:doc.agent_company!=undefined",
    "fieldname": "agent_user",
    "fieldtype": "Link",
    "label": "Agent User",
@@ -295,7 +295,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-11-03 14:57:21.160005",
+ "modified": "2020-11-12 17:37:52.950899",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Registration",

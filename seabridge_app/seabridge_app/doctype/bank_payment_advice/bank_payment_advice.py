@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from datetime import date
 
 class BankPaymentAdvice(Document):
 	pass
@@ -16,14 +17,15 @@ def auto_create_payment_entry(doc,method):
 		payment_type="Pay",
 		posting_date=doc.date,
 		company=doc.company,
+		mode_of_payment="Wire Transfer",
 		paid_to=frappe.db.get_value('Purchase Invoice',{'name':row.invoice_document},'credit_to'),
 		paid_from=frappe.db.get_value('Bank Account',{'name':doc.bank_account},'account'),
 		party_type="Supplier",
 		party=row.supplier_name,
 		paid_amount=row.payment_transaction_amount,
 		received_amount=55.5,
-		reference_no=row.cheque_no,
-		reference_date=row.cheque_date
+		reference_no=doc.name,
+		reference_date=date.today()
 		)).insert(ignore_mandatory=True)
 		
 		pe_doc.append('references', {
