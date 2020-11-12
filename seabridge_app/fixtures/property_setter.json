@@ -1,5 +1,21 @@
 [
- {
+{
+  "default_value": null,
+  "doc_type": "Purchase Invoice",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "naming_series",
+  "modified": "2020-08-26 15:40:51.438118",
+  "name": "Material Request-naming_series-reqd",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "reqd",
+  "property_type": "Check",
+  "value": "1"
+ }, 
+{
   "default_value": null,
   "doc_type": "Material Request",
   "docstatus": 0,

@@ -71,6 +71,8 @@ frappe.ui.form.on('Purchase Order', {
     },
     before_save:function(frm,cdt,cdn){
         var count=0;
+	if(frm.doc.naming_series){}
+	else{
         frappe.model.with_doc("Company", frm.doc.company, function() {
             var tabletransfer= frappe.model.get_doc("Company", frm.doc.company)
             $.each(tabletransfer.series, function(index, row){
@@ -84,7 +86,7 @@ frappe.ui.form.on('Purchase Order', {
                 msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
             }
         })
-
+	}
 	var flag=0;
 	$.each(frm.doc.items, function(idx, item){
 	            if (item.parent_item_group != "Services"){
