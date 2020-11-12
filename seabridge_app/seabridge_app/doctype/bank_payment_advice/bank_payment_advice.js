@@ -118,10 +118,9 @@ dialogObj.dialog.hide()
             cur_frm.refresh_field("date")
 	 }   
 	},
-	after_save:function(frm,cdt,cdn){
+	before_save:function(frm,cdt,cdn){
 		$.each(frm.doc.bank_payment_advice_details, function(idx, item){
 			item.cheque_date=frappe.datetime.nowdate()
-			item.cheque_no=frm.doc.name
 		})
     },
 	before_submit:function(frm,cdt,cdn){
