@@ -9,8 +9,8 @@ import datetime
 from frappe.core.doctype.communication.email import make
 from frappe.frappeclient import FrappeOAuth2Client,OAuth2Session
 from frappe.utils.error import make_error_snapshot
-import re
-
+import json
+import requests
 class SalesInvoice(Document):
 	pass
 
@@ -88,39 +88,21 @@ def auto_create_purchase_invoice(doc,method):
 	headers=frappe.db.get_list("API Integration",fields={'*'})
 	if headers:
 		try:
-			headers_list={
-				"Authorization": headers[0].authorization_key,
-				"content-type": "application/x-www-form-urlencoded"			
+			headers_list = {
+				"Authorization": "Bearer " + headers[0].authorization_key,
+				"content-type": "application/json"
 			}
-			conn=OAuth2Session(headers_list)
-			#conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
-			document={"buyer_name": doc.customer_name, "buyer_permid": "123","seller_name": doc.company,"seller_permid": "222","document_id": doc.name,"document _type": "I","document _date": doc.posting_date,"document due_date": doc.due_date,"amount_total": doc.grand_total,"currency_name": "SGD","source": "community_erpnext","stage": "AP"}
-			response=conn.post(headers[0].url,document,verify=True)
-			print("Response ",response)
-			if response=="<Response [200]>":
-				doc_posted=True
-				doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.') 
-			else:
-				doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url) 
-				message="The post of Sales Invoice Document : "+doc.name+" is unsuccessful."
-				make(
-					subject = doc.name,
-					recipients = headers[0].email,
-					communication_medium = "Email",
-					content = message,
-					send_email = True
-				)
+			conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
+			document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.grand_total)+'", "currency_name": "SGD", "source": "community_erpnext", "stage": "AP"}]}'
+			res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
+			print("RESPONSE",res)
+			res = conn.post_process(res)
+			doc_posted=True
+			doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.')
 		except Exception:
 			print(Exception)
 			doc_posted=False
 			message="The post of Sales Invoice Document : "+doc.name+" is unsuccessful."
-			make(
-				subject = doc.name,
-				recipients = headers[0].email,
-				communication_medium = "Email",
-				content = message,
-				send_email = True
-			)
 			doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url) 
 			frappe.log_error(frappe.get_traceback())
 	print(doc_posted)
