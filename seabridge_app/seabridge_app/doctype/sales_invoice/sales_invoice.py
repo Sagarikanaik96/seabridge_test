@@ -101,6 +101,10 @@ def auto_create_purchase_invoice(doc,method):
 			if response_code=="<Response [200]>":
 				doc_posted=True
 				doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.')
+			else:
+				doc_posted=False
+				message="The post of Sales Invoice Document : "+doc.name+" is unsuccessful."
+				doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url)
 		except Exception:
 			print(Exception)
 			doc_posted=False
