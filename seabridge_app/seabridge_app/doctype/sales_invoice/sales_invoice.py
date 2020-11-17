@@ -96,9 +96,11 @@ def auto_create_purchase_invoice(doc,method):
 			document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.grand_total)+'", "currency_name": "SGD", "source": "community_erpnext", "stage": "AP"}]}'
 			res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
 			print("RESPONSE",res)
+			response_code=str(res)
 			res = conn.post_process(res)
-			doc_posted=True
-			doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.')
+			if response_code=="<Response [200]>":
+				doc_posted=True
+				doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.')
 		except Exception:
 			print(Exception)
 			doc_posted=False
