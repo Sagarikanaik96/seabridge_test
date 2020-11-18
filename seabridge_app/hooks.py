@@ -117,7 +117,8 @@ fixtures = ["Server Script",
 				"Contract-party_name-label",
 				"Contract-party_user-hidden",
 				"Contract-party_type-options",
-				"Contract-party_type-default"		
+				"Contract-party_type-default",
+				"Purchase Order-naming_series-reqd"		
 						
 			]
 	]
@@ -184,7 +185,14 @@ doc_events = {
     },
 	"Bank Payment Advice": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.auto_create_payment_entry"]
+   # },
+#	"Purchase Invoice": {
+	#	"before_save": ["seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.update_status"]
     }
+}
+
+override_doctype_dashboards = {
+"Purchase Order": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order_dashboard.get_dashboard_data"]
 }
 
 # Includes in <head>
