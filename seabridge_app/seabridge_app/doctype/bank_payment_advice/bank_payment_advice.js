@@ -3,7 +3,7 @@
 
 frappe.ui.form.on('Bank Payment Advice', {
 refresh:function(frm,cdt,cdn){
-
+if(frm.doc.docstatus==1){
 frm.add_custom_button(__('Export'), function(){
 //frm.set_value('reference_doctype',frm.doc.doctype)
 			const doctype = frm.doc.doctype;
@@ -15,7 +15,7 @@ frm.add_custom_button(__('Export'), function(){
 			can_export(frm) ? export_data(frm) : null;
 		
 })
-
+}
 
 
    frm.set_query("bank_account",function(){
@@ -36,14 +36,13 @@ var select={}
  target: frm,
  setters: {
  supplier: "",
- company:"",
  due_date:"",
  outstanding_amount:""
  },
  date_field: "transaction_date",
  get_query() {
  return {
- filters: { outstanding_amount: ['>', 0], docstatus: ['=', 1] ,status: ['not in', "Paid,Return"] }
+ filters: { outstanding_amount: ['>', 0], docstatus: ['=', 1] ,status: ['not in', "Paid,Return"] ,company:frm.doc.company}
  }
  },
  action(selections) {
@@ -97,6 +96,19 @@ select=selections
                 }
             }
 			         })
+
+			frappe.model.with_doc("Purchase Invoice", select[idx], function() {
+                    var tabletransfer= frappe.model.get_doc("Purchase Invoice", select[idx])
+			$.each(tabletransfer.items, function(index, row){
+				if(row.purchase_order){
+					child.purchase_order=row.purchase_order
+					frappe.db.get_value("Purchase Order",row.purchase_order,"grand_total",(c)=>{
+						child.purchase_order_amount=c.grand_total
+					})
+				}
+			})
+			})
+
 		            cur_frm.refresh_field("bank_payment_advice_details")
                     }
                 }

@@ -46,7 +46,25 @@ frappe.ui.form.on('Service Completion Note', {
 			return erpnext.queries.warehouse(frm.doc);
 		});
 	},
-
+	reference_no: function(frm) {
+    frappe.model.with_doc("Purchase Order", frm.doc.reference_no, function() {
+        var tabletransfer= frappe.model.get_doc("Purchase Order", frm.doc.reference_no)
+        cur_frm.clear_table("items");
+        $.each(tabletransfer.items, function(index, row){
+            var d=frm.add_child("items");
+            d.item_code = row.item_code;
+		d.delivery_date = row.delivery_date;
+            d.item_name = row.item_name;
+            d.description = row.description;
+            d.item_group = row.item_group;
+		d.qty = row.qty;
+            d.stock_uom = row.stock_uom;
+            d.uom = row.uom;
+		d.rate=row.rate;
+            d.amount=row.amount;
+		})
+	})
+},
 	refresh: function(frm) {
 		if(frm.doc.company) {
 			frm.trigger("toggle_display_account_head");
