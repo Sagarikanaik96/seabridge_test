@@ -67,90 +67,180 @@ frappe.ui.form.on('Request for Quotation', {
 	on_submit:function(frm,cdt,cdn){
 		var doc=frm.doc;
 
-		  $.each(doc.suppliers,function(idx,supplier){
-			  var company;
-			  frappe.call({
-                method:"seabridge_app.seabridge_app.api.get_company_name",
-				  args:{
-					  doctype:'Supplier',
-					  is_internal_supplier:1,
-					  supplier_name:supplier.supplier
-				  },
-				 async:false,
-				  callback: function(r){
-					  company=r.message;
-				  }
-			  });
-			if(company!==undefined){
-				  var agent;
-				  var customer;
+		$.each(doc.suppliers,function(idx,supplier){
+
+			$.each(doc.items,function(idx,item){
+
 				frappe.call({
-					method: "frappe.client.get_value",
+					method: "seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.get_tag",
 					async:false,
 					args: {
-						doctype: "Company",
-						fieldname: "associate_agent",
-						filters:{
-							"company_name":frm.doc.company
-						}
+						parent:supplier.supplier
 					},
 						callback: function(r) {
-							if(r.message.associate_agent!==undefined){
-								agent=r.message.associate_agent;
+					if(r.message===item.qualifier){
+						var company;
+						var name;
+						frappe.call({
+							method:"seabridge_app.seabridge_app.api.get_company_name",
+							args:{
+								doctype:'Supplier',
+								is_internal_supplier:1,
+								supplier_name:supplier.supplier
+							},
+							async:false,
+							callback: function(r){
+								company=r.message;
+								console.log(r.message)
+							}
+					});
+						frappe.call({
+							method: "seabridge_app.seabridge_app.api.get_opportunity_name",
+							async:false,
+							args: {
+								doctype: "Opportunity",
+								reference_no:frm.doc.name
+							},
+							callback: function(c){
+								name=c.message;
+							}
+						});
+						if(company!==undefined){
+							var agent;
+							var customer;
+							frappe.call({
+								method: "frappe.client.get_value",
+								async:false,
+								args: {
+									doctype: "Company",
+									fieldname: "associate_agent",
+
+									filters:{
+
+										"company_name":frm.doc.company
+
+									}
+
+								},
+
+									callback: function(r) {
+
+										if(r.message.associate_agent!==undefined){
+
+											agent=r.message.associate_agent;
+
+										}
+
+									}
+
+							});
+
+							frappe.call({
+
+								method: "frappe.client.get_value",
+
+								async:false,
+
+								args: {
+
+									doctype: "Customer",
+
+									fieldname: "customer_name",
+
+									filters:{
+
+										"is_internal_Customer":1,
+
+										"represents_company":frm.doc.company
+
+									}
+
+								},
+
+									callback: function(r) {
+
+										if(r.message.customer_name!==undefined){
+
+											customer=r.message.customer_name;
+
+										}
+
+									}
+
+							});
+
+							if (agent!=null){
+
+								var emailTemplate=
+
+									'<h3> Dear '+supplier.supplier_name+',</h3>'+
+
+									'<br>'+
+
+									'<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
+
+									'<br>'+
+
+									'<h3>Thank you, I look forward to your prompt response.</h3>'+
+
+									'<br>'+
+
+									'<h3>Yours sincerely,</h3>'+
+
+									'<h3>'+agent+'</h3>'+
+
+									'<h3>'+customer+'</h3>'+
+
+									'<h3>'+frm.doc.company+'</h3>';
+
+							
+
+								sendEmail(name,supplier.email_id,emailTemplate);
+
+							}
+
+							else if (agent==null){
+
+								var emailTemplate=
+
+									'<h3> Dear '+supplier.supplier_name+',</h3>'+
+
+									'<br>'+
+
+									'<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
+
+									'<br>'+
+
+									'<h3>Thank you, I look forward to your prompt response.</h3>'+
+
+									'<br>'+
+
+									'<h3>Yours sincerely,</h3>'+
+
+									'<h3>'+customer+'</h3>'+
+
+									'<h3>'+frm.doc.company+'</h3>';
+
+								sendEmail(name,supplier.email_id,emailTemplate);
 							}
 						}
-				});
-				frappe.call({
-					method: "frappe.client.get_value",
-					async:false,
-					args: {
-						doctype: "Customer",
-						fieldname: "customer_name",
-						filters:{
-							"is_internal_Customer":1,
-							"represents_company":frm.doc.company
+				
+				else{
+
+							var emailTemplate1='<h1><strong>Unable to create an Opportunity because you do not have any company associated with yourself</strong></h1>';
+
+							sendEmail(name,supplier.email_id,emailTemplate1);
+
 						}
-					},
-						callback: function(r) {
-							if(r.message.customer_name!==undefined){
-								customer=r.message.customer_name;
-							}
-						}
-				});
-				if (agent!=null){
-					var emailTemplate=
-						'<h3> Dear '+supplier.supplier_name+',</h3>'+
-						'<br>'+
-						'<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
-						'<br>'+
-						'<h3>Thank you, I look forward to your prompt response.</h3>'+
-						'<br>'+
-						'<h3>Yours sincerely,</h3>'+
-						'<h3>'+agent+'</h3>'+
-						'<h3>'+customer+'</h3>'+
-						'<h3>'+frm.doc.company+'</h3>';
-				   
-					sendEmail(doc.name,supplier.email_id,emailTemplate);
-				}
-				else if (agent==null){
-					var emailTemplate=
-						'<h3> Dear '+supplier.supplier_name+',</h3>'+
-						'<br>'+
-						'<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
-						'<br>'+
-						'<h3>Thank you, I look forward to your prompt response.</h3>'+
-						'<br>'+
-						'<h3>Yours sincerely,</h3>'+
-						'<h3>'+customer+'</h3>'+
-						'<h3>'+frm.doc.company+'</h3>';
-					sendEmail(doc.name,supplier.email_id,emailTemplate);
-				}
-			}
-			else{
-				  var emailTemplate1='<h1><strong>Unable to create an Opportunity because you do not have any company associated with yourself</strong></h1>';
-				  sendEmail(doc.name,supplier.email_id,emailTemplate1);
-			}
-		  });
+
+					}
+	}
+	});
+
+			});
+
+		});
+			
   },
   before_save:function(frm,cdt,cdn){
 		var supplierList=frm.doc.suppliers;
@@ -229,8 +319,8 @@ function sendEmail(name,email,template){
 							communication_type: "Communication",
 							send_email:1,
 							attachments:[],
-							print_format:"RFQ Print Format",
-							doctype: "Request for Quotation",
+							print_format:"Standard",
+							doctype: "Opportunity",
 							name: name,
 							print_letterhead: 0
 						},

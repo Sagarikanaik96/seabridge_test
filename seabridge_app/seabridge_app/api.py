@@ -7,6 +7,7 @@ import frappe
 from frappe.model.document import Document
 import json
 from frappe.desk.reportview import build_match_conditions, get_filters_cond
+import pandas as pd 
 
 @frappe.whitelist()
 def get_email(doctype,is_internal_customer,customer_name):
@@ -14,7 +15,9 @@ def get_email(doctype,is_internal_customer,customer_name):
 	if company:
 		return frappe.db.get_value('Company',{'company_name':company},'associate_agent')
 
-       
+def get_selections(selections):
+	print("Selections",selections)
+     
 @frappe.whitelist()
 def get_contact_mail(doctype,parenttype,parent):	   
 	return frappe.db.get_value(doctype, {'parenttype':parenttype,'parent':parent},'email_id')
@@ -97,5 +100,7 @@ def get_user_filter(doctype, txt, searchfield, start, page_len, filters):
                 and u.enabled = 1 and  u.represents_company=%s
         """,(agent_company))
         
-      
-       
+@frappe.whitelist()
+def get_opportunity_name(reference_no):
+	return frappe.db.get_value('Opportunity',{'reference_no':reference_no},'name')
+
