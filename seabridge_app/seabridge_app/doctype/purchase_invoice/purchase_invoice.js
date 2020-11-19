@@ -2,8 +2,21 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Purchase Invoice', { 
+after_save:function(frm,cdt,cdn){
+	console.log("After Save")
+	if(frm.doc.is_return==1){
+	
+	    //frappe.model.set_value("Purchase Invoice", frm.doc.return_against, "status", "Debit Note Initialized");
+	}
+	
+
+
+
+},
 before_save:function(frm,cdt,cdn){
 	var count=0;
+	if(frm.doc.naming_series){}
+	else{
         frappe.model.with_doc("Company", frm.doc.company, function() {
             var tabletransfer= frappe.model.get_doc("Company", frm.doc.company)
             $.each(tabletransfer.series, function(index, row){
@@ -17,10 +30,12 @@ before_save:function(frm,cdt,cdn){
                 msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
             }
         })
+	}
 	frappe.db.get_value("Sales Invoice",frm.doc.bill_no,"po_no",(c)=>{
 		$.each(frm.doc.items, function(idx, item){
 			item.purchase_order=c.po_no;
 		})
+		frm.set_value("purchase_order",c.po_no)
 	})
 
 	var flag=0;
@@ -32,9 +47,125 @@ before_save:function(frm,cdt,cdn){
 	if(flag==1){ frm.set_df_property("total_net_weight", "hidden", 0);
 	} else {  frm.set_df_property("total_net_weight", "hidden", 1);  }
 },
+refresh:function(frm,cdt,cdn){
+	console.log("WorkflowState",frm.doc.workflow_state)
+	//frm.set_value("status","Debit Note Initialized")
+	//frappe.call({
+        //                                    async: false,
+          //                                  "method": "frappe.client.set_value",
+            //                                "args": {
+              //                                  "doctype": "Purchase Invoice",
+                //                                "name": frm.doc.name,
+                  //                              "fieldname": "status",
+                    //                            "value":"Debit Note Initialized"
+                      //                      }
+                        //                });
+//frappe.call({
+  //              method:"seabridge_app.seabridge_app.api.update_status",
+    //            args:{
+	//		doc:cur_frm.doc.name,
+	//		"method":"method"		
+	//	},
+          //      async:false,
+            //    callback: function(r){
+              //      console.log("Refresh")
+                //}
+            //});
+
+if(frm.doc.purchase_order){
+if(frm.doc.purchase_receipt){}
+else{
+	      frappe.call({
+                method:"seabridge_app.seabridge_app.api.get_purchase_receipt",
+                args:{
+                    purchase_order:frm.doc.purchase_order,
+			purchase_invoice:frm.doc.name
+                },
+                async:false,
+                callback: function(r){
+                 
+                }
+            });
+}
+
+if(frm.doc.service_completion_note){}
+else{
+	frappe.db.get_value("Service Completion Note",{"reference_no":frm.doc.purchase_order},"name",(c)=>{
+	console.log("Name",c.name)
+		frappe.call({
+                                            async: false,
+                                            "method": "frappe.client.set_value",
+                                            "args": {
+                                                "doctype": "Purchase Invoice",
+                                                "name": frm.doc.name,
+                                                "fieldname": "service_completion_note",
+                                                "value":c.name
+                                            }
+                                        });
+		
+	})
+}
+}
+else{
+frappe.db.get_value("Sales Invoice",frm.doc.bill_no,"po_no",(c)=>{
+
+		frappe.call({
+                                            async: false,
+                                            "method": "frappe.client.set_value",
+                                            "args": {
+                                                "doctype": "Purchase Invoice",
+                                                "name": frm.doc.name,
+                                                "fieldname": "purchase_order",
+                                                "value":c.po_no
+                                            }
+                                        });
+		
+	})
+}	
+	
+},
+workflow_state:function(frm,cdt,cdn){
+	console.log("WorkflowState")
+},
+
+before_submit:function(frm,cdt,cdn){
+	if(frm.doc.purchase_receipt){
+	 $.each(frm.doc.items, function(idx, item){
+                frappe.model.with_doc("Purchase Receipt", frm.doc.purchase_receipt, function() {
+                    var tabletransfer= frappe.model.get_doc("Purchase Receipt", frm.doc.purchase_receipt)
+                    $.each(tabletransfer.items, function(index, row){
+                        if(item.item_code==row.item_code){
+                            if(item.qty!=row.qty){
+				frappe.validated = false;
+                msgprint(' Unable to submit the Purchase Invoice as the quantity is not equal to the received quantity. Please keep the quantity same as '+frm.doc.purchase_receipt,'Alert')
+				}
+			}
+			})
+		})
+	})
 
 
-before_submit:function(frm,cdt,cdn){		
+	}
+
+if(frm.doc.service_completion_note){
+	 $.each(frm.doc.items, function(idx, item){
+                frappe.model.with_doc("Service Completion Note", frm.doc.service_completion_note, function() {
+                    var tabletransfer= frappe.model.get_doc("Service Completion Note", frm.doc.service_completion_note)
+                    $.each(tabletransfer.items, function(index, row){
+                        if(item.item_code==row.item_code){
+                            if(item.qty!=row.qty){
+				frappe.validated = false;
+                msgprint('Unable to submit the Purchase Invoice as the quantity is more than the received quantity. Please keep the quantity same as '+frm.doc.service_completion_note,'Alert')
+				}
+			}
+			})
+		})
+	})
+
+
+	}	
+          
+	
             $.each(frm.doc.items, function(idx, item){
                 frappe.model.with_doc("Purchase Order", item.purchase_order, function() {
                     var tabletransfer= frappe.model.get_doc("Purchase Order", item.purchase_order)
@@ -98,5 +229,10 @@ frappe.ui.form.on("Purchase Invoice Item", "item_code",function(frm, doctype, na
             })
         })
         
+})
+
+
+frappe.ui.form.on("Purchase Invoice", "validate", function(frm) {
+console.log("Check")
 })
 
