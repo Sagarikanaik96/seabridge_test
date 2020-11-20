@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 
 {% include 'erpnext/public/js/controllers/buying.js' %};
-
+cur_frm.add_fetch("reference_no", "taxes_and_charges", "taxes_and_charges");
 frappe.provide("erpnext.stock");
 frappe.ui.form.on('Service Completion Note', {
 	setup: (frm) => {
@@ -51,19 +51,40 @@ frappe.ui.form.on('Service Completion Note', {
         var tabletransfer= frappe.model.get_doc("Purchase Order", frm.doc.reference_no)
         cur_frm.clear_table("items");
         $.each(tabletransfer.items, function(index, row){
-            var d=frm.add_child("items");
-            d.item_code = row.item_code;
+		var d=frm.add_child("items");
+		d.item_code = row.item_code;
 		d.delivery_date = row.delivery_date;
-            d.item_name = row.item_name;
-            d.description = row.description;
-            d.item_group = row.item_group;
+		d.item_name = row.item_name;
+		d.description = row.description;
+		d.item_group = row.item_group;
 		d.qty = row.qty;
-            d.stock_uom = row.stock_uom;
-            d.uom = row.uom;
+		d.stock_uom = row.stock_uom;
+		d.uom = row.uom;
 		d.rate=row.rate;
-            d.amount=row.amount;
-		})
+		d.amount=row.amount;
+		frm.refresh_field("items");
 	})
+	
+
+
+	cur_frm.clear_table("taxes");
+        $.each(tabletransfer.taxes, function(index, row){
+		var d=frm.add_child("taxes");
+		d.account_head = row.account_head;
+		d.description = row.description;
+		d.cost_center = row.cost_center;
+		d.total = row.total;
+		d.tax_amount_after_discount_amount = row.tax_amount_after_discount_amount;
+		d.rate=row.rate;
+		d.tax_amount=row.tax_amount;
+		d.item_wise_tax_detail = row.item_wise_tax_detail;
+		d.base_tax_amount=row.base_tax_amount;
+		d.base_total=row.base_total;
+		d.base_tax_amount_after_discount_amount=row.base_tax_amount_after_discount_amount;
+		frm.refresh_field("taxes");
+	})
+	})
+	
 },
 	refresh: function(frm) {
 		if(frm.doc.company) {

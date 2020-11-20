@@ -69,6 +69,24 @@ frappe.ui.form.on('Purchase Order', {
         })
 
     },
+
+    refresh:function(frm,cdt,cdn){
+if(frm.doc.docstatus==1){
+frm.add_custom_button(__("Service Completion Note"), function() {
+            frappe.route_options = {
+            "reference_no": frm.doc.name,
+		"supplier": frm.doc.supplier,
+		"company": frm.doc.company
+            };
+            frappe.new_doc("Service Completion Note");
+        }, __("Create"));
+}
+
+	
+
+
+},
+
     before_save:function(frm,cdt,cdn){
         var count=0;
         frappe.model.with_doc("Company", frm.doc.company, function() {
