@@ -81,7 +81,10 @@ fixtures = ["Server Script",
 		"Company-end_date",
 		"Company-default_warehouse",
 		"Company-management_agent_registration_details",
-		"Company-column_break_13"
+		"Company-column_break_13",
+		"Purchase Invoice-purchase_order",
+		"Purchase Invoice-purchase_receipt",
+		"Purchase Invoice-service_completion_note"
 		]
 	]
 ]
@@ -131,7 +134,15 @@ fixtures = ["Server Script",
 {"dt": "Role", 
 		"filters":[
         [
-        "name","in",["Agent"]
+        "name","in",["Agent", "Accounts Payable"]
+	]
+	]
+},
+
+{"dt": "Workflow", 
+		"filters":[
+        [
+        "name","in",["PI Approval WF"]
 	]
 	]
 },
@@ -185,9 +196,10 @@ doc_events = {
     },
 	"Bank Payment Advice": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.auto_create_payment_entry"]
-   # },
-#	"Purchase Invoice": {
-	#	"before_save": ["seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.update_status"]
+    },
+	"Purchase Invoice": {
+		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.update_status"],
+		"before_submit": ["seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.before_submit"]
     }
 }
 
