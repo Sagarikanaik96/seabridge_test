@@ -104,3 +104,27 @@ def get_user_filter(doctype, txt, searchfield, start, page_len, filters):
 def get_opportunity_name(reference_no):
 	return frappe.db.get_value('Opportunity',{'reference_no':reference_no},'name')
 
+@frappe.whitelist()
+def get_purchase_receipt(purchase_order,purchase_invoice):
+	pi_list=frappe.db.get_list('Purchase Receipt Item',filters={'parenttype':'Purchase Receipt','purchase_order':purchase_order},fields={'*'})
+	if pi_list:
+		frappe.msgprint(pi_list[0].parent)
+		pi_doc=frappe.get_doc("Purchase Invoice",purchase_invoice) 		
+		pi_doc.db_set('purchase_receipt',pi_list[0].parent)
+
+
+@frappe.whitelist()
+def update_status(doc,method,status): 
+    pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+    pi_doc.db_set('status','Debit Note Initialized')
+
+@frappe.whitelist()
+def get_user_email(name):
+        user=frappe.db.get_value('Has Role',{'parent':name,'parenttype':'User','role':'Accounts Payable'},'parent')
+        return user
+
+@frappe.whitelist()
+def throw_error(name):
+        print("TE------------------------------")
+        #frappe.throw("Unable to save the Sales Order as the naming series are unavailable . Please provide the naming series at the Company:  to save the document");
+

@@ -65,7 +65,10 @@ def auto_create_sales_order(doc,method):
 						'charge_type':row.charge_type,
 						'rate':row.rate
 					    })
-					so_doc.add_comment('Comment',' System created  '+so_doc.name)
+					agent_name=frappe.db.get_value('User',{'email':frappe.session.user},'full_name')
+					agent_company=frappe.db.get_value('User',{'email':frappe.session.user},'represents_company')
+					if agent_company:
+						so_doc.add_comment('Comment',agent_name+' created '+so_doc.name+' from '+agent_company)
 					so_doc.save()
 					doc.add_comment('Comment','  Sales Order: '+so_doc.name)
 	else:

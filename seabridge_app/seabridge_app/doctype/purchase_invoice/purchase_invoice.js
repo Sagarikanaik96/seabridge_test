@@ -5,7 +5,18 @@ frappe.ui.form.on('Purchase Invoice', {
 after_save:function(frm,cdt,cdn){
 	console.log("After Save")
 	if(frm.doc.is_return==1){
-	
+		frappe.call({
+                method:"seabridge_app.seabridge_app.api.update_status",
+                args:{
+			doc:cur_frm.doc.return_against,
+			"method":"method",
+			"status":frm.doc.status		
+		},
+                async:false,
+                callback: function(r){
+                    console.log("Refresh")
+                }
+            });
 	    //frappe.model.set_value("Purchase Invoice", frm.doc.return_against, "status", "Debit Note Initialized");
 	}
 	
@@ -47,156 +58,75 @@ before_save:function(frm,cdt,cdn){
 	if(flag==1){ frm.set_df_property("total_net_weight", "hidden", 0);
 	} else {  frm.set_df_property("total_net_weight", "hidden", 1);  }
 },
-refresh:function(frm,cdt,cdn){
-	console.log("WorkflowState",frm.doc.workflow_state)
-	//frm.set_value("status","Debit Note Initialized")
-	//frappe.call({
-        //                                    async: false,
-          //                                  "method": "frappe.client.set_value",
-            //                                "args": {
-              //                                  "doctype": "Purchase Invoice",
-                //                                "name": frm.doc.name,
-                  //                              "fieldname": "status",
-                    //                            "value":"Debit Note Initialized"
-                      //                      }
-                        //                });
-//frappe.call({
-  //              method:"seabridge_app.seabridge_app.api.update_status",
-    //            args:{
-	//		doc:cur_frm.doc.name,
-	//		"method":"method"		
-	//	},
-          //      async:false,
-            //    callback: function(r){
-              //      console.log("Refresh")
-                //}
-            //});
 
-if(frm.doc.purchase_order){
-if(frm.doc.purchase_receipt){}
-else{
-	      frappe.call({
-                method:"seabridge_app.seabridge_app.api.get_purchase_receipt",
-                args:{
-                    purchase_order:frm.doc.purchase_order,
-			purchase_invoice:frm.doc.name
+
+after_workflow_action: (frm) => {
+		console.log("WorkflowState",frm.doc.workflow_state)
+	console.log("approve_email",frm.doc.approve_email)
+var email_id;
+	if(frm.doc.workflow_state=="Pending")
+	{
+		frappe.db.get_value("Company",frm.doc.company,"associate_agent_company",(c)=>{
+		if(c.associate_agent_company){
+		console.log("associate_agent_company",c.associate_agent_company)
+			frappe.call({
+            method: "frappe.client.get_list",
+            args: {
+                doctype: "User",
+                fields: ["email","name"],
+                filters:{
+                    "represents_company":c.associate_agent_company
                 },
-                async:false,
+            },
+            callback: function(r) {
+                for(var i=0;i<r.message.length;i++){
+                    console.log("Email",r.message[i].email)
+
+					frappe.call({
+                method:"seabridge_app.seabridge_app.api.get_user_email",
+                args:{
+			name:r.message[i].email
+		},
+		async:false,
                 callback: function(r){
-                 
+                    console.log("Refresh")
+			email_id=r.message
+			console.log("email_id",email_id)
+		if(email_id){
+				frappe.call({
+        method: "frappe.core.doctype.communication.email.make",
+        args: {
+            subject: "Approval",
+            communication_medium: "Email",
+            recipients: email_id,
+            content: "Please approve the Purchase Invoice",
+            communication_type: "Communication",
+            send_email:1,
+            attachments:[],
+            print_format:"Standard",
+            doctype: "Purchase Invoice",
+            name: frm.doc.name,
+            print_letterhead: 0
+        },        
+        callback: function(rh){
+            console.log("sent");
+		
+        }   
+    });
+}
                 }
             });
+
+                }
+                
+            }
+        })
+				
 }
-
-if(frm.doc.service_completion_note){}
-else{
-	frappe.db.get_value("Service Completion Note",{"reference_no":frm.doc.purchase_order},"name",(c)=>{
-	console.log("Name",c.name)
-		frappe.call({
-                                            async: false,
-                                            "method": "frappe.client.set_value",
-                                            "args": {
-                                                "doctype": "Purchase Invoice",
-                                                "name": frm.doc.name,
-                                                "fieldname": "service_completion_note",
-                                                "value":c.name
-                                            }
-                                        });
-		
-	})
-}
-}
-else{
-frappe.db.get_value("Sales Invoice",frm.doc.bill_no,"po_no",(c)=>{
-
-		frappe.call({
-                                            async: false,
-                                            "method": "frappe.client.set_value",
-                                            "args": {
-                                                "doctype": "Purchase Invoice",
-                                                "name": frm.doc.name,
-                                                "fieldname": "purchase_order",
-                                                "value":c.po_no
-                                            }
-                                        });
-		
-	})
-}	
-	
-},
-workflow_state:function(frm,cdt,cdn){
-	console.log("WorkflowState")
-},
-
-before_submit:function(frm,cdt,cdn){
-	if(frm.doc.purchase_receipt){
-	 $.each(frm.doc.items, function(idx, item){
-                frappe.model.with_doc("Purchase Receipt", frm.doc.purchase_receipt, function() {
-                    var tabletransfer= frappe.model.get_doc("Purchase Receipt", frm.doc.purchase_receipt)
-                    $.each(tabletransfer.items, function(index, row){
-                        if(item.item_code==row.item_code){
-                            if(item.qty!=row.qty){
-				frappe.validated = false;
-                msgprint(' Unable to submit the Purchase Invoice as the quantity is not equal to the received quantity. Please keep the quantity same as '+frm.doc.purchase_receipt,'Alert')
-				}
-			}
-			})
-		})
-	})
-
-
+})
 	}
-
-if(frm.doc.service_completion_note){
-	 $.each(frm.doc.items, function(idx, item){
-                frappe.model.with_doc("Service Completion Note", frm.doc.service_completion_note, function() {
-                    var tabletransfer= frappe.model.get_doc("Service Completion Note", frm.doc.service_completion_note)
-                    $.each(tabletransfer.items, function(index, row){
-                        if(item.item_code==row.item_code){
-                            if(item.qty!=row.qty){
-				frappe.validated = false;
-                msgprint('Unable to submit the Purchase Invoice as the quantity is more than the received quantity. Please keep the quantity same as '+frm.doc.service_completion_note,'Alert')
-				}
-			}
-			})
-		})
-	})
-
-
-	}	
-          
-	
-            $.each(frm.doc.items, function(idx, item){
-                frappe.model.with_doc("Purchase Order", item.purchase_order, function() {
-                    var tabletransfer= frappe.model.get_doc("Purchase Order", item.purchase_order)
-                    $.each(tabletransfer.items, function(index, row){
-                        if(item.item_code==row.item_code){
-                            if(item.amount>row.amount){
-                            var diff=item.amount-row.amount
-                            var min_per=100*diff/row.amount
-                            frappe.call({
-                                            async: false,
-                                            "method": "frappe.client.set_value",
-                                            "args": {
-                                                "doctype": "Item",
-                                                "name": item.item_code,
-                                                "fieldname": "over_billing_allowance",
-                                                "value":item.over_billing_allowance
-                                            }
-                                        });
-                            var check=item.amount-row.amount*item.over_billing_allowance/100-row.amount;
-                            if(item.over_billing_allowance<min_per){
-                            frappe.validated = false;
-                            msgprint('This document is over limit by <b>Amount '+check+'</b> for item <b>'+item.item_code+'</b>. Are you making another <b>Purchase Invoice</b> against the same <b>Purchase Order Item</b>? <br><br> To allow over billing, update "Over Billing Allowance" at Purchase Invoice Item details','Limit Crossed')
-                            }
-                            }
-                        }
-                    })
-                })
-            })
-    },
-on_submit: function(frm) {
-        var tabletransfer= frappe.model.get_doc("Purchase Invoice", frm.doc.name)
+if(frm.doc.workflow_state=="Submitted"){
+ var tabletransfer= frappe.model.get_doc("Purchase Invoice", frm.doc.name)
         $.each(tabletransfer.items, function(index, row){
                
      frappe.call({
@@ -210,16 +140,68 @@ on_submit: function(frm) {
                                             }
                                         });  
         	});
+}
+},
+refresh:function(frm,cdt,cdn){
+	if(frm.doc.purchase_order){
+		if(frm.doc.purchase_receipt){}
+		else{
+			      frappe.call({
+				method:"seabridge_app.seabridge_app.api.get_purchase_receipt",
+				args:{
+				    purchase_order:frm.doc.purchase_order,
+					purchase_invoice:frm.doc.name
+				},
+				async:false,
+				callback: function(r){
+				 
+				}
+			    });
+		}
+
+		if(frm.doc.service_completion_note){}
+		else{
+			frappe.db.get_value("Service Completion Note",{"reference_no":frm.doc.purchase_order},"name",(c)=>{
+			console.log("Name",c.name)
+				frappe.call({
+				                            async: false,
+				                            "method": "frappe.client.set_value",
+				                            "args": {
+				                                "doctype": "Purchase Invoice",
+				                                "name": frm.doc.name,
+				                                "fieldname": "service_completion_note",
+				                                "value":c.name
+				                            }
+				                        });
+				
+			})
+		}
 	}
+	else{
+	frappe.db.get_value("Sales Invoice",frm.doc.bill_no,"po_no",(c)=>{
+
+			frappe.call({
+		                                    async: false,
+		                                    "method": "frappe.client.set_value",
+		                                    "args": {
+		                                        "doctype": "Purchase Invoice",
+		                                        "name": frm.doc.name,
+		                                        "fieldname": "purchase_order",
+		                                        "value":c.po_no
+		                                    }
+		                                });
+			
+		})
+	}	
+	
+}
 });
 
 
 frappe.ui.form.on("Purchase Invoice Item", "item_code",function(frm, doctype, name) {
       var row = locals[doctype][name];
         frappe.db.get_value("Item",row.item_code, "item_group",(s)=>{
-         // console.log(s) 
           frappe.db.get_value("Item Group",s.item_group,"parent_item_group",(a)=>{
-             // console.log(a) 
 		if(s.item_group=="Services"){
 		row.parent_item_group="Services";
 		}else
