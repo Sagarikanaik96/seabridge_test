@@ -4,7 +4,10 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe.frappeclient import FrappeOAuth2Client,OAuth2Session
 from frappe.model.document import Document
+import json
+import requests
 
 class PurchaseInvoice(Document):
 	pass
@@ -47,13 +50,44 @@ def before_submit(doc,method):
 	
 @frappe.whitelist()
 def update_status(doc,method):
-    frappe.msgprint("After Submit")
     if doc.is_return==1:
-        frappe.msgprint("Status"+doc.status)
         pi_doc=frappe.get_doc("Purchase Invoice",doc.return_against) 
-        #invoices=frappe.db.get_list("Purchase Invoice",filters={'is_return':1,'return_against':doc.},fields={'*'})
-        #if invoices:
-        frappe.msgprint("Present"+pi_doc.name)
         pi_doc.db_set('status','Debit Note Issued')
+
+@frappe.whitelist()
+def post_invoice(name):
+        doc=frappe.get_doc("Purchase Invoice",name)
+        doc_posted=False
+        headers=frappe.db.get_list("API Integration",fields={'*'})
+        has_sbtfx=frappe.db.get_value('Supplier',{'supplier_name':doc.supplier_name},'has_sbtfx')
+        if has_sbtfx==1:
+            if headers:
+                try:
+                     headers_list = {
+                         "Authorization": "Bearer " + headers[0].authorization_key,
+                         "content-type": "application/json"
+                     }
+                     print("URL",headers[0].url)
+                     print("Auth Key",headers[0].authorization_key)
+                     conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
+                     document='{"documents":[{"buyer_name":"'+ doc.supplier_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+str(doc.posting_date)+'", "document_due_date":"'+str(doc.due_date)+'", "amount_total": "'+str(doc.outstanding_amount)+'", "currency_name": "SGD", "source": "community_erpnext", "stage": "AP"}]}'
+                     res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
+                     print("RESPONSE",res)
+                     response_code=str(res)
+                     res = conn.post_process(res)
+                     if response_code=="<Response [200]>":
+                         doc_posted=True
+                         doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.')
+                     else:
+                         doc_posted=False
+                         doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url)
+                except Exception:
+                     print(Exception)
+                     doc_posted=False
+                     doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url) 
+                     frappe.log_error(frappe.get_traceback())
+       
+        print(doc_posted)
+
         
 

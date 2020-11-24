@@ -20,7 +20,7 @@ website_context = {
 }
 
 
-fixtures = ["Server Script",
+fixtures = ["Server Script","Workflow State","Workflow Action Master",
 {
     "dt":"DocType",
     "filters":[
@@ -84,7 +84,9 @@ fixtures = ["Server Script",
 		"Company-column_break_13",
 		"Purchase Invoice-purchase_order",
 		"Purchase Invoice-purchase_receipt",
-		"Purchase Invoice-service_completion_note"
+		"Purchase Invoice-service_completion_note",
+		"Supplier-has_sbtfx",
+		"Company-has_sbtfx"
 		]
 	]
 ]

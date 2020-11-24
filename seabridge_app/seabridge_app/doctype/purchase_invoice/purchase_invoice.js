@@ -17,9 +17,11 @@ after_save:function(frm,cdt,cdn){
                     console.log("Refresh")
                 }
             });
+
+		
 	    //frappe.model.set_value("Purchase Invoice", frm.doc.return_against, "status", "Debit Note Initialized");
 	}
-	
+		cur_frm.timeline.insert_comment("Comment"+frm.doc.name+" to "+frm.doc.name)
 
 
 
@@ -61,8 +63,6 @@ before_save:function(frm,cdt,cdn){
 
 
 after_workflow_action: (frm) => {
-		console.log("WorkflowState",frm.doc.workflow_state)
-	console.log("approve_email",frm.doc.approve_email)
 var email_id;
 	if(frm.doc.workflow_state=="Pending")
 	{
@@ -80,7 +80,6 @@ var email_id;
             },
             callback: function(r) {
                 for(var i=0;i<r.message.length;i++){
-                    console.log("Email",r.message[i].email)
 
 					frappe.call({
                 method:"seabridge_app.seabridge_app.api.get_user_email",
@@ -89,9 +88,7 @@ var email_id;
 		},
 		async:false,
                 callback: function(r){
-                    console.log("Refresh")
 			email_id=r.message
-			console.log("email_id",email_id)
 		if(email_id){
 				frappe.call({
         method: "frappe.core.doctype.communication.email.make",
@@ -141,6 +138,20 @@ if(frm.doc.workflow_state=="Submitted"){
                                         });  
         	});
 }
+
+	if(frm.doc.workflow_state=="Approved"){
+	frappe.call({
+		        method:"seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.post_invoice",
+		        args:{
+				name:frm.doc.name	
+			},
+		        async:false,
+		        callback: function(r){
+		            
+				
+		        }
+		    });
+	}
 },
 refresh:function(frm,cdt,cdn){
 	if(frm.doc.purchase_order){

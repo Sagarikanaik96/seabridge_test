@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "naming_series:",
- "creation": "2020-11-11 20:24:39.320735",
+ "creation": "2020-11-18 20:47:10.491507",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -13,9 +13,9 @@
   "bank_account",
   "section_break_6",
   "bank_payment_advice_details",
-  "amended_from",
   "filter_list",
-  "fields_multicheck"
+  "fields_multicheck",
+  "amended_from"
  ],
  "fields": [
   {
@@ -85,7 +85,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-11-12 02:12:32.164734",
+ "modified": "2020-11-24 16:59:23.408130",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Bank Payment Advice",

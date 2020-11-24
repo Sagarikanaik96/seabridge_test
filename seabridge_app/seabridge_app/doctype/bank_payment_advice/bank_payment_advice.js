@@ -76,6 +76,10 @@ select=selections
 			        child.invoice_amount = r.message[i].grand_total;
 			        child.outstanding_amount=r.message[i].outstanding_amount;
 			        child.payment_transaction_amount=r.message[i].outstanding_amount;
+				if(child.due_date<frappe.datetime.nowdate()){
+					child.overdue_days=frappe.datetime.get_day_diff(frappe.datetime.nowdate(),child.due_date)
+				}
+				
 			         frappe.call({
             method: "frappe.client.get_list",
 		async:false,
@@ -109,6 +113,51 @@ select=selections
 			})
 			})
 
+	frappe.db.get_value("Supplier",child.supplier_name,"has_sbtfx",(s)=>{
+		if(s.has_sbtfx==1){
+			frappe.db.get_value("Supplier",child.supplier_name,"represents_company",(c)=>{
+				frappe.db.get_value("Company",c.represents_company,"parent_company",(p)=>{
+					frappe.call({
+					    method: "frappe.client.get_list",
+					    args: {
+						doctype: "Bank Account",
+						fields: ["bank","name"],
+						filters:{
+						    "company":p.parent_company
+						},
+					    },
+					    callback: function(r) {
+							if(r.message.length>0){
+								child.bank_account=r.message[0].name
+								child.bank_name=r.message[0].bank
+								
+							}
+						}
+					})
+				})
+			})
+		}
+		else{
+				frappe.call({
+					    method: "frappe.client.get_list",
+					    args: {
+						doctype: "Bank Account",
+						fields: ["bank","name"],
+						filters:{
+						    "company":child.supplier_name
+						},
+					    },
+					    callback: function(r) {
+							if(r.message.length>0){
+								child.bank_account=r.message[0].name
+								child.bank_name=r.message[0].bank
+								
+							}
+						}
+					})
+
+		}		
+	})
 		            cur_frm.refresh_field("bank_payment_advice_details")
                     }
                 }

@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "naming_series:",
- "creation": "2020-11-11 20:24:31.593544",
+ "creation": "2020-11-18 20:47:05.831014",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -295,7 +295,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-11-12 17:37:52.950899",
+ "modified": "2020-11-24 16:59:41.689784",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Registration",

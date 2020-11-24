@@ -65,6 +65,24 @@ refresh:function(frm,cdt,cdn){
         })
         
     },
+after_save:function(frm,cdt,cdn){
+	frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "has_sbtfx",(s)=>{
+		if(s.has_sbtfx!=frm.doc.has_sbtfx){
+				frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "name",(s)=>{
+					frappe.call({
+		                                    async: false,
+		                                    "method": "frappe.client.set_value",
+		                                    "args": {
+		                                        "doctype": "Supplier",
+		                                        "name": frm.doc.name,
+		                                        "fieldname": "has_sbtfx",
+		                                        "value":frm.doc.has_sbtfx
+		                                    }
+		                                });
+			})
+		}
+	})
+},
 associate_agent_company:function(frm,cdt,cdn){
     if(frm.doc.associate_agent!==undefined){
         frm.doc.associate_agent='';
