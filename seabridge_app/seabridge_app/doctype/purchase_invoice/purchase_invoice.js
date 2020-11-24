@@ -21,7 +21,6 @@ after_save:function(frm,cdt,cdn){
 		
 	    //frappe.model.set_value("Purchase Invoice", frm.doc.return_against, "status", "Debit Note Initialized");
 	}
-		cur_frm.timeline.insert_comment("Comment"+frm.doc.name+" to "+frm.doc.name)
 
 
 
