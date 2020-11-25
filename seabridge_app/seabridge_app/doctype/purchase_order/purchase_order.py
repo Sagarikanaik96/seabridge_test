@@ -24,6 +24,7 @@ def auto_create_sales_order(doc,method):
 			if company:
 					taxes=frappe.db.get_value('Sales Taxes and Charges Template',{'company':doc.supplier_name},'name')
 					tax=frappe.db.get_list("Sales Taxes and Charges",filters={'parent':taxes,'parenttype':'Sales Taxes and Charges Template'},fields={'*'})
+					agent=frappe.db.get_value('Company',{'Company_name':doc.company},'associate_agent')
 					so_doc=frappe.get_doc(dict(doctype = 'Sales Order',
 						    company=company,
 						    naming_series=sales_order_name,
@@ -44,6 +45,12 @@ def auto_create_sales_order(doc,method):
 						    tc_name=doc.tc_name,
 						    terms=doc.terms
 						)).insert(ignore_mandatory=True)
+					if agent:
+						contact=frappe.db.get_value('Contact',{'user':agent},'name')
+						if contact:
+							so_doc.update({
+								"_agent_contact_person":contact
+							})
 					for val in doc.items:
 						so_doc.append('items', {
 						    'item_code':val.item_code,

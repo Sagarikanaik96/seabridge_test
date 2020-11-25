@@ -36,6 +36,9 @@ def before_submit(doc,method):
 			po_items=frappe.db.get_list("Purchase Order Item",filters={'parent':doc.purchase_order,'parenttype':'Purchase Order'},fields={'*'})
 			for po in po_items:
 				if val.item_code==po.item_code:
+					val.po_rate=po.rate
+					val.po_amount=po.amount
+					val.po_qty=po.qty
 					if val.amount>po.amount:
 						diff=val.amount-po.amount
 						min_per=100*diff/po.amount
@@ -44,9 +47,6 @@ def before_submit(doc,method):
 						check=val.amount-po.amount*val.over_billing_allowance/100-po.amount;
 						if val.over_billing_allowance<min_per:
 							frappe.throw('This document is over limit by <b>Amount '+str(check)+'</b> for item <b>'+val.item_code+'</b>. Are you making another <b>Purchase Invoice</b> against the same <b>Purchase Order Item</b>? <br><br> To allow over billing, update "Over Billing Allowance" at Purchase Invoice Item details')
-					
-						
-
 	
 @frappe.whitelist()
 def update_status(doc,method):

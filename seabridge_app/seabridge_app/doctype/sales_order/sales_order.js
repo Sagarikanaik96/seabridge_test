@@ -41,7 +41,22 @@ before_save:function(frm,cdt,cdn){
             })
         if(flag==1){ frm.set_df_property("total_net_weight", "hidden", 0);
         } else {  frm.set_df_property("total_net_weight", "hidden", 1);  }
-    }
+    },
+customer:function(frm,cdt,cdn){
+	frappe.db.get_value("Customer",{"name":frm.doc.customer},"represents_company",(c)=>{
+		if(c.represents_company){
+			var  company=c.represents_company
+			frm.set_query("_agent_contact_person",function(){
+					return{
+					    query: "seabridge_app.seabridge_app.api.get_contact_filter",
+					    filters:{
+						"company_name":company
+					    },
+					}
+				    });
+		}
+	});
+}
 })
 
 frappe.ui.form.on('Sales Order','company',function(frm, doctype, name){

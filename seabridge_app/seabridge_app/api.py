@@ -127,4 +127,10 @@ def get_user_email(name):
 def set_po(doc,po_no):
     pi_doc=frappe.get_doc("Purchase Invoice",doc) 
     pi_doc.db_set('purchase_order',po_no)
+	
 
+@frappe.whitelist()
+def get_contact_filter(doctype, txt, searchfield, start, page_len, filters):
+	agent_company=filters['company_name']
+	user=frappe.db.get_value('Company',{'company_name':agent_company},'associate_agent')
+	return frappe.db.sql(""" select name from `tabContact` where user=%s""",(user))
