@@ -3,7 +3,6 @@
 
 frappe.ui.form.on('Purchase Invoice', { 
 after_save:function(frm,cdt,cdn){
-	console.log("After Save")
 	if(frm.doc.is_return==1){
 		frappe.call({
                 method:"seabridge_app.seabridge_app.api.update_status",
@@ -14,7 +13,6 @@ after_save:function(frm,cdt,cdn){
 		},
                 async:false,
                 callback: function(r){
-                    console.log("Refresh")
                 }
             });
 
@@ -26,7 +24,6 @@ after_save:function(frm,cdt,cdn){
 
 },
 before_save:function(frm,cdt,cdn){
-	console.log("Before Save")
 	var count=0;
 	if(frm.doc.naming_series){}
 	else{
@@ -46,10 +43,13 @@ before_save:function(frm,cdt,cdn){
 	}
 	frappe.db.get_value("Sales Invoice",frm.doc.bill_no,"po_no",(c)=>{
 		$.each(frm.doc.items, function(idx, item){
-			item.purchase_order=c.po_no;
+			if(item.purchase_order){}
+			else{
+				item.purchase_order=c.po_no;
+			}
 		})
-		frm.set_value("purchase_order",c.po_no)
-	})
+			
+		})
 
 	var flag=0;
 	$.each(frm.doc.items, function(idx, item){
@@ -63,13 +63,11 @@ before_save:function(frm,cdt,cdn){
 
 
 after_workflow_action: (frm) => {
-console.log("After WFA")
 var email_id;
 	if(frm.doc.workflow_state=="Pending")
 	{
 		frappe.db.get_value("Company",frm.doc.company,"associate_agent_company",(c)=>{
 		if(c.associate_agent_company){
-		console.log("associate_agent_company",c.associate_agent_company)
 			frappe.call({
             method: "frappe.client.get_list",
             args: {
@@ -155,9 +153,7 @@ if(frm.doc.workflow_state=="Submitted"){
 	}
 },
 refresh:function(frm,cdt,cdn){
-console.log("ON Refresh")
 	if(frm.doc.purchase_order){
-			console.log("InIf")
 		if(frm.doc.purchase_receipt){}
 		else{
 			      frappe.call({
@@ -176,7 +172,7 @@ console.log("ON Refresh")
 		if(frm.doc.service_completion_note){}
 		else{
 			frappe.db.get_value("Service Completion Note",{"reference_no":frm.doc.purchase_order},"name",(c)=>{
-			console.log("Name",c.name)
+			if(c.name){
 				frappe.call({
 				                            async: false,
 				                            "method": "frappe.client.set_value",
@@ -187,12 +183,12 @@ console.log("ON Refresh")
 				                                "value":c.name
 				                            }
 				                        });
+			}
 				
 			})
 		}
 	}
 	else{
-	console.log("Inelse")
 	if(frm.doc.bill_no){
 	frappe.db.get_value("Sales Invoice",frm.doc.bill_no,"po_no",(c)=>{
 	if(c.po_no){
@@ -206,7 +202,6 @@ console.log("ON Refresh")
 		},
                 async:false,
                 callback: function(r){
-                    console.log("Refresh")
                 }
             });
 			}
@@ -234,7 +229,4 @@ frappe.ui.form.on("Purchase Invoice Item", "item_code",function(frm, doctype, na
 })
 
 
-frappe.ui.form.on("Purchase Invoice", "validate", function(frm) {
-console.log("Check")
-})
 

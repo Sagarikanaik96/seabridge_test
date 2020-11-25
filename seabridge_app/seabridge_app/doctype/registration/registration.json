@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "naming_series:",
- "creation": "2020-11-18 20:47:05.831014",
+ "creation": "2020-11-25 22:53:06.936702",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -85,12 +85,6 @@
    "fieldtype": "Link",
    "label": "Default Currency",
    "options": "Currency"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_group",
-   "fieldtype": "Check",
-   "label": "Is Group"
   },
   {
    "fieldname": "column_break_8",
@@ -291,11 +285,17 @@
    "options": "Registration",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "label": "Is Group"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-11-24 16:59:41.689784",
+ "modified": "2020-11-25 22:58:55.947838",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Registration",

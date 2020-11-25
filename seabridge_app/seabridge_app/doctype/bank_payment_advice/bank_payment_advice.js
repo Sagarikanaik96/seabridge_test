@@ -3,6 +3,7 @@
 
 frappe.ui.form.on('Bank Payment Advice', {
 refresh:function(frm,cdt,cdn){
+
 if(frm.doc.docstatus==1){
 frm.add_custom_button(__('Export'), function(){
 //frm.set_value('reference_doctype',frm.doc.doctype)
@@ -100,36 +101,34 @@ select=selections
                 }
             }
 			         })
-
-			frappe.model.with_doc("Purchase Invoice", select[idx], function() {
-                    var tabletransfer= frappe.model.get_doc("Purchase Invoice", select[idx])
-			$.each(tabletransfer.items, function(index, row){
-				if(row.purchase_order){
-					child.purchase_order=row.purchase_order
-					frappe.db.get_value("Purchase Order",row.purchase_order,"grand_total",(c)=>{
+			
+			frappe.db.get_value("Purchase Invoice",select[idx],"purchase_order",(c)=>{
+				if(c.purchase_order){
+				child.purchase_order=c.purchase_order
+				frappe.db.get_value("Purchase Order",c.purchase_order,"grand_total",(c)=>{
 						child.purchase_order_amount=c.grand_total
 					})
 				}
 			})
-			})
+			
 
-	frappe.db.get_value("Supplier",child.supplier_name,"has_sbtfx",(s)=>{
-		if(s.has_sbtfx==1){
+	frappe.db.get_value("Supplier",child.supplier_name,"has_sbtfx_contract",(s)=>{
+		if(s.has_sbtfx_contract==1){
 			frappe.db.get_value("Supplier",child.supplier_name,"represents_company",(c)=>{
 				frappe.db.get_value("Company",c.represents_company,"parent_company",(p)=>{
 					frappe.call({
 					    method: "frappe.client.get_list",
 					    args: {
-						doctype: "Bank Account",
-						fields: ["bank","name"],
+						doctype: "Company",
+						fields: ["bank_account","bank_name"],
 						filters:{
-						    "company":p.parent_company
+						    "company_name":p.parent_company
 						},
 					    },
 					    callback: function(r) {
 							if(r.message.length>0){
-								child.bank_account=r.message[0].name
-								child.bank_name=r.message[0].bank
+								child.bank_account=r.message[0].bank_account
+								child.bank_name=r.message[0].bank_name
 								
 							}
 						}
@@ -141,16 +140,16 @@ select=selections
 				frappe.call({
 					    method: "frappe.client.get_list",
 					    args: {
-						doctype: "Bank Account",
-						fields: ["bank","name"],
+						doctype: "Supplier",
+						fields: ["bank_account","bank_name"],
 						filters:{
-						    "company":child.supplier_name
+						    "supplier_name":child.supplier_name
 						},
 					    },
 					    callback: function(r) {
 							if(r.message.length>0){
-								child.bank_account=r.message[0].name
-								child.bank_name=r.message[0].bank
+								child.bank_account=r.message[0].bank_account
+								child.bank_name=r.message[0].bank_name
 								
 							}
 						}

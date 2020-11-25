@@ -16,12 +16,14 @@ def on_registration_submit(doc,method):
                     company_type=doc.company_type,		
                     default_currency=doc.default_currency,
                     country=doc.country,
-                    is_group=doc.is_group,
                     parent_company=doc.parent_company,
                     associate_agent_company=doc.agent_company,
                     associate_agent=doc.agent_user,
                     start_date=doc.start_date,
-                    end_date=doc.end_date
+                    end_date=doc.end_date,
+                    has_sbtfx_contract=doc.has_sbtfx_contract,
+                    bank_name=doc.bank_name,
+                    bank_account=doc.bank_account
         )).insert(ignore_mandatory=True)
         co_doc.save()
 
@@ -51,7 +53,10 @@ def on_registration_submit(doc,method):
                         supplier_type=doc.supplier_type,
                         country=doc.country,
                         is_internal_supplier=1,
-                        represents_company=doc.company
+                        represents_company=doc.company,
+                        has_sbtfx_contract=doc.has_sbtfx_contract,
+                        bank_name=doc.bank_name,
+                        bank_account=doc.bank_account
                         )).insert(ignore_mandatory=True)
                         su_doc.save()
         if doc.company_type=="Customer":

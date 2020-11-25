@@ -84,32 +84,36 @@ def auto_create_purchase_invoice(doc,method):
 	else:
 		frappe.throw("Unable to save the Purchase Invoice as the naming series are unavailable . Please provide the naming series at the Company: "+company+" to save the document");
 
-	doc_posted=False
-	headers=frappe.db.get_list("API Integration",fields={'*'})
-	if headers:
-		try:
-			headers_list = {
-				"Authorization": "Bearer " + headers[0].authorization_key,
-				"content-type": "application/json"
-			}
-			conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
-			document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.grand_total)+'", "currency_name": "SGD", "source": "community_erpnext", "stage": "AP"}]}'
-			res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
-			print("RESPONSE",res)
-			response_code=str(res)
-			res = conn.post_process(res)
-			if response_code=="<Response [200]>":
-				doc_posted=True
-				doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.')
-			else:
+	has_sbtfx_contract=frappe.db.get_value('Company',{'company_name':doc.company},'has_sbtfx_contract')
+	if has_sbtfx_contract==1:
+		print("has-----------------------------L")
+		doc_posted=False
+		headers=frappe.db.get_list("API Integration",fields={'*'})
+		if headers:
+			try:
+				headers_list = {
+					"Authorization": "Bearer " + headers[0].authorization_key,
+					"content-type": "application/json"
+				}
+				conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
+				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.outstanding_amount)+'", "currency_name": "SGD", "source": "community_erpnext", "stage": "AP"}]}'
+				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
+				print("RESPONSE",res)
+				response_code=str(res)
+				res = conn.post_process(res)
+				print("res",res)
+				if response_code=="<Response [200]>":
+					doc_posted=True
+					doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.')
+				else:
+					doc_posted=False
+					message="The post of Sales Invoice Document : "+doc.name+" is unsuccessful."
+					doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url)
+			except Exception:
+				print(Exception)
 				doc_posted=False
 				message="The post of Sales Invoice Document : "+doc.name+" is unsuccessful."
-				doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url)
-		except Exception:
-			print(Exception)
-			doc_posted=False
-			message="The post of Sales Invoice Document : "+doc.name+" is unsuccessful."
-			doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url) 
-			frappe.log_error(frappe.get_traceback())
-	print(doc_posted)
+				doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url) 
+				frappe.log_error(frappe.get_traceback())
+		print(doc_posted)
 
