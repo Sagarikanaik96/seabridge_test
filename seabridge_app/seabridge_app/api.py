@@ -124,7 +124,7 @@ def get_user_email(name):
         return user
 
 @frappe.whitelist()
-def throw_error(name):
-        print("TE------------------------------")
-        #frappe.throw("Unable to save the Sales Order as the naming series are unavailable . Please provide the naming series at the Company:  to save the document");
+def set_po(doc,po_no):
+    pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+    pi_doc.db_set('purchase_order',po_no)
 

@@ -26,6 +26,7 @@ after_save:function(frm,cdt,cdn){
 
 },
 before_save:function(frm,cdt,cdn){
+	console.log("Before Save")
 	var count=0;
 	if(frm.doc.naming_series){}
 	else{
@@ -62,6 +63,7 @@ before_save:function(frm,cdt,cdn){
 
 
 after_workflow_action: (frm) => {
+console.log("After WFA")
 var email_id;
 	if(frm.doc.workflow_state=="Pending")
 	{
@@ -153,7 +155,9 @@ if(frm.doc.workflow_state=="Submitted"){
 	}
 },
 refresh:function(frm,cdt,cdn){
+console.log("ON Refresh")
 	if(frm.doc.purchase_order){
+			console.log("InIf")
 		if(frm.doc.purchase_receipt){}
 		else{
 			      frappe.call({
@@ -188,20 +192,26 @@ refresh:function(frm,cdt,cdn){
 		}
 	}
 	else{
+	console.log("Inelse")
+	if(frm.doc.bill_no){
 	frappe.db.get_value("Sales Invoice",frm.doc.bill_no,"po_no",(c)=>{
-
-			frappe.call({
-		                                    async: false,
-		                                    "method": "frappe.client.set_value",
-		                                    "args": {
-		                                        "doctype": "Purchase Invoice",
-		                                        "name": frm.doc.name,
-		                                        "fieldname": "purchase_order",
-		                                        "value":c.po_no
-		                                    }
-		                                });
+	if(c.po_no){
 			
+
+				frappe.call({
+                method:"seabridge_app.seabridge_app.api.set_po",
+                args:{
+			doc:cur_frm.doc.name,
+			po_no:c.po_no		
+		},
+                async:false,
+                callback: function(r){
+                    console.log("Refresh")
+                }
+            });
+			}
 		})
+	}
 	}	
 	
 }
