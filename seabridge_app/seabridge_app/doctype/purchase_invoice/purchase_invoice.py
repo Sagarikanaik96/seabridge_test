@@ -36,9 +36,6 @@ def before_submit(doc,method):
 			po_items=frappe.db.get_list("Purchase Order Item",filters={'parent':doc.purchase_order,'parenttype':'Purchase Order'},fields={'*'})
 			for po in po_items:
 				if val.item_code==po.item_code:
-					val.po_rate=po.rate
-					val.po_amount=po.amount
-					val.po_qty=po.qty
 					if val.amount>po.amount:
 						diff=val.amount-po.amount
 						min_per=100*diff/po.amount
