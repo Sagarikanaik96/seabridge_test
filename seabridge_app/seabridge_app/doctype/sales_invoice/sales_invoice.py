@@ -77,6 +77,15 @@ def auto_create_purchase_invoice(doc,method):
 						})
 				pi_doc.add_comment('Comment',' System created  '+pi_doc.name)
 				pi_doc.save()
+				for v in pi_doc.items:
+					if doc.po_no:
+						po_items=frappe.db.get_list("Purchase Order Item",filters={'parent':doc.po_no,'parenttype':'Purchase Order','item_code':v.item_code},fields={'*'})
+						for po in po_items:
+							if v.item_code==po.item_code:
+								v.po_rate=po.rate,
+								v.po_qty=po.qty,
+								v.po_amount=po.amount
+					pi_doc.save()
 				doc.add_comment('Comment','  Purchase Invoice: '+pi_doc.name)  
 		else:
 			frappe.msgprint('Unable to create  Sales Invoice as customer: '+doc.customer_name +' is not associated with any company. Register the Customer for the Company and submit the document: '+doc.name+ '.')
