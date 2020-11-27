@@ -134,3 +134,7 @@ def get_contact_filter(doctype, txt, searchfield, start, page_len, filters):
 	agent_company=filters['company_name']
 	user=frappe.db.get_value('Company',{'company_name':agent_company},'associate_agent')
 	return frappe.db.sql(""" select name from `tabContact` where user=%s""",(user))
+
+@frappe.whitelist()
+def get_contact_phone(doctype,parenttype,parent):	   
+	return frappe.db.get_value(doctype, {'parenttype':parenttype,'parent':parent},'phone')

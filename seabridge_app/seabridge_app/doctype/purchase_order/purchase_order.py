@@ -49,7 +49,9 @@ def auto_create_sales_order(doc,method):
 						contact=frappe.db.get_value('Contact',{'user':agent},'name')
 						if contact:
 							so_doc.update({
-								"_agent_contact_person":contact
+								"_agent_contact_person":contact,
+								"_agent_contact_email":frappe.db.get_value('Contact Email',{'parent':contact},'email_id'),
+								"agent_contact_phone":frappe.db.get_value('Contact Phone',{'parent':contact},'phone')
 							})
 					for val in doc.items:
 						so_doc.append('items', {

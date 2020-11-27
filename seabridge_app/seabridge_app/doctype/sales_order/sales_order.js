@@ -56,6 +56,32 @@ customer:function(frm,cdt,cdn){
 				    });
 		}
 	});
+},
+_agent_contact_person:function(frm,cdt,cdn){
+	frappe.call({
+		method: "seabridge_app.seabridge_app.api.get_contact_mail",
+		async:false,
+		args: {
+			doctype: "Contact Email",
+			parent:frm.doc._agent_contact_person,
+			parenttype:'Contact'
+			},
+		callback: function(c){
+			frm.set_value("_agent_contact_email",c.message)
+		}
+	});
+	frappe.call({
+		method: "seabridge_app.seabridge_app.api.get_contact_phone",
+		async:false,
+		args: {
+			doctype: "Contact Phone",
+			parent:frm.doc._agent_contact_person,
+			parenttype:'Contact'
+			},
+		callback: function(c){
+			frm.set_value("agent_contact_phone",c.message)
+		}
+	});
 }
 })
 

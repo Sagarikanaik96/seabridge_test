@@ -91,7 +91,9 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Invoice-service_completion_note",
 		"Supplier-has_sbtfx",
 		"Company-has_sbtfx",
-		"Sales Order-_agent_contact_person"
+		"Sales Order-_agent_contact_person",
+		"Sales Order-_agent_contact_email",
+		"Sales Order-agent_contact_phone"
 		]
 	]
 ]
