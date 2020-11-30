@@ -43,7 +43,7 @@ var select={}
  date_field: "transaction_date",
  get_query() {
  return {
- filters: { outstanding_amount: ['>', 0], docstatus: ['=', 1] ,status: ['not in', "Paid,Return"] ,company:frm.doc.company}
+ filters: {  docstatus: ['=', 1] ,workflow_state: ['=', "Approved"] ,company:frm.doc.company}
  }
  },
  action(selections) {

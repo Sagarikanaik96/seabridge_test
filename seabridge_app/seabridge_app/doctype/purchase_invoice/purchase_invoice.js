@@ -89,13 +89,17 @@ var email_id;
                 callback: function(r){
 			email_id=r.message
 		if(email_id){
+
+		var email_template='<h2><span style="color: rgb(102, 185, 102);">Task Details</span></h2><table class="table table-bordered"><tbody><tr><td data-row="insert-column-right"><strong>Document Id</strong></td><td data-row="insert-column-right"><strong style="color: rgb(107, 36, 178);">'+frm.doc.name+'</strong></td></tr><tr><td data-row="row-z48v"><strong>Approver</strong></td><td data-row="row-z48v"><strong style="color: rgb(107, 36, 178);">'+email_id+'</strong></td></tr><tr><td data-row="row-779i"><strong>Note</strong></td><td data-row="row-779i"><strong style="color: rgb(255, 153, 0);">This is a system generated email, please do not reply to this message.</strong></td></tr></tbody></table>'
+
+
 				frappe.call({
         method: "frappe.core.doctype.communication.email.make",
         args: {
             subject: "Approval",
             communication_medium: "Email",
             recipients: email_id,
-            content: "Please approve the Purchase Invoice",
+            content: email_template,
             communication_type: "Communication",
             send_email:1,
             attachments:[],
