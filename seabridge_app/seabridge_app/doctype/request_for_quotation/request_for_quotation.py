@@ -76,7 +76,6 @@ def create_user_permission(user,allow,value,check,applicable_for=''):
 
 @frappe.whitelist()
 def delete_user_permission(user,allow,value,check,applicable_for=''):
-    frappe.msgprint("Inside delete")
 #user,allow,for_value,apply_to_all_doctypes,applicable_for
     docVal=frappe.db.get_list('User Permission', filters={'user':user,'for_value':value,'allow':allow,'apply_to_all_doctypes':check,'applicable_for':applicable_for})
     if not docVal:
