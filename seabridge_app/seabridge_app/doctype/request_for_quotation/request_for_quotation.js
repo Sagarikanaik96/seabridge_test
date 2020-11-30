@@ -11,8 +11,8 @@ frappe.ui.form.on('Request for Quotation', {
 	},
 	refresh:function(frm,cdt,cdn){
 		var item_group=[];
-			item_group=get_item_group(frm.doc.items);
-			supplier_filter(frm,item_group);
+		item_group=get_item_group(frm.doc.items);
+		supplier_filter(frm,item_group);
 		if(frm.doc.quotation_type=='Sealed'&& frappe.user_roles.includes('Customer Representative')){
 			cur_frm.add_custom_button(__("Open Quotation"),function() {
 					frappe.call({
@@ -66,211 +66,152 @@ frappe.ui.form.on('Request for Quotation', {
 	},
 	on_submit:function(frm,cdt,cdn){
 		var doc=frm.doc;
-
 		$.each(doc.suppliers,function(idx,supplier){
-
 			$.each(doc.items,function(idx,item){
-
 				frappe.call({
 					method: "seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.get_tag",
 					async:false,
 					args: {
 						parent:supplier.supplier
 					},
-						callback: function(r) {
-					if(r.message===item.qualifier){
-						var company;
-						var name;
-						frappe.call({
-							method:"seabridge_app.seabridge_app.api.get_company_name",
-							args:{
-								doctype:'Supplier',
-								is_internal_supplier:1,
-								supplier_name:supplier.supplier
-							},
-							async:false,
-							callback: function(r){
-								company=r.message;
-								console.log(r.message)
-							}
-					});
-						frappe.call({
-							method: "seabridge_app.seabridge_app.api.get_opportunity_name",
-							async:false,
-							args: {
-								doctype: "Opportunity",
-								reference_no:frm.doc.name
-							},
-							callback: function(c){
-								name=c.message;
-							}
-						});
-						if(company!==undefined){
-							var agent;
-							var customer;
+					callback: function(r) {
+						if(r.message===item.qualifier){
+							var company;
+							var name;
 							frappe.call({
-								method: "frappe.client.get_value",
+								method:"seabridge_app.seabridge_app.api.get_company_name",
+								args:{
+									doctype:'Supplier',
+									is_internal_supplier:1,
+									supplier_name:supplier.supplier
+								},
+								async:false,
+								callback: function(r){
+									company=r.message;
+									console.log(r.message)
+								}
+							});
+							frappe.call({
+								method: "seabridge_app.seabridge_app.api.get_opportunity_name",
 								async:false,
 								args: {
-									doctype: "Company",
-									fieldname: "associate_agent",
-
-									filters:{
-
-										"company_name":frm.doc.company
-
-									}
-
+									doctype: "Opportunity",
+									reference_no:frm.doc.name
 								},
-
+								callback: function(c){
+									name=c.message;
+								}
+							});
+							if(company!==undefined){
+								var agent;
+								var customer;
+								frappe.call({
+									method: "frappe.client.get_value",
+									async:false,
+									args: {
+										doctype: "Company",
+										fieldname: "associate_agent",
+										filters:{
+											"company_name":frm.doc.company
+										}
+									},
 									callback: function(r) {
-
 										if(r.message.associate_agent!==undefined){
-
 											agent=r.message.associate_agent;
-
 										}
-
 									}
-
-							});
-
-							frappe.call({
-
-								method: "frappe.client.get_value",
-
-								async:false,
-
-								args: {
-
-									doctype: "Customer",
-
-									fieldname: "customer_name",
-
-									filters:{
-
-										"is_internal_Customer":1,
-
-										"represents_company":frm.doc.company
-
-									}
-
-								},
-
+								});
+								frappe.call({
+									method: "frappe.client.get_value",
+									async:false,
+									args: {
+										doctype: "Customer",
+										fieldname: "customer_name",
+										filters:{
+											"is_internal_Customer":1,
+											"represents_company":frm.doc.company
+										}
+									},
 									callback: function(r) {
-
 										if(r.message.customer_name!==undefined){
-
 											customer=r.message.customer_name;
-
 										}
-
 									}
-
-							});
-
-							if (agent!=null){
-
-								var emailTemplate=
-
-									'<h3> Dear '+supplier.supplier_name+',</h3>'+
-
-									'<br>'+
-
-									'<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
-
-									'<br>'+
-
-									'<h3>Thank you, I look forward to your prompt response.</h3>'+
-
-									'<br>'+
-
-									'<h3>Yours sincerely,</h3>'+
-
-									'<h3>'+agent+'</h3>'+
-
-									'<h3>'+customer+'</h3>'+
-
-									'<h3>'+frm.doc.company+'</h3>';
-
-							
-
-								sendEmail(name,supplier.email_id,emailTemplate);
-
+								});
+								if(agent!=null){
+									var emailTemplate=
+										'<h3> Dear '+supplier.supplier_name+',</h3>'+
+										'<br>'+
+										'<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
+										'<br>'+
+										'<h3>Thank you, I look forward to your prompt response.</h3>'+
+										'<br>'+
+										'<h3>Yours sincerely,</h3>'+
+										'<h3>'+agent+'</h3>'+
+										'<h3>'+customer+'</h3>'+
+										'<h3>'+frm.doc.company+'</h3>';
+									sendEmail(name,supplier.email_id,emailTemplate);
+								}
+								else if (agent==null){
+									var emailTemplate=
+										'<h3> Dear '+supplier.supplier_name+',</h3>'+
+										'<br>'+
+										'<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
+										'<br>'+
+										'<h3>Thank you, I look forward to your prompt response.</h3>'+
+										'<br>'+
+										'<h3>Yours sincerely,</h3>'+
+										'<h3>'+customer+'</h3>'+
+										'<h3>'+frm.doc.company+'</h3>';
+									sendEmail(name,supplier.email_id,emailTemplate);
+								}
 							}
-
-							else if (agent==null){
-
-								var emailTemplate=
-
-									'<h3> Dear '+supplier.supplier_name+',</h3>'+
-
-									'<br>'+
-
-									'<h3>We understand that your company manufactures some products that fit our business requirements, and would like to request a quotation on the following attached items. We would appreciate your sales quotation for the listed items/services available in Request for Quotation attachment.</h3>'+
-
-									'<br>'+
-
-									'<h3>Thank you, I look forward to your prompt response.</h3>'+
-
-									'<br>'+
-
-									'<h3>Yours sincerely,</h3>'+
-
-									'<h3>'+customer+'</h3>'+
-
-									'<h3>'+frm.doc.company+'</h3>';
-
-								sendEmail(name,supplier.email_id,emailTemplate);
+							else{
+								var emailTemplate1='<h1><strong>Unable to create an Opportunity because you do not have any company associated with yourself</strong></h1>';
+								sendEmail(name,supplier.email_id,emailTemplate1);
 							}
 						}
-				
-				else{
-
-							var emailTemplate1='<h1><strong>Unable to create an Opportunity because you do not have any company associated with yourself</strong></h1>';
-
-							sendEmail(name,supplier.email_id,emailTemplate1);
-
-						}
-
 					}
-	}
-	});
-
+				});
 			});
-
 		});
-			
-  },
-  before_save:function(frm,cdt,cdn){
+	},
+	before_save:function(frm,cdt,cdn){
 		var supplierList=frm.doc.suppliers;
-	  for(var i=0; i< supplierList.length; i++) {
-		  for(var j=i+1; j<supplierList.length; j++) {
-				 if(supplierList[i].supplier===supplierList[j].supplier) {
-				  frappe.throw('The already entered/inserted Supplier '+supplierList[j].supplier+' should not be allowed to added twice.');
-			  }
-		  }
-	  }
-    var count=0;
-    frappe.model.with_doc("Company", frm.doc.company, function() {
-        var tabletransfer= frappe.model.get_doc("Company", frm.doc.company)
-            $.each(tabletransfer.series, function(index, row){
-                if(row.reference_document==frm.doc.doctype){
-                    frm.set_value("naming_series",row.series)
-                    count++;
-                }
-            })
-        if(count==0){
-            frappe.validated = false;
-            msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
-        }
-    })
+		for(var i=0; i< supplierList.length; i++) {
+			for(var j=i+1; j<supplierList.length; j++) {
+				if(supplierList[i].supplier===supplierList[j].supplier) {
+					frappe.throw('The already entered/inserted Supplier '+supplierList[j].supplier+' should not be allowed to added twice.');
+			  	}
+		  	}
+	  	}
+	var count=0;
+	frappe.model.with_doc("Company", frm.doc.company, function() {
+		var tabletransfer= frappe.model.get_doc("Company", frm.doc.company)
+			$.each(tabletransfer.series, function(index, row){
+				if(row.reference_document==frm.doc.doctype){
+					frm.set_value("naming_series",row.series)
+					count++;
+                		}
+            		})
+        		if(count==0){
+            			frappe.validated = false;
+            			msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
+        		}
+    		})
 
-  },
-before_cancel:function(frm,cdt,cdn){
-	frappe.throw('Unable to cancel the document as Request for Quotation'+frm.doc.name+'is linked with the submitted opportunity.')
-
-}
+  	},
+	before_cancel:function(frm,cdt,cdn){
+		frappe.throw('Unable to cancel the document as Request for Quotation'+frm.doc.name+'is linked with the submitted opportunity.')
+	},
+	before_submit:function(frm,cdt,cdn){
+		$.each(frm.doc.suppliers,function(idx,supplier){
+			if(supplier.contact && supplier.email_id){}
+			else{
+				frappe.throw('Unable to submit the document as contact details are unavailable for the supplier: '+supplier.supplier+'. Please provide the contact details to submit the document.')
+			}
+		})
+	}
 });
 frappe.ui.form.on('Request for Quotation Item', {
 	item_code:function(frm,cdt,cdn){

@@ -93,7 +93,11 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Company-has_sbtfx",
 		"Sales Order-_agent_contact_person",
 		"Sales Order-_agent_contact_email",
-		"Sales Order-agent_contact_phone"
+		"Sales Order-agent_contact_phone",
+		"Supplier-bank_name",
+		"Supplier-bank_account",
+		"Company-bank_name",
+		"Company-bank_account"
 		]
 	]
 ]
