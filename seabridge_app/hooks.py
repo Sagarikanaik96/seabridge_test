@@ -130,7 +130,10 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 				"Contract-party_user-hidden",
 				"Contract-party_type-options",
 				"Contract-party_type-default",
-				"Purchase Order-naming_series-reqd"		
+				"Purchase Order-naming_series-reqd",
+				"Purchase Invoice Item-qty-columns",
+				"Purchase Invoice Item-item_code-columns",
+				"Purchase Invoice Item-rate-columns"		
 						
 			]
 	]
