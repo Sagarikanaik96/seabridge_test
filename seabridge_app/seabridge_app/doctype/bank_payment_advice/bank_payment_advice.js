@@ -116,44 +116,26 @@ select=selections
 		if(s.has_sbtfx_contract==1){
 			frappe.db.get_value("Supplier",child.supplier_name,"represents_company",(c)=>{
 				frappe.db.get_value("Company",c.represents_company,"parent_company",(p)=>{
-					frappe.call({
-					    method: "frappe.client.get_list",
-					    args: {
-						doctype: "Company",
-						fields: ["bank_account","bank_name"],
-						filters:{
-						    "company_name":p.parent_company
-						},
-					    },
-					    callback: function(r) {
-							if(r.message.length>0){
-								child.bank_account=r.message[0].bank_account
-								child.bank_name=r.message[0].bank_name
-								
-							}
-						}
+					frappe.db.get_value("Company",p.parent_company,"bank_account",(b)=>{
+						child.bank_account=b.bank_account
 					})
+					frappe.db.get_value("Company",p.parent_company,"bank_name",(b)=>{
+						child.bank_name=b.bank_name
+					})
+				
 				})
 			})
 		}
 		else{
-				frappe.call({
-					    method: "frappe.client.get_list",
-					    args: {
-						doctype: "Supplier",
-						fields: ["bank_account","bank_name"],
-						filters:{
-						    "supplier_name":child.supplier_name
-						},
-					    },
-					    callback: function(r) {
-							if(r.message.length>0){
-								child.bank_account=r.message[0].bank_account
-								child.bank_name=r.message[0].bank_name
-								
-							}
-						}
-					})
+
+
+		frappe.db.get_value("Supplier",child.supplier_name,"bank_account",(b)=>{
+			child.bank_account=b.bank_account
+		})
+		frappe.db.get_value("Supplier",child.supplier_name,"bank_name",(b)=>{
+			child.bank_name=b.bank_name
+		})
+				
 
 		}		
 	})

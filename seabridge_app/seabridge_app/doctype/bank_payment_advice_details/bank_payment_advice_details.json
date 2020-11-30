@@ -1,6 +1,6 @@
 {
  "actions": [],
- "creation": "2020-11-25 19:23:42.736284",
+ "creation": "2020-11-26 13:31:11.374035",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -26,11 +26,10 @@
   "cheque_date",
   "overdue_days",
   "vendor_account_details_section",
-  "supplier_account_details_section",
-  "seabridge_account_details_section",
-  "bank_name",
-  "column_break_25",
-  "bank_account"
+  "company_account_details_section",
+  "bank_account",
+  "column_break_24",
+  "bank_name"
  ],
  "fields": [
   {
@@ -160,31 +159,28 @@
   {
    "fieldname": "bank_name",
    "fieldtype": "Data",
-   "label": "Bank Name"
+   "label": "Bank Name",
+   "read_only": 1
   },
   {
    "fieldname": "bank_account",
    "fieldtype": "Data",
-   "label": "Bank Account"
+   "label": "Bank Account",
+   "read_only": 1
   },
   {
-   "fieldname": "supplier_account_details_section",
+   "fieldname": "company_account_details_section",
    "fieldtype": "Section Break",
-   "label": "Supplier Account Details"
+   "label": "Company Account Details"
   },
   {
-   "fieldname": "seabridge_account_details_section",
-   "fieldtype": "Section Break",
-   "label": "Seabridge Account Details"
-  },
-  {
-   "fieldname": "column_break_25",
+   "fieldname": "column_break_24",
    "fieldtype": "Column Break"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2020-11-25 22:13:00.890595",
+ "modified": "2020-11-30 22:34:36.561811",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Bank Payment Advice Details",
