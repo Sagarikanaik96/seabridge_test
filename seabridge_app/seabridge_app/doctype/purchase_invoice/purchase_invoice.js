@@ -140,7 +140,7 @@ if(frm.doc.workflow_state=="Submitted"){
         	});
 }
 
-	if(frm.doc.workflow_state=="Approved"){
+	if(frm.doc.workflow_state=="To Bill"){
 	frappe.call({
 		        method:"seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.post_invoice",
 		        args:{

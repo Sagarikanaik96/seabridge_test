@@ -47,7 +47,10 @@ def auto_create_opportunity(doc,method):
 									'qty': val.qty,
 									'uom':val.uom
 									})
-								opp_doc.add_comment('Comment',row.supplier+' created')
+								agent_name=frappe.db.get_value('User',{'email':frappe.session.user},'full_name')
+								agent_company=frappe.db.get_value('User',{'email':frappe.session.user},'represents_company')
+								if agent_company:
+									opp_doc.add_comment('Comment',agent_name+' created '+opp_doc.name+' from '+agent_company)
 								opp_doc.save()
 								doc.add_comment('Created','  created Opportunity for '+row.supplier)
 								companyName=frappe.db.get_value('Item',val.item_code,'company_name')
