@@ -11,6 +11,24 @@ from itertools import groupby
 class BankPaymentAdvice(Document):
 	pass
 
+def validate_bank_details(doc,method):
+        account="null"
+        name="null"
+        for val in doc.bank_payment_advice_details:
+            if val.bank_account:
+                account=val.bank_account
+            if val.bank_name:
+                name=val.bank_name
+            if account=="null" or name=="null":
+                has_sbtfx_contract=frappe.db.get_value('Supplier',{'supplier_name':val.supplier_name},'has_sbtfx_contract')
+                if has_sbtfx_contract!=1:
+                    frappe.throw("Unable to submit the document. Please maintain the Bank Account Details at Supplier: "+val.supplier_name)
+                else:
+                    represents_company=frappe.db.get_value('Supplier',{'supplier_name':val.supplier_name},'represents_company')
+                    parent_company=frappe.db.get_value('Company',{'company_name':represents_company},'parent_company')
+                    frappe.throw("Unable to submit the document. Please maintain the Bank Account Details at Parent Company: "+parent_company)
+
+
 def auto_create_payment_entry(doc,method): 
 	bpad=frappe.db.get_list("Bank Payment Advice Details",filters={'parent':doc.name,'parenttype':'Bank Payment Advice'},fields={'*'})
 	for key, group in groupby(bpad, key=lambda x: (x['supplier_name'])):

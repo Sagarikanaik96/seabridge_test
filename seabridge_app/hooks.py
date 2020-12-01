@@ -137,7 +137,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 				"Purchase Order-naming_series-reqd",
 				"Purchase Invoice Item-qty-columns",
 				"Purchase Invoice Item-item_code-columns",
-				"Purchase Invoice Item-rate-columns"		
+				"Purchase Invoice Item-rate-columns",
+				"Purchase Invoice Item-amount-columns"		
 						
 			]
 	]
@@ -211,11 +212,16 @@ doc_events = {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.auto_create_sales_order"]
     },
 	"Bank Payment Advice": {
-		"on_submit": ["seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.auto_create_payment_entry"]
+		"on_submit": ["seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.auto_create_payment_entry"],
+		"before_submit": ["seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.validate_bank_details"]
     },
 	"Purchase Invoice": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.update_status"],
 		"before_submit": ["seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.before_submit"]
+    },
+	"Payment Entry": {
+		"on_submit": ["seabridge_app.seabridge_app.doctype.payment_entry.payment_entry.update_status"],
+		"on_cancel": ["seabridge_app.seabridge_app.doctype.payment_entry.payment_entry.update_status_on_cancel"]
     }
 }
 

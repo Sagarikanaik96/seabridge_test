@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "naming_series:",
- "creation": "2020-11-25 22:53:10.614320",
+ "creation": "2020-11-26 13:31:12.599707",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -85,7 +85,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-11-25 22:59:08.362990",
+ "modified": "2020-11-26 13:57:21.996392",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Bank Payment Advice",

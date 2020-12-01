@@ -25,8 +25,7 @@
   "column_break_12",
   "cheque_date",
   "overdue_days",
-  "vendor_account_details_section",
-  "company_account_details_section",
+  "account_details_section",
   "bank_account",
   "column_break_24",
   "bank_name"
@@ -152,35 +151,28 @@
    "label": "Overdue Days"
   },
   {
-   "fieldname": "vendor_account_details_section",
-   "fieldtype": "Section Break",
-   "label": "Vendor Account Details"
-  },
-  {
    "fieldname": "bank_name",
    "fieldtype": "Data",
-   "label": "Bank Name",
-   "read_only": 1
+   "label": "Bank Name"
   },
   {
    "fieldname": "bank_account",
    "fieldtype": "Data",
-   "label": "Bank Account",
-   "read_only": 1
-  },
-  {
-   "fieldname": "company_account_details_section",
-   "fieldtype": "Section Break",
-   "label": "Company Account Details"
+   "label": "Bank Account"
   },
   {
    "fieldname": "column_break_24",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "account_details_section",
+   "fieldtype": "Section Break",
+   "label": "Account Details"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2020-11-30 22:34:36.561811",
+ "modified": "2020-12-01 16:34:30.739068",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Bank Payment Advice Details",

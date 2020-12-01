@@ -49,7 +49,7 @@ def before_submit(doc,method):
 def update_status(doc,method):
     if doc.is_return==1:
         pi_doc=frappe.get_doc("Purchase Invoice",doc.return_against) 
-        pi_doc.db_set('status','Debit Note Issued')
+        pi_doc.db_set('workflow_state','Debit Note Issued')
 
 @frappe.whitelist()
 def post_invoice(name):

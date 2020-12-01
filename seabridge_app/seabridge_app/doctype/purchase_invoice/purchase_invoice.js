@@ -7,9 +7,7 @@ after_save:function(frm,cdt,cdn){
 		frappe.call({
                 method:"seabridge_app.seabridge_app.api.update_status",
                 args:{
-			doc:cur_frm.doc.return_against,
-			"method":"method",
-			"status":frm.doc.status		
+			doc:cur_frm.doc.return_against		
 		},
                 async:false,
                 callback: function(r){
@@ -157,6 +155,8 @@ if(frm.doc.workflow_state=="Submitted"){
 	}
 },
 refresh:function(frm,cdt,cdn){
+
+	
 	if(frm.doc.purchase_order){
 		if(frm.doc.purchase_receipt){}
 		else{

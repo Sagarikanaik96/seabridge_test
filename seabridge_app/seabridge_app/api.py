@@ -108,15 +108,14 @@ def get_opportunity_name(reference_no):
 def get_purchase_receipt(purchase_order,purchase_invoice):
 	pi_list=frappe.db.get_list('Purchase Receipt Item',filters={'parenttype':'Purchase Receipt','purchase_order':purchase_order},fields={'*'})
 	if pi_list:
-		frappe.msgprint(pi_list[0].parent)
 		pi_doc=frappe.get_doc("Purchase Invoice",purchase_invoice) 		
 		pi_doc.db_set('purchase_receipt',pi_list[0].parent)
 
 
 @frappe.whitelist()
-def update_status(doc,method,status): 
+def update_status(doc): 
     pi_doc=frappe.get_doc("Purchase Invoice",doc) 
-    pi_doc.db_set('status','Debit Note Initialized')
+    pi_doc.db_set('workflow_state','Debit Note Initialized')
 
 @frappe.whitelist()
 def get_user_email(name):
@@ -138,3 +137,9 @@ def get_contact_filter(doctype, txt, searchfield, start, page_len, filters):
 @frappe.whitelist()
 def get_contact_phone(doctype,parenttype,parent):	   
 	return frappe.db.get_value(doctype, {'parenttype':parenttype,'parent':parent},'phone')
+
+
+@frappe.whitelist()
+def update_pi_status(doc): 
+    pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+    pi_doc.db_set('workflow_state','Debit Note Initialized')
