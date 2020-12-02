@@ -31,8 +31,13 @@ def validate_bank_details(doc,method):
 
 def auto_create_payment_entry(doc,method): 
 	bpad=frappe.db.get_list("Bank Payment Advice Details",filters={'parent':doc.name,'parenttype':'Bank Payment Advice'},fields={'*'})
-	for key, group in groupby(bpad, key=lambda x: (x['supplier_name'])):
-		grouped_by_supplier= list(group)
+	sorted_users = sorted(bpad, key=lambda x: (x['supplier_name']))
+	grouped_by_supplier = {}
+
+	for key, group in groupby(sorted_users, key=lambda x: (x['supplier_name'])):
+		grouped_by_supplier[key]= list(group)
+
+	for key,val in grouped_by_supplier.items():	
 		pe_doc=frappe.get_doc(dict(doctype = 'Payment Entry',
 		payment_type="Pay",
 		posting_date=doc.date,
@@ -46,23 +51,23 @@ def auto_create_payment_entry(doc,method):
 		reference_no=doc.name,
 		reference_date=date.today()
 		)).insert(ignore_mandatory=True)
-
+		
 		amount=0
-		for row in grouped_by_supplier:	
-			amount=amount+row.payment_transaction_amount
-			pe_doc.update({
-                "paid_to":frappe.db.get_value('Purchase Invoice',{'name':row.invoice_document},'credit_to'),
-                "paid_amount":amount,
-				"received_amount":amount,
-            })
+		for row in val:
+					amount=amount+row.payment_transaction_amount
+					pe_doc.update({
+						"paid_to":frappe.db.get_value('Purchase Invoice',{'name':row.invoice_document},'credit_to'),
+						"paid_amount":amount,
+						"received_amount":amount,
+					})
 
-			pe_doc.append('references', {
-				'reference_doctype':"Purchase Invoice",
-				'reference_name':row.invoice_document,
-				'due_date':row.due_date,
-				'total_amount':row.invoice_amount,
-				'outstanding_amount':row.outstanding_amount-row.payment_transaction_amount,
-				'allocated_amount':row.payment_transaction_amount	
-								
-							})
+					pe_doc.append('references', {
+						'reference_doctype':"Purchase Invoice",
+						'reference_name':row.invoice_document,
+						'due_date':row.due_date,
+						'total_amount':row.invoice_amount,
+						'outstanding_amount':row.outstanding_amount-row.payment_transaction_amount,
+						'allocated_amount':row.payment_transaction_amount	
+										
+					})
 		pe_doc.submit()
