@@ -65,63 +65,45 @@ var email_id;
 	if(frm.doc.workflow_state=="Pending")
 	{
 		frappe.db.get_value("Company",frm.doc.company,"associate_agent_company",(c)=>{
-		if(c.associate_agent_company){
-			frappe.call({
-            method: "frappe.client.get_list",
-            args: {
-                doctype: "User",
-                fields: ["email","name"],
-                filters:{
-                    "represents_company":c.associate_agent_company
-                },
-            },
-            callback: function(r) {
-                for(var i=0;i<r.message.length;i++){
-
-					frappe.call({
-                method:"seabridge_app.seabridge_app.api.get_user_email",
-                args:{
-			name:r.message[i].email
-		},
-		async:false,
-                callback: function(r){
-			email_id=r.message
-		if(email_id){
-
-		var email_template='<h2><span style="color: rgb(102, 185, 102);">Task Details</span></h2><table class="table table-bordered"><tbody><tr><td data-row="insert-column-right"><strong>Document Id</strong></td><td data-row="insert-column-right"><strong style="color: rgb(107, 36, 178);">'+frm.doc.name+'</strong></td></tr><tr><td data-row="row-z48v"><strong>Approver</strong></td><td data-row="row-z48v"><strong style="color: rgb(107, 36, 178);">'+email_id+'</strong></td></tr><tr><td data-row="row-779i"><strong>Note</strong></td><td data-row="row-779i"><strong style="color: rgb(255, 153, 0);">This is a system generated email, please do not reply to this message.</strong></td></tr></tbody></table>'
-
-
+			if(c.associate_agent_company){
 				frappe.call({
-        method: "frappe.core.doctype.communication.email.make",
-        args: {
-            subject: "Approval",
-            communication_medium: "Email",
-            recipients: email_id,
-            content: email_template,
-            communication_type: "Communication",
-            send_email:1,
-            attachments:[],
-            print_format:"Standard",
-            doctype: "Purchase Invoice",
-            name: frm.doc.name,
-            print_letterhead: 0
-        },        
-        callback: function(rh){
-            console.log("sent");
-		
-        }   
-    });
-}
-                }
-            });
+					method:"seabridge_app.seabridge_app.api.get_agent_users",
+					async:false,
+					args:{
+						"represents_company":c.associate_agent_company,
+						"doc":frm.doc.name
+					},
+					callback: function(r){
+						
+						for(var i=0;i<r.message.length;i++){
+							var email_template='<h2><span style="color: rgb(102, 185, 102);">Task Details</span></h2><table class="table table-bordered"><tbody><tr><td data-row="insert-column-right"><strong>Document Id</strong></td><td data-row="insert-column-right"><strong style="color: rgb(107, 36, 178);">'+frm.doc.name+'</strong></td></tr><tr><td data-row="row-z48v"><strong>Approver</strong></td><td data-row="row-z48v"><strong style="color: rgb(107, 36, 178);">'+r.message[i][0]+'</strong></td></tr><tr><td data-row="row-779i"><strong>Note</strong></td><td data-row="row-779i"><strong style="color: rgb(255, 153, 0);">This is a system generated email, please do not reply to this message.</strong></td></tr></tbody></table>'
 
-                }
-                
-            }
-        })
-				
-}
-})
+
+							frappe.call({
+								method: "frappe.core.doctype.communication.email.make",
+								args: {
+								    subject: "Approval",
+								    communication_medium: "Email",
+								    recipients: r.message[i][0],
+								    content: email_template,
+								    communication_type: "Communication",
+								    send_email:1,
+								    attachments:[],
+								    print_format:"Standard",
+								    doctype: "Purchase Invoice",
+								    name: frm.doc.name,
+								    print_letterhead: 0
+								},        
+								callback: function(rh){
+								    console.log("sent");
+									
+								}   
+							});				
+						}
+					}
+				})
+			}				
+		})
 	}
 if(frm.doc.workflow_state=="Submitted"){
  var tabletransfer= frappe.model.get_doc("Purchase Invoice", frm.doc.name)
@@ -154,9 +136,21 @@ if(frm.doc.workflow_state=="Submitted"){
 		    });
 	}
 },
+
 refresh:function(frm,cdt,cdn){
 
-	
+
+    
+    
+//if(frm.doc.workflow_state!="Rejected"){
+//cur_frm.cscript.refresh = function(doc, dt, dn){
+    //if (doc.docstatus==1 && doc.workflow_state=="Approved") {
+               // cur_frm.clear_custom_buttons('Create')
+    //}
+//}
+//}	
+
+
 	if(frm.doc.purchase_order){
 		if(frm.doc.purchase_receipt){}
 		else{
@@ -175,20 +169,22 @@ refresh:function(frm,cdt,cdn){
 
 		if(frm.doc.service_completion_note){}
 		else{
+					
+
 			frappe.db.get_value("Service Completion Note",{"reference_no":frm.doc.purchase_order},"name",(c)=>{
-			if(c.name){
+			
+				if(c.name){
 				frappe.call({
-				                            async: false,
-				                            "method": "frappe.client.set_value",
-				                            "args": {
-				                                "doctype": "Purchase Invoice",
-				                                "name": frm.doc.name,
-				                                "fieldname": "service_completion_note",
-				                                "value":c.name
-				                            }
-				                        });
+				                            async: false,
+				                            "method": "frappe.client.set_value",
+				                            "args": {
+				                                "doctype": "Purchase Invoice",
+				                                "name": frm.doc.name,
+				                                "fieldname": "service_completion_note",
+				                                "value":c.name
+				                            }
+				                        });
 			}
-				
 			})
 		}
 	}
@@ -211,7 +207,7 @@ refresh:function(frm,cdt,cdn){
 			}
 		})
 	}
-	}	
+	}		
 	
 }
 });

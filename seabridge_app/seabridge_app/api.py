@@ -8,6 +8,7 @@ from frappe.model.document import Document
 import json
 from frappe.desk.reportview import build_match_conditions, get_filters_cond
 import pandas as pd 
+from frappe.core.doctype.communication.email import make
 
 @frappe.whitelist()
 def get_email(doctype,is_internal_customer,customer_name):
@@ -143,3 +144,20 @@ def get_contact_phone(doctype,parenttype,parent):
 def update_pi_status(doc): 
     pi_doc=frappe.get_doc("Purchase Invoice",doc) 
     pi_doc.db_set('workflow_state','Debit Note Initialized')
+
+
+@frappe.whitelist()
+def get_agent_users(represents_company,doc):
+	q1=frappe.db.sql("""
+		select u.name
+		from tabUser u,`tabHas Role` r where 
+		u.name = r.parent and r.role = 'Accounts Payable'
+		and u.enabled = 1 and u.represents_company=%s
+	""",(represents_company))
+	
+	return q1
+	
+
+		
+
+ 

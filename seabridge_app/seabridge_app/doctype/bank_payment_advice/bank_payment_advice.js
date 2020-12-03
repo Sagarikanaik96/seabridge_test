@@ -3,6 +3,14 @@
 
 frappe.ui.form.on('Bank Payment Advice', {
 refresh:function(frm,cdt,cdn){
+frm.set_query("company",function(){
+                return{
+                    filters: {
+                        "company_type":'Customer'
+                    }
+                };
+             });
+
 
 if(frm.doc.docstatus==1){
 frm.add_custom_button(__('Export'), function(){
@@ -29,7 +37,7 @@ frm.add_custom_button(__('Export'), function(){
 var hideTheButtonWrapper = $('*[data-fieldname="bank_payment_advice_details"]');
 hideTheButtonWrapper .find('.grid-add-row').hide();
 
-
+if(frm.doc.docstatus==0){
 	frm.add_custom_button(__('Get Invoices'), function(){
 var select={}
 	 let dialogObj= new frappe.ui.form.MultiSelectDialog({
@@ -150,8 +158,10 @@ select=selections
 dialogObj.dialog.hide()
  }
 }); 
+
+
   });
-   
+   }
 	},
 	date:function(frm,cdt,cdn){
 	 if(frm.doc.date<frappe.datetime.nowdate()){
