@@ -85,9 +85,9 @@ select=selections
 			        child.invoice_amount = r.message[i].grand_total;
 			        child.outstanding_amount=r.message[i].outstanding_amount;
 			        child.payment_transaction_amount=r.message[i].outstanding_amount;
-				if(child.due_date<frappe.datetime.nowdate()){
+				//if(child.due_date<frappe.datetime.nowdate()){
 					child.overdue_days=frappe.datetime.get_day_diff(frappe.datetime.nowdate(),child.due_date)
-				}
+				//}
 				
 			         frappe.call({
             method: "frappe.client.get_list",
@@ -121,6 +121,7 @@ select=selections
 			
 
 	frappe.db.get_value("Supplier",child.supplier_name,"has_sbtfx_contract",(s)=>{
+		child.has_sbtfx_contract=s.has_sbtfx_contract;
 		if(s.has_sbtfx_contract==1){
 			frappe.db.get_value("Supplier",child.supplier_name,"represents_company",(c)=>{
 				frappe.db.get_value("Company",c.represents_company,"parent_company",(p)=>{
@@ -147,7 +148,9 @@ select=selections
 
 		}		
 	})
-		            cur_frm.refresh_field("bank_payment_advice_details")
+			cur_frm.refresh_field("bank_payment_advice_details")
+
+			
                     }
                 }
                
@@ -173,13 +176,47 @@ dialogObj.dialog.hide()
 	before_save:function(frm,cdt,cdn){
 		$.each(frm.doc.bank_payment_advice_details, function(idx, item){
 			item.cheque_date=frappe.datetime.nowdate()
+
 		})
+	}
+		
     },
 	before_submit:function(frm,cdt,cdn){
 		$.each(frm.doc.bank_payment_advice_details, function(idx, item){
 			item.cheque_date=frappe.datetime.nowdate()
 			item.cheque_no=frm.doc.name
 		})
+
+		frappe.call({
+                method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.sort_details",
+                args:{
+			doc:frm.doc.name		
+		},
+                async:false,
+                callback: function(r){
+			cur_frm.clear_table("bank_payment_advice_details");
+
+			for(var i=0;i<r.message.length;i++){
+				var child = cur_frm.add_child("bank_payment_advice_details");
+				child.invoice_document=r.message[i].invoice_document,
+				child.due_date=r.message[i].due_date,
+				child.supplier_name=r.message[i].supplier_name,
+				child.has_sbtfx_contract=r.message[i].has_sbtfx_contract,
+				child.invoice_amount=r.message[i].invoice_amount,
+				child.debit_note=r.message[i].debit_note,
+				child.debit_note_amount=r.message[i].debit_note_amount,
+				child.outstanding_amount=r.message[i].outstanding_amount,
+				child.payment_transaction_amount=r.message[i].payment_transaction_amount,
+				child.purchase_order=r.message[i].purchase_order,
+				child.purchase_order_amount=r.message[i].purchase_order_amount,
+				child.cheque_no=r.message[i].cheque_no,
+				child.cheque_date=r.message[i].cheque_date,
+				child.overdue_days=r.message[i].overdue_days,
+				child.bank_account=r.message[i].bank_account,
+				child.bank_name=r.message[i].bank_name
+			}
+                }
+            });
     }
 })
 

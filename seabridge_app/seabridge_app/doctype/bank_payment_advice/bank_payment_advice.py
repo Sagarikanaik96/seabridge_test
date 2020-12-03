@@ -71,3 +71,9 @@ def auto_create_payment_entry(doc,method):
 										
 					})
 		pe_doc.submit()
+
+@frappe.whitelist()
+def sort_details(doc):
+	bpad=frappe.db.get_list("Bank Payment Advice Details",filters={'parent':doc,'parenttype':'Bank Payment Advice'},fields={'*'})
+	sorted_users = sorted(bpad, key=lambda x: (x['overdue_days']))
+	return sorted_users
