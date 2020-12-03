@@ -178,9 +178,8 @@ dialogObj.dialog.hide()
 			item.cheque_date=frappe.datetime.nowdate()
 
 		})
-	}
-		
-    },
+	},
+	
 	before_submit:function(frm,cdt,cdn){
 		$.each(frm.doc.bank_payment_advice_details, function(idx, item){
 			item.cheque_date=frappe.datetime.nowdate()
