@@ -19,7 +19,6 @@ after_save:function(frm,cdt,cdn){
 	}
 
 
-
 },
 before_save:function(frm,cdt,cdn){
 	var count=0;
@@ -76,7 +75,7 @@ var email_id;
 					callback: function(r){
 						
 						for(var i=0;i<r.message.length;i++){
-							var email_template='<h2><span style="color: rgb(102, 185, 102);">Task Details</span></h2><table class="table table-bordered"><tbody><tr><td data-row="insert-column-right"><strong>Document Id</strong></td><td data-row="insert-column-right"><strong style="color: rgb(107, 36, 178);">'+frm.doc.name+'</strong></td></tr><tr><td data-row="row-z48v"><strong>Approver</strong></td><td data-row="row-z48v"><strong style="color: rgb(107, 36, 178);">'+r.message[i][0]+'</strong></td></tr><tr><td data-row="row-779i"><strong>Note</strong></td><td data-row="row-779i"><strong style="color: rgb(255, 153, 0);">This is a system generated email, please do not reply to this message.</strong></td></tr></tbody></table>'
+							var email_template='<h2><span style="color: rgb(102, 185, 102);">Task Details</span></h2><table class="table table-bordered"><tbody><tr><td data-row="insert-column-right"><strong>Document Id</strong></td><td data-row="insert-column-right"><strong style="color: rgb(107, 36, 178);">'+frm.doc.name+'</strong></td></tr><tr><td data-row="row-z48v"><strong>Approver</strong></td><td data-row="row-z48v"><strong style="color: rgb(107, 36, 178);">'+r.message[i][0]+'</strong></td></tr><tr><td data-row="row-zajk"><strong>View Document in ERPNext</strong></td><td data-row="row-mze0"><strong style="color: rgb(230, 0, 0);"><a href="desk#Form/Purchase Invoice/'+frm.doc.name+'" target="_blank" class="btn btn-success">Click to view document</a></strong></td></tr><tr><td data-row="row-779i"><strong>Note</strong></td><td data-row="row-779i"><strong style="color: rgb(255, 153, 0);">This is a system generated email, please do not reply to this message.</strong></td></tr></tbody></table>'
 
 
 							frappe.call({
@@ -138,18 +137,6 @@ if(frm.doc.workflow_state=="Submitted"){
 },
 
 refresh:function(frm,cdt,cdn){
-
-
-    
-    
-//if(frm.doc.workflow_state!="Rejected"){
-//cur_frm.cscript.refresh = function(doc, dt, dn){
-    //if (doc.docstatus==1 && doc.workflow_state=="Approved") {
-               // cur_frm.clear_custom_buttons('Create')
-    //}
-//}
-//}	
-
 
 	if(frm.doc.purchase_order){
 		if(frm.doc.purchase_receipt){}

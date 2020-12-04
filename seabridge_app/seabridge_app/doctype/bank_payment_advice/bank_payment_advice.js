@@ -30,7 +30,8 @@ frm.add_custom_button(__('Export'), function(){
    frm.set_query("bank_account",function(){
                 return{
                     filters: [
-                        ["Bank Account","company", "=", frm.doc.company]
+                        ["Bank Account","company", "=", frm.doc.company],
+			["Bank Account","is_company_account", "=", 1]
                     ]
                 }
             }); 
@@ -77,6 +78,7 @@ select=selections
                         }
                     })
                     if(count==0){
+			
                     var child = cur_frm.add_child("bank_payment_advice_details");
                     child.invoice_document=r.message[i].name;
 			        child.due_date = r.message[i].due_date;
@@ -85,9 +87,7 @@ select=selections
 			        child.invoice_amount = r.message[i].grand_total;
 			        child.outstanding_amount=r.message[i].outstanding_amount;
 			        child.payment_transaction_amount=r.message[i].outstanding_amount;
-				//if(child.due_date<frappe.datetime.nowdate()){
-					child.overdue_days=frappe.datetime.get_day_diff(frappe.datetime.nowdate(),child.due_date)
-				//}
+				child.overdue_days=frappe.datetime.get_day_diff(frappe.datetime.nowdate(),child.due_date)
 				
 			         frappe.call({
             method: "frappe.client.get_list",
@@ -115,13 +115,16 @@ select=selections
 				child.purchase_order=c.purchase_order
 				frappe.db.get_value("Purchase Order",c.purchase_order,"grand_total",(c)=>{
 						child.purchase_order_amount=c.grand_total
+						cur_frm.refresh_field("bank_payment_advice_details")
 					})
 				}
+				
 			})
 			
 
 	frappe.db.get_value("Supplier",child.supplier_name,"has_sbtfx_contract",(s)=>{
 		child.has_sbtfx_contract=s.has_sbtfx_contract;
+		cur_frm.refresh_field("bank_payment_advice_details")
 		if(s.has_sbtfx_contract==1){
 			frappe.db.get_value("Supplier",child.supplier_name,"represents_company",(c)=>{
 				frappe.db.get_value("Company",c.represents_company,"parent_company",(p)=>{
@@ -159,11 +162,12 @@ select=selections
  cur_frm.refresh_field("bank_payment_advice_details")
  })
 dialogObj.dialog.hide()
- }
+}
 }); 
 
 
   });
+
    }
 	},
 	date:function(frm,cdt,cdn){
@@ -178,8 +182,10 @@ dialogObj.dialog.hide()
 			item.cheque_date=frappe.datetime.nowdate()
 
 		})
+
 	},
 	
+
 	before_submit:function(frm,cdt,cdn){
 		$.each(frm.doc.bank_payment_advice_details, function(idx, item){
 			item.cheque_date=frappe.datetime.nowdate()
