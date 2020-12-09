@@ -162,13 +162,55 @@ select=selections
  cur_frm.refresh_field("bank_payment_advice_details")
  })
 dialogObj.dialog.hide()
+cur_frm.save();
+	
 }
+
 }); 
 
-
+	
   });
 
+	frappe.call({
+                method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.sort_details",
+                args:{
+			doc:frm.doc.name		
+		},
+                async:false,
+                callback: function(r){
+			var idx_count=0;
+			$.each(frm.doc.bank_payment_advice_details, function(idx, detail){
+				if(detail.invoice_document!=r.message[idx].invoice_document){
+					idx_count++;
+				}			
+			})
+			if(idx_count>0){
+			cur_frm.clear_table("bank_payment_advice_details");
+
+			for(var i=0;i<r.message.length;i++){
+				var child = cur_frm.add_child("bank_payment_advice_details");
+				child.invoice_document=r.message[i].invoice_document,
+				child.due_date=r.message[i].due_date,
+				child.supplier_name=r.message[i].supplier_name,
+				child.has_sbtfx_contract=r.message[i].has_sbtfx_contract,
+				child.invoice_amount=r.message[i].invoice_amount,
+				child.debit_note=r.message[i].debit_note,
+				child.debit_note_amount=r.message[i].debit_note_amount,
+				child.outstanding_amount=r.message[i].outstanding_amount,
+				child.payment_transaction_amount=r.message[i].payment_transaction_amount,
+				child.purchase_order=r.message[i].purchase_order,
+				child.purchase_order_amount=r.message[i].purchase_order_amount,
+				child.cheque_no=r.message[i].cheque_no,
+				child.cheque_date=r.message[i].cheque_date,
+				child.overdue_days=r.message[i].overdue_days,
+				child.bank_account=r.message[i].bank_account,
+				child.bank_name=r.message[i].bank_name
+			}
+			}
+		}
+		})
    }
+	
 	},
 	date:function(frm,cdt,cdn){
 	 if(frm.doc.date<frappe.datetime.nowdate()){
@@ -192,36 +234,7 @@ dialogObj.dialog.hide()
 			item.cheque_no=frm.doc.name
 		})
 
-		frappe.call({
-                method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.sort_details",
-                args:{
-			doc:frm.doc.name		
-		},
-                async:false,
-                callback: function(r){
-			cur_frm.clear_table("bank_payment_advice_details");
-
-			for(var i=0;i<r.message.length;i++){
-				var child = cur_frm.add_child("bank_payment_advice_details");
-				child.invoice_document=r.message[i].invoice_document,
-				child.due_date=r.message[i].due_date,
-				child.supplier_name=r.message[i].supplier_name,
-				child.has_sbtfx_contract=r.message[i].has_sbtfx_contract,
-				child.invoice_amount=r.message[i].invoice_amount,
-				child.debit_note=r.message[i].debit_note,
-				child.debit_note_amount=r.message[i].debit_note_amount,
-				child.outstanding_amount=r.message[i].outstanding_amount,
-				child.payment_transaction_amount=r.message[i].payment_transaction_amount,
-				child.purchase_order=r.message[i].purchase_order,
-				child.purchase_order_amount=r.message[i].purchase_order_amount,
-				child.cheque_no=r.message[i].cheque_no,
-				child.cheque_date=r.message[i].cheque_date,
-				child.overdue_days=r.message[i].overdue_days,
-				child.bank_account=r.message[i].bank_account,
-				child.bank_name=r.message[i].bank_name
-			}
-                }
-            });
+		
     }
 })
 
