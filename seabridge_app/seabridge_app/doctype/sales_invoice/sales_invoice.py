@@ -95,7 +95,6 @@ def auto_create_purchase_invoice(doc,method):
 
 	has_sbtfx_contract=frappe.db.get_value('Company',{'company_name':doc.company},'has_sbtfx_contract')
 	if has_sbtfx_contract==1:
-		print("has-----------------------------L")
 		doc_posted=False
 		headers=frappe.db.get_list("API Integration",fields={'*'})
 		if headers:
@@ -105,12 +104,12 @@ def auto_create_purchase_invoice(doc,method):
 					"content-type": "application/json"
 				}
 				conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
-				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.outstanding_amount)+'", "currency_name": "SGD", "source": "community_erpnext", "stage": "AP"}]}'
+				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.outstanding_amount)+'", "currency_name": "SGD", "source": "community_erpnext", "stage": "AR"}]}'
+				print(document)
 				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
 				print("RESPONSE",res)
 				response_code=str(res)
 				res = conn.post_process(res)
-				print("res",res)
 				if response_code=="<Response [200]>":
 					doc_posted=True
 					doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.')

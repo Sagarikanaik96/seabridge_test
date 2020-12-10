@@ -67,7 +67,8 @@ def post_invoice(name):
                      print("URL",headers[0].url)
                      print("Auth Key",headers[0].authorization_key)
                      conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
-                     document='{"documents":[{"buyer_name":"'+ doc.company+'", "buyer_permid": "", "seller_name": "'+doc.supplier_name+'", "seller_permid": "", "document_id": "'+doc.bill_no+'", "document_type": "I", "document_date": "'+str(doc.posting_date)+'", "document_due_date":"'+str(doc.due_date)+'", "amount_total": "'+str(doc.outstanding_amount)+'", "currency_name": "SGD", "source": "community_erpnext", "stage": "AP"}]}'
+                     document='{"documents":[{"buyer_name":"'+ doc.company+'", "buyer_permid": "", "seller_name": "'+doc.supplier_name+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+str(doc.posting_date)+'", "document_due_date":"'+str(doc.due_date)+'", "amount_total": "'+str(doc.outstanding_amount)+'", "currency_name": "SGD", "source": "community_erpnext", "stage": "AP", "description":"'+doc.bill_no+'"}]}'
+                     print(document)
                      res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
                      print("RESPONSE",res)
                      response_code=str(res)
