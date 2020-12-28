@@ -104,7 +104,7 @@ def auto_create_purchase_invoice(doc,method):
 					"content-type": "application/json"
 				}
 				conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
-				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.outstanding_amount)+'", "currency_name": "SGD", "source": "community_erpnext", "document_category": "AR"}]}'
+				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.grand_total)+'", "currency_name": "SGD", "source": "community_erpnext", "document_category": "AR"}]}'
 				print(document)
 				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
 				print("RESPONSE",res)
