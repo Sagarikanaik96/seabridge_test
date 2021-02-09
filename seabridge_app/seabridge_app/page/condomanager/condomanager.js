@@ -122,7 +122,7 @@ condodata.push(
          
           {
             data: "allocatedbudget",
-            width: "8%",
+            width: "9%",
             class: "text-break text-right",
           },
           {
@@ -137,11 +137,12 @@ condodata.push(
           },
           {
             data: "match",
+	    width: "9%",
             class: "text-break text-center",
           },
           {
             data: "pendingwith",
-            width: "8%",
+            width: "9%",
             class: "text-break text-center",
             render: function (data, row) {
               let test = data;
@@ -253,7 +254,6 @@ condodata.push(
 	}
 
       $("#condotable tbody").on("click", "td button.details-control", function () {
-	
         $("tr").removeClass("shown");
         $("#detailcondo_wrapper").remove();
         var tr = $(this).closest("tr");
