@@ -10,6 +10,15 @@ from frappe.desk.reportview import build_match_conditions, get_filters_cond
 import pandas as pd 
 from frappe.core.doctype.communication.email import make
 
+#from flask import Flask, render_template
+#app = Flask(__name__)
+
+#@app.route('/')
+#def index():
+#  return render_template('web_pi_row.html.html')
+
+
+
 @frappe.whitelist()
 def get_email(doctype,is_internal_customer,customer_name):
 	company=frappe.db.get_value(doctype,{'is_internal_customer':is_internal_customer,'customer_name':customer_name},'represents_company')
@@ -158,6 +167,81 @@ def get_agent_users(represents_company,doc):
 	return q1
 	
 
+@frappe.whitelist()
+def web_form_call():
+	print(frappe.session.user)
+	if frappe.session.user=="Administrator":
+		q1=frappe.db.sql("""
+			select p.name as "name",
+			p.supplier as "supplier",p.grand_total,p.due_date,
+	 		p.workflow_state,po.grand_total,po.transaction_date,p.docstatus,
+			(CASE
+			when p.workflow_state="Draft" Then (select c.associate_agent 
+			from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
+			c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
+			when p.workflow_state="Pending" Then (select group_concat(u.name)
+			from tabUser u,`tabHas Role` r where 
+			u.name = r.parent and r.role = 'Accounts Payable'
+			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 			c.company_name=p.company))
+			END) as "user",
+			(select ba.budget_amount from `tabBudget Account` ba right join `tabBudget` b ON b.name=ba.parent 
+			AND b.item_group in(select i.item_group from `tabPurchase Invoice Item` i where
+			i.parent=p.name) and ba.account in (select id.expense_account from `tabItem Default` id
+			RIGHT JOIN `tabItem` item ON item.name=id.parent
+			right JOIN `tabPurchase Invoice Item` i ON i.item_code=item.item_code 
+			where p.name=i.parent and id.company=p.company)) as "budget_amount"
+			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
+			where p.workflow_state not in ("Rejected","Cancelled")""")
+	else:
+		q2=frappe.db.sql("""select c.company_name from `tabCompany` c where c.associate_agent=%s""",(frappe.session.user))
+		company_names=''
+		for idx,i in enumerate(q2):
+			if(idx!=0):
+				company_names+=','
+			for j in i:
+				company_names+='"'+j+'"'
+		q1=frappe.db.sql("""
+			select p.name as "name",
+			p.supplier as "supplier",p.grand_total,p.due_date,
+	 		p.workflow_state,po.grand_total,po.transaction_date,p.docstatus,
+			(CASE
+			when p.workflow_state="Draft" Then (select c.associate_agent 
+			from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
+			c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
+			when p.workflow_state="Pending" Then (select group_concat(u.name)
+			from tabUser u,`tabHas Role` r where 
+			u.name = r.parent and r.role = 'Accounts Payable'
+			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 			c.company_name=p.company))
+			END) as "user",
+			(select ba.budget_amount from `tabBudget Account` ba right join `tabBudget` b ON b.name=ba.parent 
+			AND b.item_group in(select i.item_group from `tabPurchase Invoice Item` i where
+			i.parent=p.name) and ba.account in (select id.expense_account from `tabItem Default` id
+			RIGHT JOIN `tabItem` item ON item.name=id.parent
+			right JOIN `tabPurchase Invoice Item` i ON i.item_code=item.item_code 
+			where p.name=i.parent and id.company=p.company)) as "budget_amount"
+			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
+			where p.workflow_state not in ("Rejected","Cancelled") and p.company in (%s)"""%company_names)
+	
+	return q1
+	
+
+@frappe.whitelist()
+def web_form(doc):
+	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+	pi_doc.db_set('workflow_state','Pending')
+	frappe.db.commit()
+	
+	
+@frappe.whitelist()
+def web_call_vendor(vendor):
+	q1=frappe.db.sql("""
+		select p.name as "name",
+		po.grand_total,p.grand_total,po.transaction_date,p.due_date as "due_date:Date",p.due_date
+		from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name 
+		where p.supplier=%s and p.workflow_state='Paid'""",(vendor))
+	print(q1)
+	return q1
+	
 		
 
  

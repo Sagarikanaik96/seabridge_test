@@ -11,9 +11,33 @@ app_color = "grey"
 app_email = "seabridge_app@gmail.com"
 app_license = "MIT"
 app_logo_url = '/assets/seabridge_app/images/Seabridge TFX_VL.png'
-app_include_css = "assets/seabridge_app/css/desk.min.css"
-#app_include_js = "assets/seabridge_app/js/seabridge_app/utils/common.js"
-app_include_js = "assets/seabridge_app/js/seabridge_app/form/multi_select_dialog.js"
+app_include_css = [
+	"assets/seabridge_app/css/desk.min.css"
+]
+app_include_js = [
+	"/assets/seabridge_app/js/seabridge_app/form/multi_select_dialog.js",
+	"/assets/seabridge_app/js/bootstrap-selectpicker.js",
+	"/assets/seabridge_app/js/jquery.datatables.js",
+	"/assets/seabridge_app/js/bootstrap-notify.js",
+	"/assets/seabridge_app/js/bootstrap-switch-tags.js",
+	"/assets/seabridge_app/js/bootstrap-table.js",
+	"/assets/seabridge_app/js/chartist.min.js",
+	"/assets/seabridge_app/js/es6-promise-auto.min.js",
+	"/assets/seabridge_app/js/fullcalendar.min.js",
+	"/assets/seabridge_app/js/jquery.bootstrap.wizard.min.js",
+	"/assets/seabridge_app/js/jquery.easypiechart.min.js",
+	"/assets/seabridge_app/js/demo.js",
+	"/assets/seabridge_app/js/nouislider.min.js",
+	"/assets/seabridge_app/js/paper-dashboard.js",
+	"/assets/seabridge_app/js/paper-dashboard-backup.js",
+	"/assets/seabridge_app/js/jquery.validate.min.js",
+	"/assets/seabridge_app/js/jquery-jvectormap.js",
+	"/assets/seabridge_app/js/jquery-ui.min.js",
+	"/assets/seabridge_app/js/perfect-scrollbar.min.js",
+	"/assets/seabridge_app/js/sweetalert2.js",
+	"/assets/seabridge_app/js/seabridge.js"
+
+]
 website_context = {
 	"favicon": 	"/assets/seabridge_app/images/seaicon.png",
 	"splash_image": "/assets/seabridge_app/images/Seabridge TFX_VL.png"
@@ -160,6 +184,13 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"filters":[
         [
         "name","in",["PI Approval WF"]
+	]
+	]
+},
+{"dt": "Page", 
+		"filters":[
+        [
+        "name","in",["condomanager"]
 	]
 	]
 },
@@ -325,6 +356,12 @@ override_doctype_dashboards = {
 # 		"seabridge_app.tasks.monthly"
 # 	]
 # }
+
+jenv={
+	"methods": [
+		"web_form_call:seabridge_app.seabridge_app.api.web_form_call"
+	]
+}
 
 # Testing
 # -------
