@@ -182,14 +182,9 @@ def web_form_call():
 			when p.workflow_state="Pending" Then (select group_concat(u.name)
 			from tabUser u,`tabHas Role` r where 
 			u.name = r.parent and r.role = 'Accounts Payable'
-			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 			c.company_name=p.company))
+			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			END) as "user",
-			(select ba.budget_amount from `tabBudget Account` ba right join `tabBudget` b ON b.name=ba.parent 
-			AND b.item_group in(select i.item_group from `tabPurchase Invoice Item` i where
-			i.parent=p.name) and ba.account in (select id.expense_account from `tabItem Default` id
-			RIGHT JOIN `tabItem` item ON item.name=id.parent
-			right JOIN `tabPurchase Invoice Item` i ON i.item_code=item.item_code 
-			where p.name=i.parent and id.company=p.company)) as "budget_amount"
+			"1234" as "budget_amount"
 			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
 			where p.workflow_state not in ("Rejected","Cancelled")""")
 	else:
@@ -213,12 +208,7 @@ def web_form_call():
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 			c.company_name=p.company))
 			END) as "user",
-			(select ba.budget_amount from `tabBudget Account` ba right join `tabBudget` b ON b.name=ba.parent 
-			AND b.item_group in(select i.item_group from `tabPurchase Invoice Item` i where
-			i.parent=p.name) and ba.account in (select id.expense_account from `tabItem Default` id
-			RIGHT JOIN `tabItem` item ON item.name=id.parent
-			right JOIN `tabPurchase Invoice Item` i ON i.item_code=item.item_code 
-			where p.name=i.parent and id.company=p.company)) as "budget_amount"
+			"1234" as "budget_amount"
 			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
 			where p.workflow_state not in ("Rejected","Cancelled") and p.company in (%s)"""%company_names)
 	
@@ -243,5 +233,30 @@ def web_call_vendor(vendor):
 	return q1
 	
 		
+@frappe.whitelist()
+def get_user_role():
+	print("In Context")
+	
+	q1=frappe.db.sql("""
+		select r.role
+		from tabUser u,`tabHas Role` r where 
+		u.name = r.parent and r.role = 'Estate Manager'
+		and u.enabled = 1 and u.name=%s
+	""",(frappe.session.user))
+	print("user",frappe.session.user)
+	print("result----------",q1)
+	if(frappe.session.user=="Administrator"):
+		return "Administrator";
+	else:
+		for q in q1:
+			for i in q:
+				print("actyula------------",i)
+				return i
+	#print("CONTEXT-----------",context.data)
 
+
+@frappe.whitelist()
+def get_user_estate_role(name):
+        user=frappe.db.get_value('Has Role',{'parent':name,'parenttype':'User','role':'Estate Manager'},'parent')
+        return user
  
