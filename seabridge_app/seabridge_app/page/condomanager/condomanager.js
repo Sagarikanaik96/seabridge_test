@@ -22,21 +22,29 @@ $(document).ready(function() {
           xhttp.send();
 
    // condomanagerdashboard.initdataTable();
-    $(".multiselectbtn").css("display", "none");
+    $(".multiselectbtnsubmit").css("display", "none");
+    $(".multiselectbtnapprove").css("display", "none");
+    $(".multiselectbtnreject").css("display", "none");
     $('.checked_all').on('change', function() {     
                 $('.checkbox').prop('checked', $(this).prop("checked")); 
-                $(".multiselectbtn").css("display", "block");  
+                //$(".multiselectbtnsubmit").css("display", "block"); 
+                //$(".multiselectbtnapprove").css("display", "block");   
                 if($('.checkbox:checked').length == 0){
     
-    $(".multiselectbtn").css("display", "none");
+    $(".multiselectbtnsubmit").css("display", "none");
+    $(".multiselectbtnapprove").css("display", "none");
+    $(".multiselectbtnreject").css("display", "none");
   }
   else{
-       $(".multiselectbtn").css("display", "block");
+       $(".multiselectbtnsubmit").css("display", "block");
+	$(".multiselectbtnapprove").css("display", "block");
       }           
         });
         $('.checkbox').on('change', function() {  //".checkbox" change 
        
-        $( ".multiselectbtn" ).insertAfter( $( "#condotable" ) );
+        $( ".multiselectbtnsubmit" ).insertAfter( $( "#condotable" ) );
+	//$( ".multiselectbtnapprove" ).insertAfter( $( "#condotable" ) );
+	
 });
 })
 
@@ -83,13 +91,56 @@ condodata.push(
           {
             data: null,
             width: "1%",
-            class: "text-break text-center",
+            class: "text-break text-center checkval",
+	    id: "checkval",
             render: function (data, row) {
-		if(data['match']=="Y" && data['status']=="Submitted"){
-              return '<input name="product" class="checkbox" type="checkbox">';
+		var email;
+		if(data['match']=="Y" && data['status']=="Pending"){
+		frappe.call({
+		        method:"seabridge_app.seabridge_app.api.get_user_email",
+		        args:{
+				name:frappe.session.user
+			},
+		        async:false,
+		        callback: function(r){
+				if(r.message){
+				email=r.message 	
+				}	
+			}
+						
+		    });
+			if(email){
+
+					return '<input name="product" class="checkbox" type="checkbox">';
+				}
+				else{
+					return '<input name="product" class="checkbox" type="checkbox" disabled>';
+				}
+		}
+		else if(data['status']=="Draft" || data['status']=="Rejected"){
+		frappe.call({
+		        method:"seabridge_app.seabridge_app.api.get_user_estate_role",
+		        args:{
+				name:frappe.session.user
+			},
+		        async:false,
+		        callback: function(r){
+				if(r.message){
+				email=r.message 	
+				}	
+			}
+						
+		    });
+			if(email){
+
+					return '<input name="product" class="checkbox" type="checkbox">';
+				}
+				else{
+					return '<input name="product" class="checkbox" type="checkbox" disabled>';
+				}
 		}
 		else{
-	              return '<input name="product" class="checkbox" type="checkbox" disabled>';
+			return '<input name="product" class="checkbox" type="checkbox" disabled>';
 		}
             },
             
@@ -105,7 +156,7 @@ condodata.push(
             width: "13%",
             class: "text-break text-center invoice",
             render: function (data, row) {
-              return '<a href="/desk#Form/Purchase Invoice/'+data+'" target="_blank">' + data + '</a>';
+              return '<a href="/desk#Form/Purchase Invoice/'+data+'" target="_blank"><u>' + data + '</u></a>';
             },
             
           },
@@ -132,7 +183,7 @@ condodata.push(
           },
           {
             data: "invoiceduedate",
-            width: "9%",
+            width: "12%",
             class: "text-break text-center",
           },
           {
@@ -154,7 +205,7 @@ condodata.push(
             data: null,
 	    value:"vendor",
             width: "6%",
-            class: "text-break text-center",
+            class: "text-break text-center status",
   
             render: function (data, value,row) {
               if (data['status'] == "Submitted") {
@@ -163,7 +214,7 @@ condodata.push(
                           class="btn btn-primary btn-success btn-sm btn-fill condo-btn details-control">Pending</button>`;
               } else if (data['status'] == "Pending") {
                 return `<button
-                          class="btn btn-primary btn-warning btn-sm btn-fill condo-btn details-control">Awaiting Approval</button>`;
+                          class="btn btn-primary btn-warning btn-sm btn-fill condo-btn details-control">Submitted</button>`;
               }
 		else if (data['status'] == "To Bill") {
                 return `<button
@@ -172,7 +223,12 @@ condodata.push(
 		else if (data['status'] == "Paid") {
                 return `<button
                           class="btn btn-primary btn-warning btn-sm btn-fill condo-btn details-control">Paid</button>`;
-              } else {
+              }
+		else if (data['status'] == "Rejected") {
+                return `<button
+                          class="btn btn-primary btn-danger btn-sm btn-fill condo-btn details-control">Rejected</button>`;
+              }
+		 else {
                 return `<button
                           class="btn btn-primary btn-sm btn-fill condo-btn details-control">Awaiting Match</button>`;
               }
@@ -218,12 +274,31 @@ condodata.push(
   
       $("#condotable tbody").on("change", "td input.checkbox",function(){ //".checkbox" change 
       if($('.checkbox:checked').length == 0){
+	
       
-        $(".multiselectbtn").css("display", "none");
+        $(".multiselectbtnsubmit").css("display", "none");
+	$(".multiselectbtnapprove").css("display", "none");
+	$(".multiselectbtnreject").css("display", "none");
       }
       else{
-           $(".multiselectbtn").css("display", "block");
-          }
+		frappe.call({
+		        method:"seabridge_app.seabridge_app.api.get_user_email",
+		        args:{
+				name:frappe.session.user
+			},
+		        async:false,
+		        callback: function(r){
+			    if(r.message){
+				   
+				   $(".multiselectbtnapprove").css("display", "block");
+				   $(".multiselectbtnreject").css("display", "block");
+				  }
+				}
+		})
+		$(".multiselectbtnsubmit").css("display", "block");
+	
+	
+	}
           if($('.checkbox:checked').length == $('.checkbox').length){
            
                        $('.checked_all').prop('checked',true);
@@ -233,7 +308,6 @@ condodata.push(
                        $('.checked_all').prop('checked',false);
                   
                 }
-         
     })
 	
 
@@ -532,8 +606,7 @@ for(i=0;i<resultin['message'].length;i++){
 		$("#condotable input[type=checkbox]:checked").each(function () {
 			var row = $(this).closest("tr")[0];
         var invoice = $(this).parent().siblings('.invoice').text();
-			console.log("VendorINNNN-----------",invoice)
-				var xhttp;
+	var xhttp;
           xhttp=new XMLHttpRequest();
 	  var result_in;
            xhttp.onreadystatechange = function() {
@@ -546,5 +619,50 @@ for(i=0;i<resultin['message'].length;i++){
 		})
 	
 	})
+
+ $("#btnApprove").click(function () {
+		$("#condotable input[type=checkbox]:checked").each(function () {
+			var row = $(this).closest("tr")[0];
+        var invoice = $(this).parent().siblings('.invoice').text();
+	var xhttp;
+          xhttp=new XMLHttpRequest();
+	  var result_in;
+           xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                //callBack(this);
+            }
+          };
+          xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.approve_invoice?doc='+invoice,true);
+          xhttp.send();
+		})
+	
+	})
+
+ $("#btnReject").click(function () {
+		$("#condotable input[type=checkbox]:checked").each(function () {
+			var row = $(this).closest("tr")[0];
+        var invoice = $(this).parent().siblings('.invoice').text();
+	var xhttp;
+          xhttp=new XMLHttpRequest();
+	  var result_in;
+           xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                //callBack(this);
+            }
+          };
+          xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.reject_invoice?doc='+invoice,true);
+          xhttp.send();
+		})
+	
+	})
+
+$("#checkval").click( function(){
+//$("#checkval" ).on( "click", function() {
+	console.log("check------------")
+})
+
+
+
+
 
 }

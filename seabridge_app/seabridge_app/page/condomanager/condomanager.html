@@ -1,12 +1,12 @@
 <html><head>
 <meta charset="utf-8">
-    <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="assets/img/favicon.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/assets/seabridge_app/images/apple-icon.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/assets/seabridge_app/images/favicon.png">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
     <meta name="viewport" content="width=device-width">
-    <link href="/assets/seabridge_app/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/home/erpnext/oberoi_new/frappe-bench/sites/assets/seabridge_app/css/bootstrap.min.css" rel="stylesheet">
     <!--  Paper Dashboard core CSS    -->
     <link href="/assets/seabridge_app/css/paper-dashboard.css"  rel="stylesheet">
     <link href="/assets/seabridge_app/css/customstyle.css" rel="stylesheet">
@@ -16,6 +16,7 @@
     <link href="https://fonts.googleapis.com/css?family=Muli:400,300"  type="text/css" rel="stylesheet">
     <link href="/assets/seabridge_app/css/themify-icons.css" rel="stylesheet">
     <link href="/assets/seabridge_app/css/nucleo-icons.css" rel="stylesheet">
+
     <style>
     .chart-container {
         width: 390px;
@@ -103,7 +104,7 @@
                                                                             <th data-toggle="tooltip" data-placement="top" title="PO Date" >PO Date</th>
 
 
-                                                                            <th data-toggle="tooltip" data-placement="top" title="Invoice Due Date">Inv Due Date</th>
+                                                                            <th data-toggle="tooltip" data-placement="top" title="Invoice Due Date">Date</th>
                                                                             <th data-toggle="tooltip" data-placement="top" title="Match?">Match ?</th>
                                                                             <th data-toggle="tooltip" data-placement="top" title="Pending With">Pending</th>
                                                                             <th data-toggle="tooltip" data-placement="top" title="Status">Status</th>
@@ -120,11 +121,19 @@
                                                              
                                                             </div>
                                                         </div>
-                                                        <div class="multiselectbtn text-center my-4">
-                                                                    <button id = "btnGet" class="btn btn-primary btn-success btn-sm btn-fill btn-orange">Submit for Approval</button>
-                                                                    <button class="btn btn-primary btn-warning btn-sm btn-fill">Approve</button>
-                                                                    <button class="btn btn-primary btn-success btn-sm btn-fill">Approved for Payment</button>
-                                                                </div>
+						<center>
+						<table><tr><td>
+                                                        <div class="multiselectbtnsubmit text-center my-4">
+					  
+
+
+                                                                    <button id = "btnGet" class="btn btn-primary btn-success btn-sm btn-fill btn-orange">Submit</button> </div></td>
+                                                       <td> <div class="multiselectbtnapprove text-center my-4">
+								   &nbsp;  <button id = "btnApprove" class="btn btn-primary btn-warning btn-sm btn-fill">Approve</button></div></td>
+		<td> <div class="multiselectbtnreject text-center my-4">
+								      &nbsp; <button id = "btnReject" class="btn btn-primary btn-danger btn-sm btn-fill">Reject</button></div></td>
+                                                                     <td> &nbsp;<button class="btn btn-primary btn-success btn-sm btn-fill">Approved for Payment</button></td></table></center>
+                                                  
                                                         
                                                     </div>
 

@@ -186,7 +186,7 @@ def web_form_call():
 			END) as "user",
 			"1234" as "budget_amount"
 			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
-			where p.workflow_state not in ("Rejected","Cancelled")""")
+			where p.workflow_state not in ("Cancelled")""")
 	else:
 		q2=frappe.db.sql("""select c.company_name from `tabCompany` c where c.associate_agent=%s""",(frappe.session.user))
 		company_names=''
@@ -210,7 +210,7 @@ def web_form_call():
 			END) as "user",
 			"1234" as "budget_amount"
 			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
-			where p.workflow_state not in ("Rejected","Cancelled") and p.company in (%s)"""%company_names)
+			where p.workflow_state not in ("Cancelled") and p.company in (%s)"""%company_names)
 	
 	return q1
 	
@@ -220,6 +220,12 @@ def web_form(doc):
 	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
 	pi_doc.db_set('workflow_state','Pending')
 	frappe.db.commit()
+	users=get_agent_users(pi_doc.company,doc)
+	print(users)
+	for u in users:
+		for user in u:	
+			print(user)
+			make(subject = "Pending For Approval", content="Purchase Invoice is pending for approval", recipients=user,send_email=True)
 	
 	
 @frappe.whitelist()
@@ -260,3 +266,15 @@ def get_user_estate_role(name):
         user=frappe.db.get_value('Has Role',{'parent':name,'parenttype':'User','role':'Estate Manager'},'parent')
         return user
  
+@frappe.whitelist()
+def approve_invoice(doc):
+	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+	pi_doc.db_set('workflow_state','To Bill')
+	frappe.db.commit()
+
+@frappe.whitelist()
+def reject_invoice(doc):
+	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+	pi_doc.db_set('workflow_state','Rejected')
+	frappe.db.commit()
+	
