@@ -173,8 +173,8 @@ def web_form_call():
 	if frappe.session.user=="Administrator":
 		q1=frappe.db.sql("""
 			select p.name as "name",
-			p.supplier as "supplier",p.grand_total,p.due_date,
-	 		p.workflow_state,po.grand_total,po.transaction_date,p.docstatus,
+			p.supplier as "supplier",p.grand_total,DATE_FORMAT(p.due_date,'%d-%m-%Y'),
+	 		p.workflow_state,po.grand_total,DATE_FORMAT(po.transaction_date,'%d-%m-%Y'),p.docstatus,
 			(CASE
 			when p.workflow_state="Draft" Then (select c.associate_agent 
 			from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
@@ -186,7 +186,7 @@ def web_form_call():
 			END) as "user",
 			"1234" as "budget_amount"
 			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
-			where p.workflow_state not in ("Cancelled")""")
+			where p.workflow_state not in ("Cancelled") and p.is_return=0""")
 	else:
 		q2=frappe.db.sql("""select c.company_name from `tabCompany` c where c.associate_agent=%s""",(frappe.session.user))
 		company_names=''
@@ -197,8 +197,8 @@ def web_form_call():
 				company_names+='"'+j+'"'
 		q1=frappe.db.sql("""
 			select p.name as "name",
-			p.supplier as "supplier",p.grand_total,p.due_date,
-	 		p.workflow_state,po.grand_total,po.transaction_date,p.docstatus,
+			p.supplier as "supplier",p.grand_total,DATE_FORMAT(p.due_date,'%%d-%%m-%%Y'),
+	 		p.workflow_state,po.grand_total,DATE_FORMAT(po.transaction_date,'%%d-%%m-%%Y'),p.docstatus,
 			(CASE
 			when p.workflow_state="Draft" Then (select c.associate_agent 
 			from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
@@ -210,7 +210,7 @@ def web_form_call():
 			END) as "user",
 			"1234" as "budget_amount"
 			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
-			where p.workflow_state not in ("Cancelled") and p.company in (%s)"""%company_names)
+			where p.workflow_state not in ("Cancelled") and p.is_return=0 and p.company in (%s)"""%company_names)
 	
 	return q1
 	
@@ -219,20 +219,22 @@ def web_form_call():
 def web_form(doc):
 	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
 	pi_doc.db_set('workflow_state','Pending')
+	pi_doc.db_set('docstatus',1)
 	frappe.db.commit()
 	users=get_agent_users(pi_doc.company,doc)
 	print(users)
 	for u in users:
-		for user in u:	
+		for user in u:
+			template='<h2><span style="color: rgb(102, 185, 102);">Task Details</span></h2><table class="table table-bordered"><tbody><tr><td data-row="insert-column-right"><strong>Document Id</strong></td><td data-row="insert-column-right"><strong style="color: rgb(107, 36, 178);">'+doc+'</strong></td></tr><tr><td data-row="row-z48v"><strong>Approver</strong></td><td data-row="row-z48v"><strong style="color: rgb(107, 36, 178);">'+user+'</strong></td></tr><tr><td data-row="row-zajk"><strong>View Document in ERPNext</strong></td><td data-row="row-mze0"><strong style="color: rgb(230, 0, 0);"><a href="desk#Form/Purchase Invoice/'+doc+'" target="_blank" class="btn btn-success">Click to view document</a></strong></td></tr><tr><td data-row="row-779i"><strong>Note</strong></td><td data-row="row-779i"><strong style="color: rgb(255, 153, 0);">This is a system generated email, please do not reply to this message.</strong></td></tr></tbody></table>'	
 			print(user)
-			make(subject = "Pending For Approval", content="Purchase Invoice is pending for approval", recipients=user,send_email=True)
+			make(subject = "Pending For Approval", content=template, recipients=user,send_email=True)
 	
 	
 @frappe.whitelist()
 def web_call_vendor(vendor):
 	q1=frappe.db.sql("""
 		select p.name as "name",
-		po.grand_total,p.grand_total,po.transaction_date,p.due_date as "due_date:Date",p.due_date
+		po.grand_total,p.grand_total,DATE_FORMAT(po.transaction_date,'%%d-%%m-%%Y'),DATE_FORMAT(p.due_date,'%%d-%%m-%%Y') as "due_date:Date",DATE_FORMAT(p.due_date,'%%d-%%m-%%Y')
 		from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name 
 		where p.supplier=%s and p.workflow_state='Paid'""",(vendor))
 	print(q1)

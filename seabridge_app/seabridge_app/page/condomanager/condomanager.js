@@ -25,6 +25,7 @@ $(document).ready(function() {
     $(".multiselectbtnsubmit").css("display", "none");
     $(".multiselectbtnapprove").css("display", "none");
     $(".multiselectbtnreject").css("display", "none");
+    $(".multiselectbtnpayment").css("display", "none");
     $('.checked_all').on('change', function() {     
                 $('.checkbox').prop('checked', $(this).prop("checked")); 
                 //$(".multiselectbtnsubmit").css("display", "block"); 
@@ -230,7 +231,7 @@ condodata.push(
               }
 		 else {
                 return `<button
-                          class="btn btn-primary btn-sm btn-fill condo-btn details-control">Awaiting Match</button>`;
+                          class="btn btn-primary btn-sm btn-fill condo-btn details-control">Draft</button>`;
               }
               
             },
@@ -617,7 +618,7 @@ for(i=0;i<resultin['message'].length;i++){
           xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.web_form?doc='+invoice,true);
           xhttp.send();
 		})
-	
+	window.location.reload();
 	})
 
  $("#btnApprove").click(function () {
@@ -635,6 +636,7 @@ for(i=0;i<resultin['message'].length;i++){
           xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.approve_invoice?doc='+invoice,true);
           xhttp.send();
 		})
+	
 	
 	})
 
