@@ -184,7 +184,12 @@ def web_form_call():
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			END) as "user",
-			"1234" as "budget_amount"
+			(select ba.budget_amount from `tabBudget Account` ba right join `tabBudget` b ON b.name=ba.parent 
+		AND b.fiscal_year=YEAR(CURDATE()) AND b.docstatus=1 AND b.item_group in(select i.item_group from `tabPurchase Invoice Item` i where
+		 i.parent=p.name) and ba.account in (select id.expense_account from `tabItem Default` id 
+		 RIGHT JOIN `tabItem` item ON item.name=id.parent
+		 right JOIN `tabPurchase Invoice Item` i ON i.item_code=item.item_code 
+		 where p.name=i.parent and id.company=p.company)) as "budget_amount"
 			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
 			where p.workflow_state not in ("Cancelled") and p.is_return=0""")
 	else:
@@ -206,9 +211,14 @@ def web_form_call():
 			when p.workflow_state="Pending" Then (select group_concat(u.name)
 			from tabUser u,`tabHas Role` r where 
 			u.name = r.parent and r.role = 'Accounts Payable'
-			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 			c.company_name=p.company))
+			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			END) as "user",
-			"1234" as "budget_amount"
+			(select ba.budget_amount from `tabBudget Account` ba right join `tabBudget` b ON b.name=ba.parent 
+		AND b.fiscal_year=YEAR(CURDATE()) AND b.docstatus=1 AND b.item_group in(select i.item_group from `tabPurchase Invoice Item` i where
+		 i.parent=p.name) and ba.account in (select id.expense_account from `tabItem Default` id 
+		 RIGHT JOIN `tabItem` item ON item.name=id.parent
+		 right JOIN `tabPurchase Invoice Item` i ON i.item_code=item.item_code 
+		 where p.name=i.parent and id.company=p.company)) as "budget_amount"
 			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
 			where p.workflow_state not in ("Cancelled") and p.is_return=0 and p.company in (%s)"""%company_names)
 	
@@ -221,7 +231,8 @@ def web_form(doc):
 	pi_doc.db_set('workflow_state','Pending')
 	pi_doc.db_set('docstatus',1)
 	frappe.db.commit()
-	users=get_agent_users(pi_doc.company,doc)
+	agent_comp=frappe.db.get_value('Company',{'company_name':pi_doc.company},'associate_agent_company')
+	users=get_agent_users(agent_comp,doc)
 	print(users)
 	for u in users:
 		for user in u:
