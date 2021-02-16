@@ -171,8 +171,7 @@ def get_agent_users(represents_company,doc):
 def web_form_call():
 	print(frappe.session.user)
 	if frappe.session.user=="Administrator":
-		q1=frappe.db.sql("""
-			select p.name as "name",
+		q1=frappe.db.sql("""select p.name as "name",
 			p.supplier as "supplier",p.grand_total,DATE_FORMAT(p.due_date,'%d-%m-%Y'),
 	 		p.workflow_state,po.grand_total,DATE_FORMAT(po.transaction_date,'%d-%m-%Y'),p.docstatus,
 			(CASE
@@ -184,13 +183,26 @@ def web_form_call():
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			END) as "user",
-			(select ba.budget_amount from `tabBudget Account` ba right join `tabBudget` b ON b.name=ba.parent 
-		AND b.fiscal_year=YEAR(CURDATE()) AND b.docstatus=1 AND b.item_group in(select i.item_group from `tabPurchase Invoice Item` i where
-		 i.parent=p.name) and ba.account in (select id.expense_account from `tabItem Default` id 
-		 RIGHT JOIN `tabItem` item ON item.name=id.parent
-		 right JOIN `tabPurchase Invoice Item` i ON i.item_code=item.item_code 
-		 where p.name=i.parent and id.company=p.company)) as "budget_amount"
-			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
+			T1.budget_amount as "budget"
+			from 
+			`tabPurchase Order` po right join
+			`tabPurchase Invoice` p
+			ON p.purchase_order=po.name
+			LEFT JOIN(
+			select sum(ba.budget_amount) as budget_amount,
+			p.name as purchase_invoice from
+			`tabBudget Account` ba inner join
+			`tabBudget` b 
+			ON ba.parent=b.name right join 
+			`tabPurchase Invoice Item` i
+			ON b.item_group=i.item_group right join
+			`tabPurchase Invoice` p
+			ON i.parent=p.name
+			where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
+			AND b.docstatus=1 group by p.name
+			)T1
+			ON T1.purchase_invoice=p.name
+			and p.purchase_order=po.name
 			where p.workflow_state not in ("Cancelled") and p.is_return=0""")
 	else:
 		q2=frappe.db.sql("""select c.company_name from `tabCompany` c where c.associate_agent=%s""",(frappe.session.user))
@@ -200,8 +212,7 @@ def web_form_call():
 				company_names+=','
 			for j in i:
 				company_names+='"'+j+'"'
-		q1=frappe.db.sql("""
-			select p.name as "name",
+		q1=frappe.db.sql("""select p.name as "name",
 			p.supplier as "supplier",p.grand_total,DATE_FORMAT(p.due_date,'%%d-%%m-%%Y'),
 	 		p.workflow_state,po.grand_total,DATE_FORMAT(po.transaction_date,'%%d-%%m-%%Y'),p.docstatus,
 			(CASE
@@ -213,13 +224,26 @@ def web_form_call():
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			END) as "user",
-			(select ba.budget_amount from `tabBudget Account` ba right join `tabBudget` b ON b.name=ba.parent 
-		AND b.fiscal_year=YEAR(CURDATE()) AND b.docstatus=1 AND b.item_group in(select i.item_group from `tabPurchase Invoice Item` i where
-		 i.parent=p.name) and ba.account in (select id.expense_account from `tabItem Default` id 
-		 RIGHT JOIN `tabItem` item ON item.name=id.parent
-		 right JOIN `tabPurchase Invoice Item` i ON i.item_code=item.item_code 
-		 where p.name=i.parent and id.company=p.company)) as "budget_amount"
-			from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name
+			T1.budget_amount as "budget"
+			from 
+			`tabPurchase Order` po right join
+			`tabPurchase Invoice` p
+			ON p.purchase_order=po.name
+			LEFT JOIN(
+			select sum(ba.budget_amount) as budget_amount,
+			p.name as purchase_invoice from
+			`tabBudget Account` ba inner join
+			`tabBudget` b 
+			ON ba.parent=b.name right join 
+			`tabPurchase Invoice Item` i
+			ON b.item_group=i.item_group right join
+			`tabPurchase Invoice` p
+			ON i.parent=p.name
+			where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
+			AND b.docstatus=1 group by p.name
+			)T1
+			ON T1.purchase_invoice=p.name
+			and p.purchase_order=po.name
 			where p.workflow_state not in ("Cancelled") and p.is_return=0 and p.company in (%s)"""%company_names)
 	
 	return q1
