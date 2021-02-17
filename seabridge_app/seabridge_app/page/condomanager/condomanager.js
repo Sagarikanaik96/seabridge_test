@@ -296,7 +296,20 @@ condodata.push(
 				  }
 				}
 		})
-		$(".multiselectbtnsubmit").css("display", "block");
+		frappe.call({
+		        method:"seabridge_app.seabridge_app.api.get_user_estate_role",
+		        args:{
+				name:frappe.session.user
+			},
+		        async:false,
+		        callback: function(r){
+			    if(r.message){
+				   
+				   $(".multiselectbtnsubmit").css("display", "block");
+				  }
+				}
+		})
+		
 	
 	
 	}
