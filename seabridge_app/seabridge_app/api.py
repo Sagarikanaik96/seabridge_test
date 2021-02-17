@@ -10,6 +10,15 @@ from frappe.desk.reportview import build_match_conditions, get_filters_cond
 import pandas as pd 
 from frappe.core.doctype.communication.email import make
 
+#from flask import Flask, render_template
+#app = Flask(__name__)
+
+#@app.route('/')
+#def index():
+#  return render_template('web_pi_row.html.html')
+
+
+
 @frappe.whitelist()
 def get_email(doctype,is_internal_customer,customer_name):
 	company=frappe.db.get_value(doctype,{'is_internal_customer':is_internal_customer,'customer_name':customer_name},'represents_company')
@@ -158,6 +167,151 @@ def get_agent_users(represents_company,doc):
 	return q1
 	
 
-		
+@frappe.whitelist()
+def web_form_call():
+	print(frappe.session.user)
+	if frappe.session.user=="Administrator":
+		q1=frappe.db.sql("""select p.name as "name",
+			p.supplier as "supplier",p.grand_total,DATE_FORMAT(p.due_date,'%d-%m-%Y'),
+	 		p.workflow_state,po.grand_total,DATE_FORMAT(po.transaction_date,'%d-%m-%Y'),p.docstatus,
+			(CASE
+			when p.workflow_state="Draft" Then (select c.associate_agent 
+			from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
+			c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
+			when p.workflow_state="Pending" Then (select group_concat(u.name)
+			from tabUser u,`tabHas Role` r where 
+			u.name = r.parent and r.role = 'Accounts Payable'
+			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
+			END) as "user",
+			T1.budget_amount as "budget"
+			from 
+			`tabPurchase Order` po right join
+			`tabPurchase Invoice` p
+			ON p.purchase_order=po.name
+			LEFT JOIN(
+			select sum(ba.budget_amount) as budget_amount,
+			p.name as purchase_invoice from
+			`tabBudget Account` ba inner join
+			`tabBudget` b 
+			ON ba.parent=b.name right join 
+			`tabPurchase Invoice Item` i
+			ON b.item_group=i.item_group right join
+			`tabPurchase Invoice` p
+			ON i.parent=p.name
+			where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
+			AND b.docstatus=1 group by p.name
+			)T1
+			ON T1.purchase_invoice=p.name
+			and p.purchase_order=po.name
+			where p.workflow_state not in ("Cancelled") and p.is_return=0""")
+	else:
+		q2=frappe.db.sql("""select c.company_name from `tabCompany` c,`tabUser` u  where u.name=%s and u.represents_company=c.associate_agent_company""",(frappe.session.user))
+		company_names=''
+		for idx,i in enumerate(q2):
+			if(idx!=0):
+				company_names+=','
+			for j in i:
+				company_names+='"'+j+'"'
+		q1=frappe.db.sql("""select p.name as "name",
+			p.supplier as "supplier",p.grand_total,DATE_FORMAT(p.due_date,'%%d-%%m-%%Y'),
+	 		p.workflow_state,po.grand_total,DATE_FORMAT(po.transaction_date,'%%d-%%m-%%Y'),p.docstatus,
+			(CASE
+			when p.workflow_state="Draft" Then (select c.associate_agent 
+			from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
+			c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
+			when p.workflow_state="Pending" Then (select group_concat(u.name)
+			from tabUser u,`tabHas Role` r where 
+			u.name = r.parent and r.role = 'Accounts Payable'
+			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
+			END) as "user",
+			T1.budget_amount as "budget"
+			from 
+			`tabPurchase Order` po right join
+			`tabPurchase Invoice` p
+			ON p.purchase_order=po.name
+			LEFT JOIN(
+			select sum(ba.budget_amount) as budget_amount,
+			p.name as purchase_invoice from
+			`tabBudget Account` ba inner join
+			`tabBudget` b 
+			ON ba.parent=b.name right join 
+			`tabPurchase Invoice Item` i
+			ON b.item_group=i.item_group right join
+			`tabPurchase Invoice` p
+			ON i.parent=p.name
+			where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
+			AND b.docstatus=1 group by p.name
+			)T1
+			ON T1.purchase_invoice=p.name
+			and p.purchase_order=po.name
+			where p.workflow_state not in ("Cancelled") and p.is_return=0 and p.company in (%s)"""%company_names)
+	
+	return q1
+	
 
+@frappe.whitelist()
+def web_form(doc):
+	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+	pi_doc.db_set('workflow_state','Pending')
+	pi_doc.db_set('docstatus',1)
+	frappe.db.commit()
+	agent_comp=frappe.db.get_value('Company',{'company_name':pi_doc.company},'associate_agent_company')
+	users=get_agent_users(agent_comp,doc)
+	print(users)
+	for u in users:
+		for user in u:
+			template='<h2><span style="color: rgb(102, 185, 102);">Task Details</span></h2><table class="table table-bordered"><tbody><tr><td data-row="insert-column-right"><strong>Document Id</strong></td><td data-row="insert-column-right"><strong style="color: rgb(107, 36, 178);">'+doc+'</strong></td></tr><tr><td data-row="row-z48v"><strong>Approver</strong></td><td data-row="row-z48v"><strong style="color: rgb(107, 36, 178);">'+user+'</strong></td></tr><tr><td data-row="row-zajk"><strong>View Document in ERPNext</strong></td><td data-row="row-mze0"><strong style="color: rgb(230, 0, 0);"><a href="desk#Form/Purchase Invoice/'+doc+'" target="_blank" class="btn btn-success">Click to view document</a></strong></td></tr><tr><td data-row="row-779i"><strong>Note</strong></td><td data-row="row-779i"><strong style="color: rgb(255, 153, 0);">This is a system generated email, please do not reply to this message.</strong></td></tr></tbody></table>'	
+			print(user)
+			make(subject = "Pending For Approval", content=template, recipients=user,send_email=True)
+	
+	
+@frappe.whitelist()
+def web_call_vendor(vendor):
+	q1=frappe.db.sql("""
+		select p.name as "name",
+		po.grand_total,p.grand_total,DATE_FORMAT(po.transaction_date,'%%d-%%m-%%Y'),DATE_FORMAT(p.due_date,'%%d-%%m-%%Y') as "due_date:Date",DATE_FORMAT(p.due_date,'%%d-%%m-%%Y')
+		from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name 
+		where p.supplier=%s and p.workflow_state='Paid'""",(vendor))
+	print(q1)
+	return q1
+	
+		
+@frappe.whitelist()
+def get_user_role():
+	print("In Context")
+	
+	q1=frappe.db.sql("""
+		select r.role
+		from tabUser u,`tabHas Role` r where 
+		u.name = r.parent and r.role = 'Estate Manager'
+		and u.enabled = 1 and u.name=%s
+	""",(frappe.session.user))
+	print("user",frappe.session.user)
+	print("result----------",q1)
+	if(frappe.session.user=="Administrator"):
+		return "Administrator";
+	else:
+		for q in q1:
+			for i in q:
+				print("actyula------------",i)
+				return i
+	#print("CONTEXT-----------",context.data)
+
+
+@frappe.whitelist()
+def get_user_estate_role(name):
+        user=frappe.db.get_value('Has Role',{'parent':name,'parenttype':'User','role':'Estate Manager'},'parent')
+        return user
  
+@frappe.whitelist()
+def approve_invoice(doc):
+	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+	pi_doc.db_set('workflow_state','To Bill')
+	frappe.db.commit()
+
+@frappe.whitelist()
+def reject_invoice(doc):
+	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+	pi_doc.db_set('workflow_state','Rejected')
+	frappe.db.commit()
+	

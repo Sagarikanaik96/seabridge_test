@@ -1,0 +1,521 @@
+<html><head>
+<meta charset="utf-8">
+    <link rel="apple-touch-icon" sizes="76x76" href="/assets/seabridge_app/images/apple-icon.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/assets/seabridge_app/images/favicon.png">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+    <meta name="viewport" content="width=device-width">
+    <link href="/assets/seabridge_app/css/bootstrap.min.css" rel="stylesheet">
+    <!--  Paper Dashboard core CSS    -->
+    <link href="/assets/seabridge_app/css/paper-dashboard.css"  rel="stylesheet">
+    <link href="/assets/seabridge_app/css/customstyle.css" rel="stylesheet">
+
+    <link href="/assets/seabridge_app/css/demo.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,300"  type="text/css" rel="stylesheet">
+    <link href="/assets/seabridge_app/css/themify-icons.css" rel="stylesheet">
+    <link href="/assets/seabridge_app/css/nucleo-icons.css" rel="stylesheet">
+
+    <style>
+    .chart-container {
+        width: 390px;
+        height: 290px;
+        margin: auto;
+    }
+
+    select {
+        margin: 0 auto;
+        display: block;
+    }
+.sidenav {
+  width: 130px;
+  position: fixed;
+  z-index: 1;
+  top: 20px;
+  left: 10px;
+  overflow-x: hidden;
+  padding: 8px 0;
+}
+
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style></head>
+<body>
+<div class="container condomanager">
+
+
+    <div class="wrapper">
+
+        <div class="">
+      
+            <div class="content">
+                <div class="container-fluid">
+
+                    <div class="row">
+
+
+                        <div class="col-lg-12 col-md-12">
+                            <div class="card">
+                               
+                                <div class="card-content">
+                                    <div class="nav-tabs-navigation">
+                                        <div class="nav-tabs-wrapper">
+                                            <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div id="menu-tab-content" class="tab-content">
+                                        <div class="tab-pane active" id="condo">
+                                            <div class="row">
+
+                                                <div class="col-lg-12 col-md-12">
+                                                    <div class="card-header">
+                                                        <h3 class="card-title h5-bolder">Action table</h3>
+                                                        
+                                                    </div>
+                                                    <div class="nav-tabs-navigation nav-tab-left">
+                                                        <div class="nav-tabs-wrapper">
+                                                            <ul id="tabs" class="nav nav-tabs " data-tabs="tabs">
+                                                             
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    <div id="condo-tab-content" class="tab-content">
+                                                        <div class="tab-pane active" id="condotab">
+                                                            <div class="fresh-datatables">
+
+                                                                <table id="condotable"
+                                                                    class="table table-no-bordered table-hover"
+                                                                    cellspacing="0" style="width:100%">
+                                                                    <thead>
+                                                                        <tr>
+
+                                                                            <th class="thcheckbox"><input name="product_all" class="checked_all" type="checkbox"></th>
+                                                                            <th data-toggle="tooltip" data-placement="top" title="Vendor">Vendor</th>
+                                                                            <th data-toggle="tooltip" data-placement="top" title="Invoice">INV #</th>
+
+                                                                            <th data-toggle="tooltip" data-placement="top" title="PO Amount">PO $</th>
+                                                                            <th data-toggle="tooltip" data-placement="top" title="Invoice Amount">INV $</th>
+                                                                            <th data-toggle="tooltip" data-placement="top" title="Allocated Budget">Budget</th>
+                                                                            <th data-toggle="tooltip" data-placement="top" title="PO Date" >PO Date</th>
+
+
+                                                                            <th data-toggle="tooltip" data-placement="top" title="Invoice Due Date">Invoice Date</th>
+                                                                            <th data-toggle="tooltip" data-placement="top" title="Match?">Match ?</th>
+                                                                            <th data-toggle="tooltip" data-placement="top" title="Pending With">Pending</th>
+                                                                            <th data-toggle="tooltip" data-placement="top" title="Status">Status</th>
+                                                                           
+                                                                           
+                                                                          
+                                                                        </tr>
+                                                                       
+                                                                    </thead>
+								
+                                                                    
+                                                                </table>
+                                                              
+                                                             
+                                                            </div>
+                                                        </div>
+						<center>
+						<table><tr><td>
+                                                        <div class="multiselectbtnsubmit text-center my-4">
+					  
+
+
+                                                                    <button id = "btnGet" class="btn btn-primary btn-success btn-sm btn-fill btn-orange">Submit</button> </div></td>
+                                                       <td> <div class="multiselectbtnapprove text-center my-4">
+								   &nbsp;  <button id = "btnApprove" class="btn btn-primary btn-warning btn-sm btn-fill">Approve</button></div></td>
+		<td> <div class="multiselectbtnreject text-center my-4">
+								      &nbsp; <button id = "btnReject" class="btn btn-primary btn-danger btn-sm btn-fill">Reject</button></div></td>
+                                                                     <td> <div class="multiselectbtnpayment text-center my-4">
+									&nbsp;<button class="btn btn-primary btn-success btn-sm btn-fill">Approved for Payment</button></div></td></table></center>
+                                                  
+                                                        
+                                                    </div>
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="tab-pane " id="performance">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="card-header">
+                                                        <h4 class="card-title h5-bolder">Spend Analysis</h4>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <div class="card">
+                                                            <div class="card-content">
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <div class="card">
+                                                                            <div class="card-header">
+                                                                                <h4 class="card-title h5-bolder">
+                                                                                    Spend By Sellers</h4>
+                                                                                <div class="col-md-5 pull-right">
+                                                                                    <select class="selectpicker" title="Top 5
+                                                                                                    Sellers"
+                                                                                        data-live-search="true">
+                                                                                        <option value="">Top
+                                                                                            5
+                                                                                            Sellers</option>
+                                                                                        <option
+                                                                                            value="Best Guard Security Services">
+                                                                                            Best Guard Security Services
+                                                                                        </option>
+                                                                                        <option
+                                                                                            value="GCM Safety & Security">
+                                                                                            GCM Safety & Security
+                                                                                        </option>
+                                                                                        <option
+                                                                                            value="Henderson Security">
+                                                                                            Henderson Security</option>
+                                                                                        <option
+                                                                                            value="Ken Landscape Services">
+                                                                                            Ken Landscape Services
+                                                                                        </option>
+                                                                                        <option
+                                                                                            value="MR Elevator Singapore B.V.">
+                                                                                            MR Elevator Singapore B.V.
+                                                                                        </option>
+                                                                                        <option
+                                                                                            value="Super Safe Security Services">
+                                                                                            Super Safe Security Services
+                                                                                        </option>
+
+
+                                                                                    </select>
+                                                                                </div>
+
+                                                                            </div>
+                                                                            <div class="card-content">
+                                                                                <canvas id="spendsellerchart"></canvas>
+                                                                            </div>
+                                                                            <div class="card footer">
+                                                                                <div class="col-md-12 text-center">
+                                                                                    <a class=" btn btn-simple  spend-chart spendSellerChangeGraph disabled"
+                                                                                        data-type=""
+                                                                                        data-label="Current Month">Month</a>
+                                                                                    |
+                                                                                    <a class=" btn btn-simple  spend-chart spendSellerChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="First Quarter"> Q
+                                                                                        1</a> |
+                                                                                    <a class=" btn btn-simple spend-chart spendSellerChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="Second Quarter">Q
+                                                                                        2</a> |
+                                                                                    <a class=" btn btn-simple  spend-chart spendSellerChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="Third Quarter">Q
+                                                                                        3</a>
+                                                                                    |
+                                                                                    <a class=" btn btn-simple spend-chart spendSellerChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="Fourth Quarter">Q
+                                                                                        4</a> |
+                                                                                    <a class=" btn btn-simple spend-chart spendSellerChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="First Half"> H 1</a>
+                                                                                    |
+                                                                                    <a class=" btn btn-simple spend-chart spendSellerChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="Second Half"> H
+                                                                                        2</a>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <div class="card">
+                                                                            <div class="card-header">
+                                                                                <h4 class="card-title h5-bolder">
+                                                                                    Spend By
+                                                                                    Category</h4>
+                                                                                <div class="col-md-5 pull-right">
+                                                                                    <select class="selectpicker"
+                                                                                        title="Top 5 Categories"
+                                                                                        data-live-search="true">
+                                                                                        <option value="">Top 5
+                                                                                            Categories</option>
+                                                                                        <option
+                                                                                            value="Security Maintenance">
+                                                                                            Security Maintenance
+                                                                                        </option>
+                                                                                        <option value="Landscaping">
+                                                                                            Landscaping</option>
+                                                                                        <option
+                                                                                            value="Cleaning Maintenance">
+                                                                                            Cleaning Maintenance
+                                                                                        </option>
+                                                                                        <option
+                                                                                            value="Pool Maintenance">
+                                                                                            Pool Maintenance
+                                                                                        </option>
+                                                                                        <option
+                                                                                            value="Lift Maintenance">
+                                                                                            Lift Maintenance
+                                                                                        </option>
+                                                                                    </select>
+                                                                                </div>
+
+                                                                            </div>
+                                                                            <div class="card-content">
+                                                                                <canvas
+                                                                                    id="spendCategoryChart"></canvas>
+                                                                            </div>
+                                                                            <div class="card footer">
+                                                                                <div class="col-md-12 text-center">
+                                                                                    <a class=" btn btn-simple spend-chart spendCategoryChangeGraph disabled"
+                                                                                        data-type=""
+                                                                                        data-label="Current Month">Month</a>
+                                                                                    |
+                                                                                    <a class=" btn btn-simple  spend-chart spendCategoryChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="First Quarter">
+                                                                                        Q 1</a> |
+                                                                                    <a class=" btn btn-simple spend-chart spendCategoryChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="Second Quarter">Q
+                                                                                        2</a> |
+                                                                                    <a class=" btn btn-simple  spend-chart spendCategoryChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="Third Quarter">Q
+                                                                                        3</a>
+                                                                                    |
+                                                                                    <a class=" btn btn-simple spend-chart spendCategoryChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="Fourth Quarter">Q
+                                                                                        4</a> |
+                                                                                    <a class=" btn btn-simple spend-chart spendCategoryChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="First Half"> H
+                                                                                        1</a> |
+                                                                                    <a class=" btn btn-simple spend-chart spendCategoryChangeGraph"
+                                                                                        data-type=""
+                                                                                        data-label="Second Half"> H
+                                                                                        2</a>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-lg-12 col-md-12">
+                                                    <div class="card-header">
+                                                        <h4 class="card-title h5-bolder">Vendor Performance Analysis
+                                                        </h4>
+                                                    </div>
+                                                    <div class="nav-tabs-navigation nav-tab-left">
+                                                        <div class="nav-tabs-wrapper">
+                                                            <ul id="tabs" class="nav nav-tabs " data-tabs="tabs">
+
+                                                                <li class="active"><a href="#performence-purchase"
+                                                                        data-toggle="tab">Based on No. of
+                                                                        Invoices</a>
+                                                                </li>
+                                                                <li><a href="#performence-contract"
+                                                                        data-toggle="tab">Based on Invoices
+                                                                        Value</a>
+                                                                </li>
+                                                                <!-- <li><a href="#performence-requisition"
+                                                                        data-toggle="tab">Requisitions</a>
+                                                                </li>
+                                                                <li><a href="#performence-request"
+                                                                        data-toggle="tab">Requests</a>
+                                                                </li> -->
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    <div id="performance-tab-content" class="tab-content">
+
+                                                        <div class="active tab-pane" id="performence-purchase">
+
+                                                            <div class="col-md-12">
+                                                                <div class="card">
+                                                                    <div class="card-header">
+                                                                        <h4 class="card-title h5-bolder">No. of
+                                                                            Invoices
+                                                                            vs. No. of Credit Notes</h4>
+                                                                        <div class="col-md-2 pull-right">
+                                                                            <select class="selectpicker" title="All
+                                                                                                    Sellers"
+                                                                                data-size="7" data-live-search="true">
+                                                                                <option value="">All
+                                                                                    Sellers</option>
+                                                                                <option value="CW Security Services">CW
+                                                                                    Security Services</option>
+                                                                                <option value="Ravi Landscaping">
+                                                                                    Ravi Landscaping</option>
+                                                                                <option value="Vini Cleaning">Vini
+                                                                                    Cleaning</option>
+
+                                                                            </select>
+                                                                        </div>
+
+                                                                    </div>
+                                                                    <div class="card-content">
+                                                                        <canvas class="chart"
+                                                                            id="invoices_chart"></canvas>
+                                                                    </div>
+                                                                    <div class="card footer">
+                                                                        <div class="col-md-12 text-center">
+                                                                            <a class=" btn btn-simple btn-wd disabled invoices_changeGraph"
+                                                                                data-type="upto-date">YTD</a> |
+                                                                            <a class=" btn btn-simple btn-wd invoices_changeGraph"
+                                                                                data-type="year">Year</a> |
+                                                                            <a class=" btn btn-simple btn-wd invoices_changeGraph"
+                                                                                data-type="three-year"> 3 Years</a>
+                                                                            |
+                                                                            <a class=" btn btn-simple btn-wd invoices_changeGraph"
+                                                                                data-type="five-year">5 Years</a>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+
+                                                        </div>
+                                                        <div class="tab-pane" id="performence-contract">
+                                                            <div class="col-md-12">
+                                                                <div class="card">
+                                                                    <div class="card-header">
+                                                                        <h4 class="card-title h5-bolder">Invoices
+                                                                            Value
+                                                                            vs. Credit Notes Value</h4>
+                                                                        <div class="col-md-2 pull-right">
+                                                                            <select class="selectpicker" title="All
+                                                                                                    Sellers"
+                                                                                data-size="7" data-live-search="true">
+                                                                                <option value="">All
+                                                                                    Sellers</option>
+                                                                                <option value="CW Security Services">CW
+                                                                                    Security Services</option>
+                                                                                <option value="Ravi Landscaping">
+                                                                                    Ravi Landscaping</option>
+                                                                                <option value="Vini Cleaning">Vini
+                                                                                    Cleaning</option>
+                                                                            </select>
+                                                                        </div>
+
+                                                                    </div>
+                                                                    <div class="card-content">
+                                                                        <canvas class="chart"
+                                                                            id="invoicevalue_chartActivity"></canvas>
+                                                                    </div>
+                                                                    <div class="card footer">
+                                                                        <div class="col-md-12 text-center">
+                                                                            <a class=" btn btn-simple btn-wd disabled invoicevalue_changeGraph"
+                                                                                data-type="upto-date">YTD</a> |
+                                                                            <a class=" btn btn-simple btn-wd invoicevalue_changeGraph"
+                                                                                data-type="year">Year</a> |
+                                                                            <a class=" btn btn-simple btn-wd invoicevalue_changeGraph"
+                                                                                data-type="three-year"> 3 Years</a>
+                                                                            |
+                                                                            <a class=" btn btn-simple btn-wd invoicevalue_changeGraph"
+                                                                                data-type="five-year">5 Years</a>
+
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+
+                                                        </div>
+
+
+
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-12 col-md-12">
+                                                    <div class="card-header">
+                                                        <h4 class="card-title h5-bolder">Payment Analysis</h4>
+
+                                                    </div>
+
+
+
+                                                    <div class="col-md-12">
+                                                        <div class="card">
+                                                            <div class="card-header">
+                                                                <h4 class="card-title h5-bolder">Net Invoices Value
+                                                                    vs.
+                                                                    Net Payments vs. Savings</h4>
+                                                                <div class="col-md-2 pull-right">
+                                                                    <select class="selectpicker" title="All
+                                                                                                    Sellers"
+                                                                        data-size="7" data-live-search="true">
+                                                                        <option value="">All
+                                                                            Sellers</option>
+                                                                        <option value="CW Security Services">CW
+                                                                            Security Services</option>
+                                                                        <option value="Ravi Landscaping">Ravi
+                                                                            Landscaping</option>
+                                                                        <option value="Vini Cleaning">Vini Cleaning
+                                                                        </option>
+
+                                                                    </select>
+                                                                </div>
+
+                                                            </div>
+                                                            <div class="card-content">
+                                                                <canvas class="chart"
+                                                                    id="payment_chartActivity"></canvas>
+                                                            </div>
+                                                            <div class="card footer">
+                                                                <div class="col-md-12 text-center">
+                                                                    <a class=" btn btn-simple btn disabled -wd payment_changeGraph"
+                                                                        data-type="upto-date">YTD</a> |
+                                                                    <a class=" btn btn-simple btn-wd payment_changeGraph"
+                                                                        data-type="year">Year</a> |
+                                                                    <a class=" btn btn-simple btn-wd payment_changeGraph"
+                                                                        data-type="three-year"> 3 Years</a>
+                                                                    |
+                                                                    <a class=" btn btn-simple btn-wd payment_changeGraph"
+                                                                        data-type="five-year">5 Years</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane" id="report">
+                                            <p>Coming Soon</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                
+            </div>
+        </div>
+
+
+
+</div>
+
+</body>
+</html>
