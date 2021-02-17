@@ -649,7 +649,7 @@ for(i=0;i<resultin['message'].length;i++){
           xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.approve_invoice?doc='+invoice,true);
           xhttp.send();
 		})
-	
+	window.location.reload();
 	
 	})
 
@@ -668,13 +668,9 @@ for(i=0;i<resultin['message'].length;i++){
           xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.reject_invoice?doc='+invoice,true);
           xhttp.send();
 		})
-	
+	window.location.reload();
 	})
 
-$("#checkval").click( function(){
-//$("#checkval" ).on( "click", function() {
-	console.log("check------------")
-})
 
 
 
