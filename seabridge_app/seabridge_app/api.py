@@ -205,7 +205,7 @@ def web_form_call():
 			and p.purchase_order=po.name
 			where p.workflow_state not in ("Cancelled") and p.is_return=0""")
 	else:
-		q2=frappe.db.sql("""select c.company_name from `tabCompany` c where c.associate_agent=%s""",(frappe.session.user))
+		q2=frappe.db.sql("""select c.company_name from `tabCompany` c,`tabUser` u  where u.name=%s and u.represents_company=c.associate_agent_company""",(frappe.session.user))
 		company_names=''
 		for idx,i in enumerate(q2):
 			if(idx!=0):
