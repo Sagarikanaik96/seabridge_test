@@ -33,7 +33,7 @@ app_include_js = [
 	"/assets/seabridge_app/js/jquery.validate.min.js",
 	"/assets/seabridge_app/js/jquery-jvectormap.js",
 	"/assets/seabridge_app/js/jquery-ui.min.js",
-	#"/assets/seabridge_app/js/perfect-scrollbar.min.js",
+	"/assets/seabridge_app/js/perfect-scrollbar.min.js",
 	"/assets/seabridge_app/js/sweetalert2.js",
 	"/assets/seabridge_app/js/seabridge.js"
 
