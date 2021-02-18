@@ -291,15 +291,18 @@
                                                                         <tr>
                                                                             <!-- <th><input name="btSelectAll" type="checkbox"></th> -->
                                                                             <th class="thcheckbox"><input name="product_all" class="checked_all" type="checkbox"></th>
+        								    <th data-toggle="tooltip" data-placement="top" title="Vendor">Vendor</th>
                                                                             <th data-toggle="tooltip" data-placement="top" title="Invoice">Inv #</th>
-                                                                            <th data-toggle="tooltip" data-placement="top" title="Vendor">Vendor</th>
-                                                                            <th data-toggle="tooltip" data-placement="top" title="PO Amount">PO Amt.</th>
+                                                                    
+                                                                            <th data-toggle="tooltip" data-placement="top" title="PO Amount">PO $</th>
+                                					    <th data-toggle="tooltip" data-placement="top" title="Invoice Amount">Inv $</th>
+                                                   			     <th data-toggle="tooltip" data-placement="top" title="Allocated Budget">Budget</th>
                                                                             <th data-toggle="tooltip" data-placement="top" title="PO Date" >PO Date</th>
-                                                                            <th data-toggle="tooltip" data-placement="top" title="Invoice Amount">Inv. Amt.</th>
-                                                                            <th data-toggle="tooltip" data-placement="top" title="Allocated Budget">Alo. Bud.</th>
-                                                                            <th data-toggle="tooltip" data-placement="top" title="Invoice Due Date">Inv. Dt.</th>
+                                            
+                        
+                                                                            <th data-toggle="tooltip" data-placement="top" title="Invoice Due Date">Invoice Date</th>
                                                                             <th data-toggle="tooltip" data-placement="top" title="Match?">Match ?</th>
-                                                                            <th data-toggle="tooltip" data-placement="top" title="Pending With">Pen. With</th>
+                                                                            <th data-toggle="tooltip" data-placement="top" title="Pending With">Pending</th>
                                                                             <th data-toggle="tooltip" data-placement="top" title="Status">Status</th>
                                                                            
                                                                            
@@ -307,14 +310,7 @@
                                                                         </tr>
                                                                        
                                                                     </thead>
-								<tbody>
-								 {%- for row in data -%} 
-								<tr>
-								<td></td>
-								<td>{{row.name}}</td>
-								</tr>
-								{%endfor%}
-								</tbody>
+								
                                                                     <!-- <tbody><tr>
                                                                         <td class="text-break text-center sorting_1"><input name="product" class="checkbox" type="checkbox"></td>
                                                                         <td class=" text-break text-center"> <a href="../../assets/pdf/invoice.pdf" target="_blank">INV-00265</a></td>
@@ -354,12 +350,19 @@
                                                              
                                                             </div>
                                                         </div>
-                                                        <div class="multiselectbtn text-center my-4">
-									{%if data=="Administrator"%}
-                                                                    <button id = "btnGet" class="btn btn-primary btn-success btn-sm btn-fill btn-orange">Submit for Approval</button>{%else%}
-                                                                    <button class="btn btn-primary btn-warning btn-sm btn-fill">Approve</button>
-                                                                    <button class="btn btn-primary btn-success btn-sm btn-fill">Approved for Payment</button>
-                                                                {%endif%}</div>
+                                                        <center>
+						<table><tr><td>
+                                                        <div class="multiselectbtnsubmit text-center my-4">
+					  
+
+
+                                                                    <button id = "btnGet" class="btn btn-primary btn-success btn-sm btn-fill btn-orange">Submit</button> </div></td>
+                                                       <td> <div class="multiselectbtnapprove text-center my-4">
+								   &nbsp;  <button id = "btnApprove" class="btn btn-primary btn-warning btn-sm btn-fill">Approve</button></div></td>
+		<td> <div class="multiselectbtnreject text-center my-4">
+								      &nbsp; <button id = "btnReject" class="btn btn-primary btn-danger btn-sm btn-fill">Reject</button></div></td>
+                                                                     <td> <div class="multiselectbtnpayment text-center my-4">
+									&nbsp;<button class="btn btn-primary btn-success btn-sm btn-fill">Approved for Payment</button></div></td></table></center>
                                                         <!-- <div class="tab-pane" id="invoice">
                                                             <div class="fresh-datatables">
 
@@ -1086,38 +1089,30 @@ $(document).ready(function() {
 
           xhttp.send();
 
-   // condomanagerdashboard.initdataTable();
-    $(".multiselectbtn").css("display", "none");
-    // $('[data-toggle="tooltip"]').tooltip();
-    // condomanagerdashboard.initChart();
+
+    $(".multiselectbtnsubmit").css("display", "none");
+    $(".multiselectbtnapprove").css("display", "none");
+    $(".multiselectbtnreject").css("display", "none");
+    $(".multiselectbtnpayment").css("display", "none");
     $('.checked_all').on('change', function() {     
-                $('.checkbox').prop('checked', $(this).prop("checked")); 
-                $(".multiselectbtn").css("display", "block");  
+                $('.checkbox').prop('checked', $(this).prop("checked"));    
                 if($('.checkbox:checked').length == 0){
     
-    $(".multiselectbtn").css("display", "none");
+    $(".multiselectbtnsubmit").css("display", "none");
+    $(".multiselectbtnapprove").css("display", "none");
+    $(".multiselectbtnreject").css("display", "none");
   }
   else{
-       $(".multiselectbtn").css("display", "block");
+       $(".multiselectbtnsubmit").css("display", "block");
+	$(".multiselectbtnapprove").css("display", "block");
       }           
         });
         $('.checkbox').on('change', function() {  //".checkbox" change 
-    console.log("test");
-
-//     if($('.checkbox:checked').length == $('.checkbox').length){
-//         console.log("test1");
-//            $('.checked_all').prop('checked',true);
-//            $(".multiselectbtn").css("display", "block");  
-//     }else{
-//         console.log("test2");
-//            $('.checked_all').prop('checked',false);
-//            $(".multiselectbtn").css("display", "none");
-//     }
-});
-        //deselect "checked all", if one of the listed checkbox product is unchecked amd select "checked all" if all of the listed checkbox product is checked
        
-        $( ".multiselectbtn" ).insertAfter( $( "#condotable" ) );
+        $( ".multiselectbtnsubmit" ).insertAfter( $( "#condotable" ) );
+
 });
+})
 </script>
 
 

@@ -44,34 +44,42 @@ condodata.push(
             width: "1%",
             class: "text-break text-center",
             render: function (data, row) {
-		//console.log("ROWCheck------------",data)
-		if(data['match']=="Y" && data['status']=="Submitted"){
-              return '<input name="product" class="checkbox" type="checkbox">';
-		}
-		else{
-	              return '<input name="product" class="checkbox" type="checkbox" disabled>';
-		}
+		return '<input name="product" class="checkbox" type="checkbox">';
+
+
+
             },
             
           },
           
-          {
-            data: "invoice",
-            width: "13%",
-            class: "text-break text-center invoice",
-            render: function (data, row) {
-              return '<a href="../../assets/pdf/invoice.pdf" target="_blank">' + data + '</a>';
-            },
-            
-          },
+          
           {
             data: "vendor",
             width: "13%",
             class: "text-break text-center vendor",
           },
+	{
+            data: "invoice",
+            width: "13%",
+            class: "text-break text-center invoice",
+            render: function (data, row) {
+              return '<a href="/desk#Form/Purchase Invoice/'+data+'" target="_blank"><u>' + data + '</u></a>';
+            },
+            
+          },
           {
             data: "poamount",
             width: "10%",
+            class: "text-break text-right",
+          },
+	{
+            data: "invamount",
+            width: "8%",
+            class: "text-break text-right",
+          },
+	{
+            data: "allocatedbudget",
+            width: "8%",
             class: "text-break text-right",
           },
           {
@@ -79,16 +87,8 @@ condodata.push(
             width: "12%",
             class: "text-break text-center",
           },
-          {
-            data: "invamount",
-            width: "8%",
-            class: "text-break text-right",
-          },
-          {
-            data: "allocatedbudget",
-            width: "8%",
-            class: "text-break text-right",
-          },
+          
+          
          
           {
             data: "invoiceduedate",
@@ -116,15 +116,13 @@ condodata.push(
             class: "text-break text-center",
   
             render: function (data, value,row) {
-		//console.log("ROWV-------------",data)
-		//console.log("Vendor-------------",data['status'])
               if (data['status'] == "Submitted") {
 		
                 return `<button
-                          class="btn btn-primary btn-success btn-sm btn-fill condo-btn details-control" onclick="submit_approval()">Pending</button>`;
+                          class="btn btn-primary btn-success btn-sm btn-fill condo-btn details-control">Pending</button>`;
               } else if (data['status'] == "Pending") {
                 return `<button
-                          class="btn btn-primary btn-warning btn-sm btn-fill condo-btn details-control">Awaiting Approval</button>`;
+                          class="btn btn-primary btn-warning btn-sm btn-fill condo-btn details-control">Submitted</button>`;
               }
 		else if (data['status'] == "To Bill") {
                 return `<button
@@ -133,9 +131,14 @@ condodata.push(
 		else if (data['status'] == "Paid") {
                 return `<button
                           class="btn btn-primary btn-warning btn-sm btn-fill condo-btn details-control">Paid</button>`;
-              } else {
+              }
+		else if (data['status'] == "Rejected") {
                 return `<button
-                          class="btn btn-primary btn-sm btn-fill condo-btn details-control">Awaiting Match</button>`;
+                          class="btn btn-primary btn-danger btn-sm btn-fill condo-btn details-control">Rejected</button>`;
+              }
+		 else {
+                return `<button
+                          class="btn btn-primary btn-sm btn-fill condo-btn details-control">Draft</button>`;
               }
               
             },
@@ -181,10 +184,47 @@ condodata.push(
       $("#condotable tbody").on("change", "td input.checkbox",function(){ //".checkbox" change 
       if($('.checkbox:checked').length == 0){
       
-        $(".multiselectbtn").css("display", "none");
+	$(".multiselectbtnsubmit").css("display", "none");
+	$(".multiselectbtnapprove").css("display", "none");
+	$(".multiselectbtnreject").css("display", "none");
       }
       else{
            $(".multiselectbtn").css("display", "block");
+			var xhttp;
+			  xhttp=new XMLHttpRequest();
+			  
+			   xhttp.onreadystatechange = async function() {
+			    if (this.readyState == 4 && this.status == 200) {
+				//callBack(this);
+				result=JSON.parse(this.responseText)
+				console.log(result['message'])
+				if(result['message']){
+				console.log(result['message'])
+				$(".multiselectbtnapprove").css("display", "block");
+				   $(".multiselectbtnreject").css("display", "block");
+				}
+			    }
+			  };
+			  xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.get_user_accounts_payable',true);
+			  xhttp.send();
+
+			var xhttpr;
+			  xhttpr=new XMLHttpRequest();
+			  
+			   xhttpr.onreadystatechange = async function() {
+			    if (this.readyState == 4 && this.status == 200) {
+				//callBack(this);
+				result=JSON.parse(this.responseText)
+				console.log(result['message'])
+				if(result['message']){
+				console.log(result['message'])
+				$(".multiselectbtnsubmit").css("display", "block");
+				}
+			    }
+			  };
+			  xhttpr.open('GET','/api/method/seabridge_app.seabridge_app.api.get_user_estate_roles',true);
+			  xhttpr.send();		
+	
           }
           if($('.checkbox:checked').length == $('.checkbox').length){
            
@@ -197,10 +237,22 @@ condodata.push(
                 }
          
     })
-	
-
-	function send_for_approval(){
-		console.log("SEND FOR APROVAL-----------")	
+	function check_role(){
+			var xhttp;
+			  xhttp=new XMLHttpRequest();
+			  
+			   xhttp.onreadystatechange = async function() {
+			    if (this.readyState == 4 && this.status == 200) {
+				//callBack(this);
+				result=JSON.parse(this.responseText)
+				console.log(result['message'])
+				var email=result['message']
+				return email
+				
+			    }
+			  };
+			  xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.get_user_accounts_payable',true);
+			  xhttp.send();
 	}
   
 	function testFunction(vendor_name){
@@ -494,8 +546,6 @@ for(i=0;i<resultin['message'].length;i++){
         );
 }
 
-
-
         $("#btnGet").click(function () {
 		$("#condotable input[type=checkbox]:checked").each(function () {
 			var row = $(this).closest("tr")[0];
@@ -516,4 +566,42 @@ for(i=0;i<resultin['message'].length;i++){
 		})
 	
 	})
+	
+ $("#btnApprove").click(function () {
+		$("#condotable input[type=checkbox]:checked").each(function () {
+			var row = $(this).closest("tr")[0];
+        var invoice = $(this).parent().siblings('.invoice').text();
+	var xhttp;
+          xhttp=new XMLHttpRequest();
+	  var result_in;
+           xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                //callBack(this);
+            }
+          };
+          xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.approve_invoice?doc='+invoice,true);
+          xhttp.send();
+		})
+	window.location.reload();
+	
+	})
+
+ $("#btnReject").click(function () {
+		$("#condotable input[type=checkbox]:checked").each(function () {
+			var row = $(this).closest("tr")[0];
+        var invoice = $(this).parent().siblings('.invoice').text();
+	var xhttp;
+          xhttp=new XMLHttpRequest();
+	  var result_in;
+           xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                //callBack(this);
+            }
+          };
+          xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.reject_invoice?doc='+invoice,true);
+          xhttp.send();
+		})
+	window.location.reload();
+	})
+
 

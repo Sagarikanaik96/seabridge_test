@@ -189,19 +189,19 @@ def web_form_call():
 			`tabPurchase Invoice` p
 			ON p.purchase_order=po.name
 			LEFT JOIN(
-			select sum(ba.budget_amount) as budget_amount,
-			p.name as purchase_invoice from
-			`tabBudget Account` ba inner join
-			`tabBudget` b 
-			ON ba.parent=b.name right join 
-			`tabPurchase Invoice Item` i
-			ON b.item_group=i.item_group right join
-			`tabPurchase Invoice` p
-			ON i.parent=p.name
-			where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
-			AND b.docstatus=1 group by p.name
-			)T1
-			ON T1.purchase_invoice=p.name
+                        select sum(ba.budget_amount) as budget_amount,
+                        p.name as purchase_invoice from
+                        `tabBudget Account` ba inner join
+                        `tabBudget` b 
+                        ON ba.parent=b.name right join 
+                        `tabPurchase Invoice Item` i
+                        ON b.item_group=i.item_group right join
+                        `tabPurchase Invoice` p
+                        ON i.parent=p.name
+                        where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
+                        AND b.docstatus=1 group by p.name
+                        )T1
+                        ON T1.purchase_invoice=p.name
 			and p.purchase_order=po.name
 			where p.workflow_state not in ("Cancelled") and p.is_return=0""")
 	else:
@@ -224,25 +224,25 @@ def web_form_call():
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			END) as "user",
-			T1.budget_amount as "budget"
+			T1.budget_amount" as "budget"
 			from 
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
 			ON p.purchase_order=po.name
 			LEFT JOIN(
-			select sum(ba.budget_amount) as budget_amount,
-			p.name as purchase_invoice from
-			`tabBudget Account` ba inner join
-			`tabBudget` b 
-			ON ba.parent=b.name right join 
-			`tabPurchase Invoice Item` i
-			ON b.item_group=i.item_group right join
-			`tabPurchase Invoice` p
-			ON i.parent=p.name
-			where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
-			AND b.docstatus=1 group by p.name
-			)T1
-			ON T1.purchase_invoice=p.name
+                        select sum(ba.budget_amount) as budget_amount,
+                        p.name as purchase_invoice from
+                        `tabBudget Account` ba inner join
+                        `tabBudget` b 
+                        ON ba.parent=b.name right join 
+                        `tabPurchase Invoice Item` i
+                        ON b.item_group=i.item_group right join
+                        `tabPurchase Invoice` p
+                        ON i.parent=p.name
+                        where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
+                        AND b.docstatus=1 group by p.name
+                        )T1
+                        ON T1.purchase_invoice=p.name
 			and p.purchase_order=po.name
 			where p.workflow_state not in ("Cancelled") and p.is_return=0 and p.company in (%s)"""%company_names)
 	
@@ -295,12 +295,16 @@ def get_user_role():
 			for i in q:
 				print("actyula------------",i)
 				return i
-	#print("CONTEXT-----------",context.data)
 
 
 @frappe.whitelist()
 def get_user_estate_role(name):
         user=frappe.db.get_value('Has Role',{'parent':name,'parenttype':'User','role':'Estate Manager'},'parent')
+        return user
+
+@frappe.whitelist()
+def get_user_estate_roles():
+        user=frappe.db.get_value('Has Role',{'parent':frappe.session.user,'parenttype':'User','role':'Estate Manager'},'parent')
         return user
  
 @frappe.whitelist()
@@ -314,4 +318,10 @@ def reject_invoice(doc):
 	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
 	pi_doc.db_set('workflow_state','Rejected')
 	frappe.db.commit()
-	
+
+
+
+@frappe.whitelist()
+def get_user_accounts_payable():
+	user=frappe.db.get_value('Has Role',{'parent':frappe.session.user,'parenttype':'User','role':'Accounts Payable'},'parent')
+	return user
