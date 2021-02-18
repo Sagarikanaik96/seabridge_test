@@ -34,13 +34,13 @@ $(document).ready(function(){
 
     if (isWindows){
        // if we are on windows OS we activate the perfectScrollbar function
-       var $sidebar_wrapper = document.getElementsByClassName('sidebar-wrapper')[0];
-       var $main_panel = document.getElementsByClassName('main-panel')[0];
+       //var $sidebar_wrapper = document.getElementsByClassName('sidebar-wrapper')[0];
+       //var $main_panel = document.getElementsByClassName('main-panel')[0];
 
-       var ps = new PerfectScrollbar($sidebar_wrapper);
-       ps = new PerfectScrollbar($main_panel);
+       //var ps = new PerfectScrollbar($sidebar_wrapper);
+       //ps = new PerfectScrollbar($main_panel);
 
-       $('html').addClass('perfect-scrollbar-on');
+       //$('html').addClass('perfect-scrollbar-on');
    } else {
        $('html').addClass('perfect-scrollbar-off');
    }
