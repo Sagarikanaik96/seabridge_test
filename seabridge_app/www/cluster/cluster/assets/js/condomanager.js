@@ -559,6 +559,7 @@ for(i=0;i<resultin['message'].length;i++){
            xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 //callBack(this);
+		window.location.reload();
             }
           };
           xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.web_form?doc='+invoice,true);
@@ -577,12 +578,13 @@ for(i=0;i<resultin['message'].length;i++){
            xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 //callBack(this);
+		window.location.reload();
             }
           };
           xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.approve_invoice?doc='+invoice,true);
           xhttp.send();
 		})
-	window.location.reload();
+	
 	
 	})
 
@@ -596,12 +598,13 @@ for(i=0;i<resultin['message'].length;i++){
            xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 //callBack(this);
+		window.location.reload();
             }
           };
           xhttp.open('GET','/api/method/seabridge_app.seabridge_app.api.reject_invoice?doc='+invoice,true);
           xhttp.send();
 		})
-	window.location.reload();
+	
 	})
 
 
