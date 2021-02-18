@@ -224,7 +224,7 @@ def web_form_call():
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			END) as "user",
-			T1.budget_amount" as "budget"
+			T1.budget_amount as "budget"
 			from 
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
