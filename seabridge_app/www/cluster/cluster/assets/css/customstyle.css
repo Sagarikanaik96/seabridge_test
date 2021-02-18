@@ -1,0 +1,97 @@
+span.isrequired:after {
+  color: #e32;
+  content: " *";
+  display: inline;
+}
+.border-box {
+  border: 1px solid #e8e7e3;
+  border-radius: 4px;
+  padding: 0 18px;
+  background-color: #f3f2ee;
+}
+.h5-bolder {
+  font-weight: 600 !important;
+  display: inline-block;
+}
+.card-padding {
+  margin: 10px 0;
+}
+
+.tiny-text {
+  font-size: 80%;
+  margin-left: 5px;
+}
+
+.nav-tab-left {
+  text-align: left !important;
+}
+
+.other-table td {
+  text-align: right;
+}
+
+.other-table td + td {
+  text-align: left;
+}
+.other-table th{
+    text-align: center;
+}
+.chart {
+    height:515px;
+}
+
+.dataTables_length .bootstrap-select {
+    width: 40% !important;
+    background-color: white;
+}
+
+.spend-chart{
+    padding :7px 7px;
+    font-size: 12px;
+}
+
+
+.dataTables_filter button{
+    margin: 0 7px ;
+}
+
+
+.widget-icon{
+    margin:  0 !important;
+}
+
+.static-height{
+    min-height:166px ;
+}
+
+
+.logo-image{
+    border-radius: 0px !important
+}
+
+div.border-box div.radio {
+    padding:10px 25px;
+    margin: 0px;
+} 
+
+.header-inline{
+    display: inline;
+}
+
+.header-margin-top {
+    margin: 0px 0 !important;
+}
+.logo{
+    
+    padding: 15px 0;
+}
+.logo img{
+    border-radius: 50%;
+    width: 45px;
+}
+.padding-top{
+    padding-top: 8px;
+}
+.red{
+  background-color:  #e32;
+}

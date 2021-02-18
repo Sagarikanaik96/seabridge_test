@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<body>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h4 class="panel-title">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#panel1"><i class="glyphicon glyphicon-minus"></i>Panel 1</a>
+            </h4>
+
+        </div>
+        <div id="panel1" class="panel-collapse collapse in">
+            <div class="panel-body">Contents panel 1</div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h4 class="panel-title">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#panel2"><i class="glyphicon glyphicon-plus"></i>Panel 2</a>
+            </h4>
+
+        </div>
+        <div id="panel2" class="panel-collapse collapse">
+            <div class="panel-body">Contents panel 2</div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h4 class="panel-title">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#panel3"><i class="glyphicon glyphicon-plus"></i>Panel 3</a>
+            </h4>
+
+        </div>
+        <div id="panel3" class="panel-collapse collapse">
+            <div class="panel-body">Contents panel 3</div>
+        </div>
+    </div>
+</div>
+
+<script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="exponential.js"></script>
+<script>
+var selectIds = $('#panel1,#panel2,#panel3');
+$(function ($) {
+    console.log("IN Panel")
+    selectIds.on('show.bs.collapse hidden.bs.collapse', function () {
+        $(this).prev().find('.glyphicon').toggleClass('glyphicon-plus glyphicon-minus');
+    })
+});
+</script>
+</body>
+</html>

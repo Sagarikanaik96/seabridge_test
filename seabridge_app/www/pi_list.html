@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>PURCHASE INVOICES</title>
+   
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 90%;
+  
+}
+button {
+  background-color: grey; /* Green */
+  border: none;
+  color: white;
+  padding: 8px 30px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 12px;
+}
+td, th {
+  font-family: arial, sans-serif;
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+  
+}
+th{
+  background-color: black;
+  color: white;
+}
+
+
+h2{
+font-family: arial, sans-serif;
+}
+</style>
+  </head>
+  <body>
+	<center><h2> Purchase Invoices List</h2>
+<p id="demo"></p>
+	 <table width="90%">
+	<tr>
+		<th>Invoice No</th>
+		<th>Supplier</th>	
+		<th>Status</th>
+		<th>Action</th>
+	</tr>
+	{% set val=frappe.db.get_list('Purchase Invoice',fields=['name','supplier_name','workflow_state'],filters=[['workflow_state', 'not in', ['Cancelled']]])%}
+	{%- for row in val-%}
+	
+	<tr>
+		<td><a href="desk#Form/Purchase%20Invoice/{{row.name}}">{{row.name}}</a></td>
+		<td>{{row.supplier_name}}</td>	
+		<td>{{row.workflow_state}}</td>
+		<td><button type="submit" class='btn btn-act' onclick="myFunction(4,4)"> Click</button></td>
+	</tr>
+	{%-endfor-%}
+	</table>
+</center>
+{% block page_content %}
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js">
+
+</script>
+<script>
+
+
+</script>
+{% endblock %}
+  </body>
+</html>
