@@ -17,14 +17,14 @@ condodata.push(
       let elementArray = [
         {
           id: "condo-Inv",
-          title: "Invoice",
+          title: "Vendor",
           number: 1,
           className: "col-md-3 condo-select",
         },
         {
           id: "condo-title",
-          title: "Vendor",
-          number: 2,
+          title: "Match",
+          number: 8,
           className: "col-md-3 condo-select",
         },
   
