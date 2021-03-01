@@ -1,0 +1,19 @@
+{
+ "content": null,
+ "creation": "2021-02-23 14:28:06.192990",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2021-02-23 14:28:24.431936",
+ "modified_by": "Administrator",
+ "module": "seabridge_app",
+ "name": "dashboardpage",
+ "owner": "Administrator",
+ "page_name": "dashboardpage",
+ "roles": [],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Dashboard"
+}
