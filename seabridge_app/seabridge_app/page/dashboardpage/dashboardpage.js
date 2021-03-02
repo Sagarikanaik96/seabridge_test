@@ -5,7 +5,7 @@ frappe.pages['dashboardpage'].on_page_load = function(wrapper) {
 	//parent.html(frappe.render_template("dashboardpage", {}));
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: 'Dashboard',
+		title: 'Action Table',
 		single_column: true
 	});
 page.start = 0;
