@@ -416,11 +416,25 @@ def get_data(name=None, supplier=None, match=None,
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			END) as "user",
-			"12,34,464.00" as "budget","""+str(count)+""" as "role"
+			T1.budget_amount as "budget","""+str(count)+""" as "role"
 			from 
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
 			ON p.purchase_order=po.name
+			LEFT JOIN(
+                        select sum(ba.budget_amount) as budget_amount,
+                        p.name as purchase_invoice from
+                        `tabBudget Account` ba inner join
+                        `tabBudget` b 
+                        ON ba.parent=b.name right join 
+                        `tabPurchase Invoice Item` i
+                        ON b.item_group=i.item_group right join
+                        `tabPurchase Invoice` p
+                        ON i.parent=p.name
+                        where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
+                        AND b.docstatus=1 group by p.name
+                        )T1
+                        ON T1.purchase_invoice=p.name
 			and p.purchase_order=po.name
 			where p.workflow_state not in ("Cancelled") and p.is_return=0 """+conditions+company_names)
 	
