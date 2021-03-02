@@ -284,13 +284,7 @@ def web_form(doc):
 	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
 	pi_doc.submit()
 	pi_doc.db_set('workflow_state','Pending')
-	#pi_doc.db_set('docstatus',1)
-	#pi_doc.db_set('status','Unpaid')
-	
 	frappe.db.commit()
-	#PurchaseInvoice.on_submit(pi_doc)
-	#update_grand_total_for_rcm(pi_doc,"method")
-	
 	agent_comp=frappe.db.get_value('Company',{'company_name':pi_doc.company},'associate_agent_company')
 	users=get_agent_users(agent_comp,doc)
 	print(users)
@@ -346,7 +340,7 @@ def get_user_estate_roles():
 @frappe.whitelist()
 def approve_invoice(doc):
 	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
-	pi_doc.db_set('workflow_state','To Bill')
+	pi_doc.db_set('workflow_state','To Pay')
 	pi_doc.db_set('status','Unpaid')
 	frappe.db.commit()
 
@@ -365,23 +359,54 @@ def get_user_accounts_payable():
 
 
 @frappe.whitelist()
-def get_data(name=None, supplier=None, item_group=None,
+def get_data(name=None, supplier=None, match=None,
 	start=0, sort_by='actual_qty', sort_order='desc'):
-	print("Print------------")
 	'''Return data to render the item dashboard'''
 	filters = []
+	conditions=""
 	if name:
-		filters.append(['name', '=', name])
+		conditions+=str('And p.name="'+name+'"')
 	if supplier:
-		filters.append(['supplier', '=', supplier])
-	conditions="And p.name='{}'".format('name')
-
-	#items = frappe.db.get_all('Purchase Invoice', fields=['name', 'set_warehouse', 'supplier','workflow_state',
-			#'0', '1', '1', '1', '1'],filters=filters)
-	if name:
-		items=frappe.db.sql("""select p.name as "name",
-			p.supplier as "supplier",p.grand_total,p.due_date,
-	 		p.workflow_state,po.grand_total,po.transaction_date,p.docstatus,
+		conditions+=str('And p.supplier="'+supplier+'"')
+	if match:
+		if match=='Y':
+			conditions+=str('And p.workflow_state not in ("Draft","Cancelled")')
+		if match=='N':
+			conditions+=str('And p.workflow_state="Draft"')
+		#conditions+=str('And p.supplier="'+supplier+'"')
+	q3=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
+	q4=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""",frappe.session.user)
+	count=0
+	for i in q3:
+			for q in i:
+				if(q==frappe.session.user):
+					count+=1
+	for i in q4:
+			for q in i:
+				if(q==frappe.session.user):
+					count+=2
+	
+	q2=frappe.db.sql("""select c.company_name from `tabCompany` c,`tabUser` u  where u.name=%s and u.represents_company=c.associate_agent_company and c.associate_agent=%s""",(frappe.session.user,frappe.session.user))
+	company_names=''
+	for i in q2:
+			for q in i:
+				if(q):
+					company_names=' and p.company in ('	
+					for idx,i in enumerate(q2):
+							if(idx!=0):
+								company_names+=','
+							for j in i:
+								company_names+='"'+j+'"'
+					company_names+=')'
+	
+	print("company_names------------",company_names)
+	items=frappe.db.sql("""select p.name as "name",
+			p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
+	 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
 			(CASE
 			when p.workflow_state="Draft" Then (select c.associate_agent 
 			from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
@@ -391,34 +416,14 @@ def get_data(name=None, supplier=None, item_group=None,
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			END) as "user",
-			"1234" as "budget"
+			"12,34,464.00" as "budget","""+str(count)+""" as "role"
 			from 
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
 			ON p.purchase_order=po.name
 			and p.purchase_order=po.name
-			where p.workflow_state not in ("Cancelled") and p.is_return=0 And p.name=%s""",name)
+			where p.workflow_state not in ("Cancelled") and p.is_return=0 """+conditions+company_names)
 	
-	else:
-		items=frappe.db.sql("""select p.name as "name",
-				p.supplier as "supplier",p.grand_total,p.due_date,
-		 		p.workflow_state,po.grand_total,po.transaction_date,p.docstatus,
-				(CASE
-				when p.workflow_state="Draft" Then (select c.associate_agent 
-				from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
-				c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
-				when p.workflow_state="Pending" Then (select group_concat(u.name)
-				from tabUser u,`tabHas Role` r where 
-				u.name = r.parent and r.role = 'Accounts Payable'
-				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
-				END) as "user",
-				"1234" as "budget"
-				from 
-				`tabPurchase Order` po right join
-				`tabPurchase Invoice` p
-				ON p.purchase_order=po.name
-				and p.purchase_order=po.name
-				where p.workflow_state not in ("Cancelled") and p.is_return=0""")
 	
-	print(items)
+	
 	return items

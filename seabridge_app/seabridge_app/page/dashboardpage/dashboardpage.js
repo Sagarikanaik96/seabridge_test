@@ -10,16 +10,7 @@ frappe.pages['dashboardpage'].on_page_load = function(wrapper) {
 	});
 page.start = 0;
 
-	page.invoice_field = page.add_field({
-		fieldname: 'purchase_invoice',
-		label: __('Purchase Invoice'),
-		fieldtype:'Link',
-		options:'Purchase Invoice',
-		change: function() {
-			page.item_dashboard.start = 0;
-			page.item_dashboard.refresh();
-		}
-	});
+	
 
 	page.item_field = page.add_field({
 		fieldname: 'supplier',
@@ -31,12 +22,22 @@ page.start = 0;
 			page.item_dashboard.refresh();
 		}
 	});
-
-	page.item_group_field = page.add_field({
-		fieldname: 'item_group',
-		label: __('Item Group'),
+	page.invoice_field = page.add_field({
+		fieldname: 'purchase_invoice',
+		label: __('Purchase Invoice'),
 		fieldtype:'Link',
-		options:'Item Group',
+		options:'Purchase Invoice',
+		change: function() {
+			page.item_dashboard.start = 0;
+			page.item_dashboard.refresh();
+		}
+	});
+
+	page.match_field = page.add_field({
+		fieldname: 'match',
+		label: __('Match'),
+		fieldtype:'Select',
+		options:['Y','N'],
 		change: function() {
 			page.item_dashboard.start = 0;
 			page.item_dashboard.refresh();
@@ -74,7 +75,7 @@ page.start = 0;
 		page.item_dashboard.before_refresh = function() {
 			this.supplier = page.item_field.get_value();
 			this.purchase_invoice = page.invoice_field.get_value();
-			this.item_group = page.item_group_field.get_value();
+			this.match = page.match_field.get_value();
 		}
 
 		page.item_dashboard.refresh();
