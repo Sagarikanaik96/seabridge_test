@@ -47,10 +47,10 @@ page.start = 0;
 	page.sort_selector = new frappe.ui.SortSelector({
 		parent: page.wrapper.find('.page-form'),
 		args: {
-			sort_by: 'projected_qty',
+			sort_by: 'purchase_invoice',
 			sort_order: 'asc',
 			options: [
-				{fieldname: 'projected_qty', label: __('Projected qty')},
+				{fieldname: 'purchase_invoice', label: __('Purchase Invoice')},
 				{fieldname: 'reserved_qty', label: __('Reserved for sale')},
 				{fieldname: 'reserved_qty_for_production', label: __('Reserved for manufacturing')},
 				{fieldname: 'reserved_qty_for_sub_contract', label: __('Reserved for sub contracting')},
