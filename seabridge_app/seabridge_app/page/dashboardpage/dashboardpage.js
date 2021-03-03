@@ -32,12 +32,11 @@ page.start = 0;
 			page.item_dashboard.refresh();
 		}
 	});
-
-	page.match_field = page.add_field({
-		fieldname: 'match',
-		label: __('Match'),
-		fieldtype:'Select',
-		options:['Y','N'],
+	page.status_field = page.add_field({
+		fieldname: 'status',
+		label: __('Status'),
+		fieldtype:'Link',
+		options:'Workflow State',
 		change: function() {
 			page.item_dashboard.start = 0;
 			page.item_dashboard.refresh();
@@ -51,10 +50,8 @@ page.start = 0;
 			sort_order: 'asc',
 			options: [
 				{fieldname: 'purchase_invoice', label: __('Purchase Invoice')},
-				{fieldname: 'reserved_qty', label: __('Reserved for sale')},
-				{fieldname: 'reserved_qty_for_production', label: __('Reserved for manufacturing')},
-				{fieldname: 'reserved_qty_for_sub_contract', label: __('Reserved for sub contracting')},
-				{fieldname: 'actual_qty', label: __('Actual qty in stock')},
+				{fieldname: 'invoice_date', label: __('Invoice Date')},
+				{fieldname: 'po_date', label: __('PO Date')},
 			]
 		},
 		change: function(sort_by, sort_order) {
@@ -75,7 +72,7 @@ page.start = 0;
 		page.item_dashboard.before_refresh = function() {
 			this.supplier = page.item_field.get_value();
 			this.purchase_invoice = page.invoice_field.get_value();
-			this.match = page.match_field.get_value();
+			this.status = page.status_field.get_value();
 		}
 
 		page.item_dashboard.refresh();

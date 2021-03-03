@@ -359,7 +359,7 @@ def get_user_accounts_payable():
 
 
 @frappe.whitelist()
-def get_data(name=None, supplier=None, match=None,
+def get_data(name=None, supplier=None, match=None,status=None,
 	start=0, sort_by='name', sort_order='desc'):
 	'''Return data to render the item dashboard'''
 	filters = []
@@ -373,7 +373,8 @@ def get_data(name=None, supplier=None, match=None,
 			conditions+=str('And p.workflow_state not in ("Draft","Cancelled")')
 		if match=='N':
 			conditions+=str('And p.workflow_state="Draft"')
-		#conditions+=str('And p.supplier="'+supplier+'"')
+	if status:
+		conditions+=str('And p.workflow_state="'+status+'"')
 	q3=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
@@ -405,15 +406,20 @@ def get_data(name=None, supplier=None, match=None,
 	
 	sort=''
 	if sort_by:
-		sort+=" Order by p.name "+sort_order
+		if(sort_by=="name"):
+			sort+=" Order by p.name "+sort_order
+		elif(sort_by=="invoice_date"):
+			sort+=" Order by p.due_date "+sort_order
+		elif(sort_by=="po_date"):
+			sort+=" Order by po.transaction_date "+sort_order
 	items=frappe.db.sql("""select p.name as "name",
 			p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
 	 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
 			(CASE
-			when p.workflow_state="Draft" Then (select c.associate_agent 
+			when p.workflow_state="Draft" Then (select u.full_name 
 			from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
 			c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
-			when p.workflow_state="Pending" Then (select group_concat(u.name)
+			when p.workflow_state="Pending" Then (select group_concat(u.full_name)
 			from tabUser u,`tabHas Role` r where 
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
