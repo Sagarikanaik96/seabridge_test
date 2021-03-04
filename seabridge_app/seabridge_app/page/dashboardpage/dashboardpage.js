@@ -18,8 +18,8 @@ page.start = 0;
 		fieldtype:'Link',
 		options:'Supplier',
 		change: function() {
-			page.item_dashboard.start = 0;
-			page.item_dashboard.refresh();
+			page.invoice_dashboard.start = 0;
+			page.invoice_dashboard.refresh();
 		}
 	});
 	page.invoice_field = page.add_field({
@@ -28,8 +28,8 @@ page.start = 0;
 		fieldtype:'Link',
 		options:'Purchase Invoice',
 		change: function() {
-			page.item_dashboard.start = 0;
-			page.item_dashboard.refresh();
+			page.invoice_dashboard.start = 0;
+			page.invoice_dashboard.refresh();
 		}
 	});
 	page.status_field = page.add_field({
@@ -38,8 +38,8 @@ page.start = 0;
 		fieldtype:'Link',
 		options:'Workflow State',
 		change: function() {
-			page.item_dashboard.start = 0;
-			page.item_dashboard.refresh();
+			page.invoice_dashboard.start = 0;
+			page.invoice_dashboard.refresh();
 		}
 	});
 
@@ -55,27 +55,27 @@ page.start = 0;
 			]
 		},
 		change: function(sort_by, sort_order) {
-			page.item_dashboard.sort_by = sort_by;
-			page.item_dashboard.sort_order = sort_order;
-			page.item_dashboard.start = 0;
-			page.item_dashboard.refresh();
+			page.invoice_dashboard.sort_by = sort_by;
+			page.invoice_dashboard.sort_order = sort_order;
+			page.invoice_dashboard.start = 0;
+			page.invoice_dashboard.refresh();
 		}
 	});
 
 	 //page.sort_selector.wrapper.css({'margin-right': '15px', 'margin-top': '4px'});
-
-	frappe.require('assets/seabridge_app/js/item-dashboard.min.js', function() {
-		page.item_dashboard = new erpnext.stock.ItemDashboard({
+	//console.log("PAGE------------",page.status_field.get_value())
+	frappe.require('/assets/seabridge_app/js/item-dashboard.min.js', function() {
+		page.invoice_dashboard = new seabridge_app.ActionTable({
 			parent: page.main,
 		})
 
-		page.item_dashboard.before_refresh = function() {
+		page.invoice_dashboard.before_refresh = function() {
 			this.supplier = page.item_field.get_value();
 			this.purchase_invoice = page.invoice_field.get_value();
 			this.status = page.status_field.get_value();
 		}
 
-		page.item_dashboard.refresh();
+		page.invoice_dashboard.refresh();
 
 		// item click
 		var setup_click = function(doctype) {
@@ -88,7 +88,7 @@ page.start = 0;
 					frappe.set_route('Form', doctype, name)
 				} else {
 					field.set_input(name);
-					page.item_dashboard.refresh();
+					page.invoice_dashboard.refresh();
 				}
 			});
 		}
