@@ -281,6 +281,7 @@ def web_form_try(doc):
 
 @frappe.whitelist()
 def web_form(doc):
+	pi_doc=frappe.get_doc("Purchase Invoice",doc)
 	pi_doc.submit()
 	pi_doc.db_set('workflow_state','Pending')
 	frappe.db.commit()
