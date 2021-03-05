@@ -38,6 +38,7 @@ page.start = 0;
 							}
 						}
 					},
+		reqd:1,
 		change: function() {
 			page.invoice_dashboard.start = 0;
 			page.invoice_dashboard.refresh();
