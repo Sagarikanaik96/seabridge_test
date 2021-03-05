@@ -507,31 +507,37 @@ def get_data_for_payment(company=None,
 			sort+=" Order by po.transaction_date "+sort_order
 	
 	limit=' Limit 20 offset '+start
-	items=frappe.db.sql("""select p.name as "name",
-			p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
-	 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
-			"user" as "user",
-			T1.budget_amount as "budget","""+str(count)+""" as "role"
-			from 
-			`tabPurchase Order` po right join
-			`tabPurchase Invoice` p
-			ON p.purchase_order=po.name
-			LEFT JOIN(
-                        select sum(ba.budget_amount) as budget_amount,
-                        p.name as purchase_invoice from
-                        `tabBudget Account` ba inner join
-                        `tabBudget` b 
-                        ON ba.parent=b.name right join 
-                        `tabPurchase Invoice Item` i
-                        ON b.item_group=i.item_group right join
-                        `tabPurchase Invoice` p
-                        ON i.parent=p.name
-                        where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
-                        AND b.docstatus=1 group by p.name
-                        )T1
-                        ON T1.purchase_invoice=p.name
-			and p.purchase_order=po.name
-			where p.workflow_state="To Pay" and p.is_return=0 """+conditions+company_names+sort+limit)
+	manager_role=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'Finance manager'""",frappe.session.user)
+	if manager_role:
+		items=frappe.db.sql("""select p.name as "name",
+				p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
+		 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
+				"user" as "user",
+				T1.budget_amount as "budget","""+str(count)+""" as "role"
+				from 
+				`tabPurchase Order` po right join
+				`tabPurchase Invoice` p
+				ON p.purchase_order=po.name
+				LEFT JOIN(
+		                select sum(ba.budget_amount) as budget_amount,
+		                p.name as purchase_invoice from
+		                `tabBudget Account` ba inner join
+		                `tabBudget` b 
+		                ON ba.parent=b.name right join 
+		                `tabPurchase Invoice Item` i
+		                ON b.item_group=i.item_group right join
+		                `tabPurchase Invoice` p
+		                ON i.parent=p.name
+		                where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
+		                AND b.docstatus=1 group by p.name
+		                )T1
+		                ON T1.purchase_invoice=p.name
+				and p.purchase_order=po.name
+				where p.workflow_state="To Pay" and p.is_return=0 """+conditions+company_names+sort+limit)
+	else:
+		items=''
 	
 	
 	
@@ -597,4 +603,30 @@ def create_payment(invoices,account,company):
 						    'bank_account':bank_account,
 						    'bank_name':bank_name
 						})
-		bpa_doc.save()
+		#bpa_doc.save()
+	bpa_doc.save()
+	print("DocName-------------",bpa_doc.name)
+	frappe.msgprint("Bank Payment Advice is created for selected invoices <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name+"'  target='_blank'>"+bpa_doc.name+"</a>")
+
+@frappe.whitelist()
+def get_user_roles_dashboard():
+	print("INUSERROLES--------------")
+	q3=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
+	q4=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""",frappe.session.user)
+	count=0
+	for i in q3:
+			for q in i:
+				if(q==frappe.session.user):
+					count+=1
+	for i in q4:
+			for q in i:
+				if(q==frappe.session.user):
+					count+=2
+	print(count)
+	return count
+
+
