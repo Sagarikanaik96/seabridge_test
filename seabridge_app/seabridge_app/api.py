@@ -12,6 +12,8 @@ from frappe.core.doctype.communication.email import make
 from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import PurchaseInvoice
 from erpnext.regional.india.utils import update_grand_total_for_rcm
 from frappe.model.db_query import DatabaseQuery
+from datetime import datetime
+from itertools import groupby
 
 #from flask import Flask, render_template
 #app = Flask(__name__)
@@ -30,6 +32,7 @@ def get_email(doctype,is_internal_customer,customer_name):
 
 def get_selections(selections):
 	print("Selections",selections)
+	
      
 @frappe.whitelist()
 def get_contact_mail(doctype,parenttype,parent):	   
@@ -477,18 +480,22 @@ def get_data_for_payment(company=None,
 				if(q==frappe.session.user):
 					count+=2
 	
-	q2=frappe.db.sql("""select c.company_name from `tabCompany` c,`tabUser` u  where u.name=%s and u.represents_company=c.associate_agent_company and c.associate_agent=%s""",(frappe.session.user,frappe.session.user))
 	company_names=''
-	for i in q2:
-			for q in i:
-				if(q):
-					company_names=' and p.company in ('	
-					for idx,i in enumerate(q2):
-							if(idx!=0):
-								company_names+=','
-							for j in i:
-								company_names+='"'+j+'"'
-					company_names+=')'
+	if(frappe.session.user!="Administrator"):
+		q2=frappe.db.sql("""select c.company_name from `tabUser Permission` u left join `tabCompany` c ON c.company_name=u.for_value where allow="Company" and c.company_type="Customer" and u.user=%s""",(frappe.session.user))
+		company_names=''
+		for i in q2:
+				for q in i:
+					if(q):
+						company_names=' and p.company in ('	
+						for idx,i in enumerate(q2):
+								if(idx!=0):
+									company_names+=','
+								for j in i:
+									company_names+='"'+j+'"'
+						company_names+=')'
+		
+	
 	
 	sort=''
 	if sort_by:
@@ -503,24 +510,91 @@ def get_data_for_payment(company=None,
 	items=frappe.db.sql("""select p.name as "name",
 			p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
 	 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
-			(CASE
-			when p.workflow_state="Draft" Then (select u.full_name 
-			from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
-			c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
-			when p.workflow_state="Pending" Then (select group_concat(u.full_name)
-			from tabUser u,`tabHas Role` r where 
-			u.name = r.parent and r.role = 'Accounts Payable'
-			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
-			END) as "user",
-			"123.00" as "budget","""+str(count)+""" as "role"
+			"user" as "user",
+			T1.budget_amount as "budget","""+str(count)+""" as "role"
 			from 
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
 			ON p.purchase_order=po.name
-			
+			LEFT JOIN(
+                        select sum(ba.budget_amount) as budget_amount,
+                        p.name as purchase_invoice from
+                        `tabBudget Account` ba inner join
+                        `tabBudget` b 
+                        ON ba.parent=b.name right join 
+                        `tabPurchase Invoice Item` i
+                        ON b.item_group=i.item_group right join
+                        `tabPurchase Invoice` p
+                        ON i.parent=p.name
+                        where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
+                        AND b.docstatus=1 group by p.name
+                        )T1
+                        ON T1.purchase_invoice=p.name
 			and p.purchase_order=po.name
-			where p.workflow_state not in ("Cancelled") and p.is_return=0 """+conditions+company_names+sort+limit)
+			where p.workflow_state="To Pay" and p.is_return=0 """+conditions+company_names+sort+limit)
 	
 	
 	
 	return items
+
+@frappe.whitelist()
+def create_paymentc(invoices,account,company):
+	print("In Payment------------",invoices+account+company)
+
+
+@frappe.whitelist()
+def create_payment(invoices,account,company):
+	print("In Payment------------",invoices+account+company)
+	invoice_list=json.loads(invoices)
+	purchase_invoices=frappe.db.get_list("Purchase Invoice",filters={'name':['in',invoice_list]},fields={'*'})
+	bpa_doc=frappe.get_doc(dict(doctype = 'Bank Payment Advice',
+	company=company,
+	date=datetime.date(datetime.now()),
+	bank_account=account
+	)).insert(ignore_mandatory=True)
+	for inv in purchase_invoices:
+		number=(datetime.date(datetime.now())-inv['due_date'])
+		days_val=number.days
+		return_invoices=frappe.db.get_list("Purchase Invoice",filters={'return_against':inv['name']},fields={'*'})
+		if return_invoices:
+			return_inv=return_invoices[0]['name']	
+			return_total=return_invoices[0]['grand_total']
+		else:
+			return_inv=''
+			return_total=0
+		purchase_order=frappe.db.get_value('Purchase Invoice',{'name':inv['name']},'purchase_order')
+		if purchase_order:
+			po=purchase_order
+			purchase_amount=frappe.db.get_value('Purchase Order',{'name':po},'grand_total')
+		else:
+			po=''
+			purchase_amount=0
+		has_sbtfx=frappe.db.get_value('Supplier',{'name':inv['supplier_name']},'has_sbtfx_contract')
+		if has_sbtfx==1:
+			represents_company=frappe.db.get_value('Supplier',{'name':inv['supplier_name']},'represents_company')
+			parent_company=frappe.db.get_value('Company',{'name':represents_company},"parent_company")
+			bank_account=frappe.db.get_value("Company",{'name':parent_company},"bank_account")
+			bank_name=frappe.db.get_value("Company",{'name':parent_company},"bank_name")
+		else:
+			bank_account=frappe.db.get_value("Supplier",{'name':inv['supplier_name']},"bank_account")
+			bank_name=frappe.db.get_value("Supplier",{'name':inv['supplier_name']},"bank_name")
+		print("INVOICE-------------",inv['name'])
+		bpa_doc.append('bank_payment_advice_details', {
+						    'invoice_document':inv['name'],
+						    'overdue_days':days_val,
+						    'debit_note':return_inv,
+						    'debit_note_amount':return_total,
+						    'supplier_name':inv['supplier_name'],
+						    'invoice_amount':inv['grand_total'],
+						    'due_date':inv['due_date'],
+						    'outstanding_amount':inv['outstanding_amount'],
+						    'payment_transaction_amount':inv['outstanding_amount'],
+						    'cheque_no':"1234",
+						    'cheque_date':datetime.date(datetime.now()),
+						    'purchase_order':po,
+						    'purchase_order_amount':purchase_amount,
+						    'has_sbtfx_contract':has_sbtfx,
+						    'bank_account':bank_account,
+						    'bank_name':bank_name
+						})
+		bpa_doc.save()
