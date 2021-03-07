@@ -37,6 +37,13 @@ page.start = 0;
 		label: __('Status'),
 		fieldtype:'Link',
 		options:'Workflow State',
+		get_query: () => {
+						return {
+							filters: {
+								"workflow_state_name": ["in", ["Draft","To Pay","Rejected","Paid"]]
+							}
+						}
+					},
 		change: function() {
 			page.invoice_dashboard.start = 0;
 			page.invoice_dashboard.refresh();

@@ -14,6 +14,8 @@ from erpnext.regional.india.utils import update_grand_total_for_rcm
 from frappe.model.db_query import DatabaseQuery
 from datetime import datetime
 from itertools import groupby
+from frappe.frappeclient import FrappeOAuth2Client,OAuth2Session
+import requests
 
 #from flask import Flask, render_template
 #app = Flask(__name__)
@@ -346,6 +348,37 @@ def approve_invoice(doc):
 	pi_doc.db_set('workflow_state','To Pay')
 	pi_doc.db_set('status','Unpaid')
 	frappe.db.commit()
+	doc_posted=False
+	headers=frappe.db.get_list("API Integration",fields={'*'})
+	has_sbtfx_contract=frappe.db.get_value('Supplier',{'supplier_name':pi_doc.supplier_name},'has_sbtfx_contract')
+	if has_sbtfx_contract==1:
+		if headers:
+			try:
+				headers_list = {
+				"Authorization": "Bearer " + headers[0].authorization_key,
+				"content-type": "application/json"
+				}
+				print("URL",headers[0].url)
+				print("Auth Key",headers[0].authorization_key)
+				conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
+				document='{"documents":[{"buyer_name":"'+ pi_doc.company+'", "buyer_permid": "", "seller_name": "'+pi_doc.supplier_name+'", "seller_permid": "", "document_id": "'+pi_doc.name+'", "document_type": "I", "document_date": "'+str(pi_doc.posting_date)+'", "document_due_date":"'+str(pi_doc.due_date)+'", "amount_total": "'+str(pi_doc.outstanding_amount)+'", "currency_name": "SGD", "source": "community_erpnext", "document_category": "AP", "orig_transaction_ref":"'+pi_doc.bill_no+'"}]}'
+				print(document)
+				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
+				print("RESPONSE",res)
+				response_code=str(res)
+				res = conn.post_process(res)
+				if response_code=="<Response [200]>":
+					doc_posted=True
+					pi_doc.add_comment('Comment','Sent the '+pi_doc.name+' to '+headers[0].url+' successfully.')
+				else:
+					doc_posted=False
+					pi_doc.add_comment('Comment','Unable to send the '+pi_doc.name+' to '+headers[0].url)
+			except Exception:
+				print(Exception)
+				doc_posted=False
+				pi_doc.add_comment('Comment','Unable to send the '+pi_doc.name+' to '+headers[0].url) 
+				frappe.log_error(frappe.get_traceback())
+	print(doc_posted)
 
 @frappe.whitelist()
 def reject_invoice(doc):
@@ -394,18 +427,20 @@ def get_data(name=None, supplier=None, match=None,status=None,
 				if(q==frappe.session.user):
 					count+=2
 	
-	q2=frappe.db.sql("""select c.company_name from `tabCompany` c,`tabUser` u  where u.name=%s and u.represents_company=c.associate_agent_company and c.associate_agent=%s""",(frappe.session.user,frappe.session.user))
+	#q2=frappe.db.sql("""select c.company_name from `tabCompany` c,`tabUser` u  where u.name=%s and u.represents_company=c.associate_agent_company and c.associate_agent=%s""",(frappe.session.user,frappe.session.user))
 	company_names=''
-	for i in q2:
-			for q in i:
-				if(q):
-					company_names=' and p.company in ('	
-					for idx,i in enumerate(q2):
-							if(idx!=0):
-								company_names+=','
-							for j in i:
-								company_names+='"'+j+'"'
-					company_names+=')'
+	if(frappe.session.user!="Administrator"):
+		q2=frappe.db.sql("""select c.company_name from `tabUser Permission` u left join `tabCompany` c ON c.company_name=u.for_value where allow="Company" and u.user=%s""",(frappe.session.user))
+		for i in q2:
+				for q in i:
+					if(q):
+						company_names=' and p.company in ('	
+						for idx,i in enumerate(q2):
+								if(idx!=0):
+									company_names+=','
+								for j in i:
+									company_names+='"'+j+'"'
+						company_names+=')'
 	
 	sort=''
 	if sort_by:
@@ -417,6 +452,15 @@ def get_data(name=None, supplier=None, match=None,status=None,
 			sort+=" Order by po.transaction_date "+sort_order
 	
 	limit=' Limit 20 offset '+start
+	records=frappe.db.sql("""select 
+			count(p.name) as "count"
+			from 
+			`tabPurchase Order` po right join
+			`tabPurchase Invoice` p
+			ON p.purchase_order=po.name
+			and p.purchase_order=po.name
+			where p.workflow_state not in ("Cancelled") and p.is_return=0 """+conditions+company_names)
+	print('count-----------',records[0][0])
 	items=frappe.db.sql("""select p.name as "name",
 			p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
 	 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
@@ -429,7 +473,8 @@ def get_data(name=None, supplier=None, match=None,status=None,
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			END) as "user",
-			T1.budget_amount as "budget","""+str(count)+""" as "role"
+			T1.budget_amount as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
+			
 			from 
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
@@ -452,7 +497,7 @@ def get_data(name=None, supplier=None, match=None,status=None,
 			where p.workflow_state not in ("Cancelled") and p.is_return=0 """+conditions+company_names+sort+limit)
 	
 	
-	
+	print(items)
 	return items
 
 @frappe.whitelist()
@@ -510,12 +555,24 @@ def get_data_for_payment(company=None,
 	manager_role=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Finance manager'""",frappe.session.user)
+	
 	if manager_role:
+		records=frappe.db.sql("""select 
+			count(p.name) as "count"
+			from 
+			`tabPurchase Order` po right join
+			`tabPurchase Invoice` p
+			ON p.purchase_order=po.name
+			and p.purchase_order=po.name
+			where p.workflow_state="To Pay" and p.is_return=0 """+conditions+company_names)
 		items=frappe.db.sql("""select p.name as "name",
 				p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
 		 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
-				"user" as "user",
-				T1.budget_amount as "budget","""+str(count)+""" as "role"
+				(select group_concat(u.full_name)
+				from tabUser u,`tabHas Role` r where 
+				u.name = r.parent and r.role = 'Finance Manager'
+				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company)) as "user",
+				T1.budget_amount as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
 				from 
 				`tabPurchase Order` po right join
 				`tabPurchase Invoice` p
@@ -606,7 +663,7 @@ def create_payment(invoices,account,company):
 		#bpa_doc.save()
 	bpa_doc.save()
 	print("DocName-------------",bpa_doc.name)
-	frappe.msgprint("Bank Payment Advice is created for selected invoices <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name+"'  target='_blank'>"+bpa_doc.name+"</a>")
+	frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name+"'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
 
 @frappe.whitelist()
 def get_user_roles_dashboard():

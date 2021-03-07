@@ -2,6 +2,15 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Bank Payment Advice', {
+
+company:function(frm,cdt,cdn){
+	frappe.db.get_value("Bank Account",frm.doc.bank_account,"company",(c)=>{
+		if(c.company!=frm.doc.company){
+			frm.set_value('bank_account','')
+			cur_frm.refresh_field("bank_payment_advice_details")
+		}
+	})
+},
 refresh:function(frm,cdt,cdn){
 frm.set_query("company",function(){
                 return{
@@ -163,14 +172,12 @@ select=selections
  })
 dialogObj.dialog.hide()
 cur_frm.save();
-	
 }
 
 }); 
 
 	
   });
-
 	frappe.call({
                 method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.sort_details",
                 args:{
@@ -209,6 +216,7 @@ cur_frm.save();
 			}
 		}
 		})
+		
    }
 	
 	},
@@ -222,8 +230,36 @@ cur_frm.save();
 	before_save:function(frm,cdt,cdn){
 		$.each(frm.doc.bank_payment_advice_details, function(idx, item){
 			item.cheque_date=frappe.datetime.nowdate()
+			if(item.bank_account || item.bank_name){}
+			else{
+				frappe.db.get_value("Supplier",item.supplier_name,"has_sbtfx_contract",(c)=>{
+					if(c.has_sbtfx_contract==1){
+						frappe.db.get_value("Supplier",item.supplier_name,"bank_account",(b)=>{
+							if(b.bank_account){item.bank_account=b.bank_account}
+						})
+						frappe.db.get_value("Supplier",item.supplier_name,"bank_name",(b)=>{
+							if(b.bank_name){item.bank_name=b.bank_name}
+						})
+					}
+					else{
+						frappe.db.get_value("Supplier",item.supplier_name,"represents_company",(r)=>{
+							frappe.db.get_value("Company",r.represents_company,"parent_company",(p)=>{
+								frappe.db.get_value("Company",p.parent_company,"bank_name",(bn)=>{
+									if(bn.bank_account){item.bank_account=bn.bank_account}	
+								})
+								frappe.db.get_value("Company",p.parent_company,"bank_name",(bn)=>{
+									if(bn.bank_name){item.bank_name=bn.bank_name}
+								})
+							})
+						})
+
+
+					}
+				})
+			}
 
 		})
+		
 
 	},
 	

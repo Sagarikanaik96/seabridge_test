@@ -1,7 +1,7 @@
 frappe.pages['payment-page'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: 'Payment Page',
+		title: 'Payment Batch',
 		single_column: true
 	});
 page.start = 0;
