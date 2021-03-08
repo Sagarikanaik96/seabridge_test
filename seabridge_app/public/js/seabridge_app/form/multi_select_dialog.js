@@ -728,7 +728,6 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 		/* Options: doctype, target, setters, get_query, action, add_filters_group, data_fields, primary_action_label */
 		Object.assign(this, opts);
 		var me = this;
-		
 		if (this.doctype != "[Select]") {
 			frappe.model.with_doctype(this.doctype, function () {
 				me.make();
@@ -761,11 +760,23 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 			fields.push({ fieldtype: "Section Break" });
 			fields = fields.concat(this.data_fields);
 		}
+		console.log("FIELDS-------------",fields)
 
 		let doctype_plural = this.doctype.plural();
 
 		if(this.doctype=="Purchase Invoice"){
-			this.dialog = new frappe.ui.Dialog({
+			console.log("Target",this.target)
+			console.log("Target[0]",this.target[0])
+			if(this.target['window']){
+				console.log("IN Dashboard------------")
+				this.dialog = new frappe.ui.Dialog({
+				title:"Paid Invoices",
+				fields:fields
+				});
+			}
+			else{
+				console.log("IN BPA-------------")
+				this.dialog = new frappe.ui.Dialog({
 				title: __("Select {0}", [(this.doctype == '[Select]') ? __("value") : __(doctype_plural)]),
 				fields: fields,
 				primary_action_label: this.primary_action_label || __("Set Invoices"),
@@ -774,6 +785,8 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 					me.action(me.get_checked_values(), cur_dialog.get_values(), me.args, filters_data);
 				}
 			});
+			}
+			
 		}
 		else{		
 
@@ -812,8 +825,9 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 		}
 
 		this.$parent = $(this.dialog.body);
+		console.log("width------------",this.target)
 		this.$wrapper = this.dialog.fields_dict.results_area.$wrapper.append(`<div class="results"
-			style="border: 1px solid #d1d8dd; border-radius: 3px; height: 300px; overflow: auto;"></div>`);
+			style="border: 1px solid #d1d8dd; border-radius: 3px; height: 300px;overflow: auto;"></div>`);
 
 		this.$results = this.$wrapper.find('.results');
 		this.$results.append(this.make_list_row());

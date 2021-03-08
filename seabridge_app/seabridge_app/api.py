@@ -472,8 +472,12 @@ def get_data(name=None, supplier=None, match=None,status=None,
 			from tabUser u,`tabHas Role` r where 
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
+			when p.workflow_state="To Pay" Then (select group_concat(u.full_name)
+				from tabUser u,`tabHas Role` r where 
+				u.name = r.parent and r.role = 'Finance Manager'
+				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			END) as "user",
-			T1.budget_amount as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
+			FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
 			
 			from 
 			`tabPurchase Order` po right join
@@ -501,11 +505,15 @@ def get_data(name=None, supplier=None, match=None,status=None,
 	return items
 
 @frappe.whitelist()
-def get_data_for_payment(company=None,
+def get_data_for_payment(name=None, supplier=None,company=None,
 	start=0, sort_by='name', sort_order='desc'):
 	'''Return data to render the item dashboard'''
 	filters = []
 	conditions=""
+	if name:
+		conditions+=str('And p.name="'+name+'"')
+	if supplier:
+		conditions+=str('And p.supplier="'+supplier+'"')
 	if company:
 		conditions+=str('And p.company="'+company+'"')
 	
@@ -572,7 +580,7 @@ def get_data_for_payment(company=None,
 				from tabUser u,`tabHas Role` r where 
 				u.name = r.parent and r.role = 'Finance Manager'
 				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company)) as "user",
-				T1.budget_amount as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
+				FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
 				from 
 				`tabPurchase Order` po right join
 				`tabPurchase Invoice` p

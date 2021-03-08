@@ -40,7 +40,7 @@ page.start = 0;
 		get_query: () => {
 						return {
 							filters: {
-								"workflow_state_name": ["in", ["Draft","To Pay","Rejected","Paid"]]
+								"workflow_state_name": ["in", ["Draft","To Pay","Rejected","Paid","Pending"]]
 							}
 						}
 					},

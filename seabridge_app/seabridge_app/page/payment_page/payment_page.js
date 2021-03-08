@@ -44,7 +44,26 @@ page.start = 0;
 			page.invoice_dashboard.refresh();
 		}
 	});
-	
+	page.supplier_field = page.add_field({
+		fieldname: 'supplier',
+		label: __('Vendor'),
+		fieldtype:'Link',
+		options:'Supplier',
+		change: function() {
+			page.invoice_dashboard.start = 0;
+			page.invoice_dashboard.refresh();
+		}
+	});
+	page.invoice_field = page.add_field({
+		fieldname: 'purchase_invoice',
+		label: __('Purchase Invoice'),
+		fieldtype:'Link',
+		options:'Purchase Invoice',
+		change: function() {
+			page.invoice_dashboard.start = 0;
+			page.invoice_dashboard.refresh();
+		}
+	});
 
 	page.sort_selector = new frappe.ui.SortSelector({
 		parent: page.wrapper.find('.page-form'),
@@ -76,6 +95,8 @@ page.start = 0;
 		page.invoice_dashboard.before_refresh = function() {
 			this.company = page.company_field.get_value();
 			this.account=page.account_field.get_value();
+			this.supplier = page.supplier_field.get_value();
+			this.purchase_invoice = page.invoice_field.get_value();
 		}
 
 		page.invoice_dashboard.refresh();
