@@ -51,7 +51,8 @@ def auto_create_purchase_invoice(doc,method):
 							grand_total=doc.grand_total,
 							base_grand_total=doc.base_grand_total,
 							rounded_total=doc.rounded_total,
-							base_rounded_total=doc.base_rounded_total
+							base_rounded_total=doc.base_rounded_total,
+							purchase_order=doc.po_no
 						)).insert(ignore_mandatory=True)
 				for val in doc.items:
 						pi_doc.append('items', {

@@ -10,7 +10,33 @@ frappe.pages['dashboardpage'].on_page_load = function(wrapper) {
 	});
 page.start = 0;
 
-	
+	frappe.call({method:"seabridge_app.seabridge_app.api.get_user_roles_dashboard",
+				async:false, 
+				callback:function(r){
+					console.log(r.message)
+					console.log("iNDShbOARD--------------")
+					if(r.message==2){
+					page.company_field = page.add_field({
+						fieldname: 'company',
+						label: __('Company'),
+						fieldtype:'Link',
+						options:'Company',
+						get_query: () => {
+										return {
+											filters: {
+												"company_type": ["in", ["Customer"]]
+											}
+										}
+									},
+						reqd:1,
+						change: function() {
+							page.invoice_dashboard.start = 0;
+							page.invoice_dashboard.refresh();
+						}
+					});
+					}
+				}
+			})
 
 	page.item_field = page.add_field({
 		fieldname: 'supplier',
@@ -49,33 +75,7 @@ page.start = 0;
 			page.invoice_dashboard.refresh();
 		}
 	});
-	frappe.call({method:"seabridge_app.seabridge_app.api.get_user_roles_dashboard",
-				async:false, 
-				callback:function(r){
-					console.log(r.message)
-					console.log("iNDShbOARD--------------")
-					if(r.message==2){
-					page.company_field = page.add_field({
-						fieldname: 'company',
-						label: __('Company'),
-						fieldtype:'Link',
-						options:'Company',
-						get_query: () => {
-										return {
-											filters: {
-												"company_type": ["in", ["Customer"]]
-											}
-										}
-									},
-						reqd:1,
-						change: function() {
-							page.invoice_dashboard.start = 0;
-							page.invoice_dashboard.refresh();
-						}
-					});
-					}
-				}
-			})
+	
 	page.sort_selector = new frappe.ui.SortSelector({
 		parent: page.wrapper.find('.page-form'),
 		args: {
