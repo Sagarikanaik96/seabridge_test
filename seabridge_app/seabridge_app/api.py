@@ -473,11 +473,15 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 			when p.workflow_state="Pending" Then (select group_concat(u.full_name)
 			from tabUser u,`tabHas Role` r where 
 			u.name = r.parent and r.role = 'Accounts Payable'
-			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
+			and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where 				c.company_name=p.company))
 			when p.workflow_state="To Pay" Then (select group_concat(u.full_name)
 				from tabUser u,`tabHas Role` r where 
 				u.name = r.parent and r.role = 'Finance Manager'
 				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
+			when p.workflow_state="Rejected" Then (select distinct (u.full_name)
+			from tabUser u,`tabHas Role` r where 
+			u.name = r.parent
+			and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
 			END) as "user",
 			FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
 			
