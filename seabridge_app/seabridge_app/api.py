@@ -395,7 +395,7 @@ def get_user_accounts_payable():
 
 
 @frappe.whitelist()
-def get_data(name=None, supplier=None, match=None,status=None,
+def get_data(name=None, supplier=None, match=None,status=None,company=None,
 	start=0, sort_by='name', sort_order='desc'):
 	'''Return data to render the item dashboard'''
 	filters = []
@@ -411,6 +411,8 @@ def get_data(name=None, supplier=None, match=None,status=None,
 			conditions+=str('And p.workflow_state="Draft"')
 	if status:
 		conditions+=str('And p.workflow_state="'+status+'"')
+	if company:
+		conditions+=str('And p.company="'+company+'"')
 	q3=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
