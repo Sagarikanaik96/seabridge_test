@@ -49,7 +49,33 @@ page.start = 0;
 			page.invoice_dashboard.refresh();
 		}
 	});
-
+	frappe.call({method:"seabridge_app.seabridge_app.api.get_user_roles_dashboard",
+				async:false, 
+				callback:function(r){
+					console.log(r.message)
+					console.log("iNDShbOARD--------------")
+					if(r.message==2){
+					page.company_field = page.add_field({
+						fieldname: 'company',
+						label: __('Company'),
+						fieldtype:'Link',
+						options:'Company',
+						get_query: () => {
+										return {
+											filters: {
+												"company_type": ["in", ["Customer"]]
+											}
+										}
+									},
+						reqd:1,
+						change: function() {
+							page.invoice_dashboard.start = 0;
+							page.invoice_dashboard.refresh();
+						}
+					});
+					}
+				}
+			})
 	page.sort_selector = new frappe.ui.SortSelector({
 		parent: page.wrapper.find('.page-form'),
 		args: {
@@ -80,6 +106,24 @@ page.start = 0;
 			this.supplier = page.item_field.get_value();
 			this.purchase_invoice = page.invoice_field.get_value();
 			this.status = page.status_field.get_value();
+			var company_name=''
+			var accounts_payable=0
+			frappe.call({method:"seabridge_app.seabridge_app.api.get_user_roles_dashboard",
+				async:false,
+				callback:function(r){
+					console.log(r.message)
+					if(r.message==2){
+					accounts_payable=1
+					company_name=page.company_field.get_value();
+					
+					console.log("INCOMPANYDASHBOARD>JSINN-------------",company_name)
+					}
+				}
+			})
+			console.log("comp-------------",company_name)
+			if(accounts_payable==1){
+			this.company = page.company_field.get_value();
+			console.log("INCOMPANYDASHBOARD>JSOUT-------------",this.company)}
 		}
 
 		page.invoice_dashboard.refresh();
