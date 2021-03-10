@@ -461,8 +461,7 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 			`tabPurchase Invoice` p
 			ON p.purchase_order=po.name
 			and p.purchase_order=po.name
-			where p.workflow_state not in ("Cancelled") and p.is_return=0 """+conditions+company_names)
-	print('count-----------',records[0][0])
+			where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names)
 	items=frappe.db.sql("""select p.name as "name",
 			p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
 	 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
@@ -504,10 +503,7 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
                         )T1
                         ON T1.purchase_invoice=p.name
 			and p.purchase_order=po.name
-			where p.workflow_state not in ("Cancelled") and p.is_return=0 """+conditions+company_names+sort+limit)
-	
-	
-	print(items)
+			where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names+sort+limit)
 	return items
 
 @frappe.whitelist()
@@ -609,19 +605,10 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 				where p.workflow_state="To Pay" and p.is_return=0 """+conditions+company_names+sort+limit)
 	else:
 		items=''
-	
-	
-	
 	return items
 
 @frappe.whitelist()
-def create_paymentc(invoices,account,company):
-	print("In Payment------------",invoices+account+company)
-
-
-@frappe.whitelist()
 def create_payment(invoices,account,company):
-	print("In Payment------------",invoices+account+company)
 	invoice_list=json.loads(invoices)
 	purchase_invoices=frappe.db.get_list("Purchase Invoice",filters={'name':['in',invoice_list]},fields={'*'})
 	bpa_doc=frappe.get_doc(dict(doctype = 'Bank Payment Advice',
@@ -655,7 +642,6 @@ def create_payment(invoices,account,company):
 		else:
 			bank_account=frappe.db.get_value("Supplier",{'name':inv['supplier_name']},"bank_account")
 			bank_name=frappe.db.get_value("Supplier",{'name':inv['supplier_name']},"bank_name")
-		print("INVOICE-------------",inv['name'])
 		bpa_doc.append('bank_payment_advice_details', {
 						    'invoice_document':inv['name'],
 						    'overdue_days':days_val,
@@ -674,20 +660,22 @@ def create_payment(invoices,account,company):
 						    'bank_account':bank_account,
 						    'bank_name':bank_name
 						})
-		#bpa_doc.save()
 	bpa_doc.save()
-	print("DocName-------------",bpa_doc.name)
 	frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name+"'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
 
 @frappe.whitelist()
 def get_user_roles_dashboard():
-	print("INUSERROLES--------------")
 	q3=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
 	q4=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""",frappe.session.user)
+	q5=frappe.db.sql("""select u.name
+				from tabUser u,`tabHas Role` r where 
+				u.name = r.parent and r.role = 'Finance Manager'
+				and u.enabled = 1 and u.name=%s""",frappe.session.user)
+
 	count=0
 	for i in q3:
 			for q in i:
@@ -697,6 +685,10 @@ def get_user_roles_dashboard():
 			for q in i:
 				if(q==frappe.session.user):
 					count+=2
+	for i in q5:
+			for q in i:
+				if(q==frappe.session.user):
+					count+=3
 	print(count)
 	return count
 

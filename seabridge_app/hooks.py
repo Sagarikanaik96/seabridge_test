@@ -35,7 +35,8 @@ app_include_js = [
 	"/assets/seabridge_app/js/jquery-ui.min.js",
 	"/assets/seabridge_app/js/perfect-scrollbar.min.js",
 	"/assets/seabridge_app/js/sweetalert2.js",
-	"/assets/seabridge_app/js/seabridge.js"
+	"/assets/seabridge_app/js/seabridge.js",
+	"/assets/seabridge_app/js/seabridge_app.js"
 
 ]
 website_context = {
@@ -175,7 +176,7 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 {"dt": "Role", 
 		"filters":[
         [
-        "name","in",["Agent", "Accounts Payable"]
+        "name","in",["Agent", "Accounts Payable","Finance Manager"]
 	]
 	]
 },
