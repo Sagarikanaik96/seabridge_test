@@ -52,7 +52,6 @@ def get_agent_name(doctype,is_internal_customer,customer_name):
 def get_company_name(doctype,is_internal_supplier,supplier_name):
     return frappe.db.get_value(doctype,{'is_internal_supplier':is_internal_supplier,'supplier_name':supplier_name},'represents_company')
 	
-
 @frappe.whitelist()
 def get_supplier_List(item_group,tag):
 	item_group_list=json.loads(item_group)
@@ -156,47 +155,41 @@ def get_contact_filter(doctype, txt, searchfield, start, page_len, filters):
 def get_contact_phone(doctype,parenttype,parent):	   
 	return frappe.db.get_value(doctype, {'parenttype':parenttype,'parent':parent},'phone')
 
-
 @frappe.whitelist()
 def update_pi_status(doc): 
     pi_doc=frappe.get_doc("Purchase Invoice",doc) 
     pi_doc.db_set('workflow_state','Debit Note Initialized')
 
-
 @frappe.whitelist()
 def get_agent_users(represents_company,doc):
-	q1=frappe.db.sql("""
+	agent_users=frappe.db.sql("""
 		select u.name
 		from tabUser u,`tabHas Role` r where 
 		u.name = r.parent and r.role = 'Accounts Payable'
 		and u.enabled = 1 and u.represents_company=%s
 	""",(represents_company))
-	
-	return q1
+	return agent_users
 	
 
 @frappe.whitelist()
 def web_form_call():
-	print(frappe.session.user)
 	if frappe.session.user=="Administrator":
-		q2=frappe.db.sql("""select u.name 
+		estate_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
-		q3=frappe.db.sql("""select u.name 
+		accounts_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""",frappe.session.user)
 		count=0
-		print('q2q3',q2,q3)
-		for i in q2:
+		for i in estate_user:
 			for q in i:
 				if(q==frappe.session.user):
 					count+=1
-		for i in q3:
+		for i in accounts_user:
 			for q in i:
 				if(q==frappe.session.user):
 					count+=2
-		print("Count-------------",count)
-		q1=frappe.db.sql("""select p.name as "name",
+		invoice_list=frappe.db.sql("""select p.name as "name",
 			p.supplier as "supplier",p.grand_total,DATE_FORMAT(p.due_date,'dd/mm/YY'),
 	 		p.workflow_state,po.grand_total,po.transaction_date,p.docstatus,
 			(CASE
@@ -213,18 +206,17 @@ def web_form_call():
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
 			ON p.purchase_order=po.name
-			
 			and p.purchase_order=po.name
 			where p.workflow_state not in ("Cancelled") and p.is_return=0""")
 	else:
-		q2=frappe.db.sql("""select c.company_name from `tabCompany` c,`tabUser` u  where u.name=%s and u.represents_company=c.associate_agent_company""",(frappe.session.user))
+		company_list=frappe.db.sql("""select c.company_name from `tabCompany` c,`tabUser` u  where u.name=%s and u.represents_company=c.associate_agent_company""",(frappe.session.user))
 		company_names=''	
-		for idx,i in enumerate(q2):
+		for idx,i in enumerate(company_list):
 			if(idx!=0):
 				company_names+=','
 			for j in i:
 				company_names+='"'+j+'"'
-		q1=frappe.db.sql("""select p.name as "name",
+		invoice_list=frappe.db.sql("""select p.name as "name",
 			p.supplier as "supplier",p.grand_total,DATE_FORMAT(p.due_date,'%%d-%%m-%%Y'),
 	 		p.workflow_state,po.grand_total,DATE_FORMAT(po.transaction_date,'%%d-%%m-%%Y'),p.docstatus,
 			(CASE
@@ -257,32 +249,22 @@ def web_form_call():
                         ON T1.purchase_invoice=p.name
 			and p.purchase_order=po.name
 			where p.workflow_state not in ("Cancelled") and p.is_return=0 and p.company in (%s)"""%company_names)
-		q3=frappe.db.sql("""select u.name 
+		estate_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
-		q4=frappe.db.sql("""select u.name 
+		accounts_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""",frappe.session.user)
 		count=0
-		print('q2q3',q2,q3)
-		for i in q3:
+		for i in estate_user:
 			for q in i:
 				if(q==frappe.session.user):
 					count+=1
-		for i in q4:
+		for i in accounts_user:
 			for q in i:
 				if(q==frappe.session.user):
 					count+=2
-		print("Count-------------",count)
-	
-	return q1,count
-
-
-@frappe.whitelist()
-def web_form_try(doc):
-	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
-	#pi_doc.submit()
-	print("PI Doc-------------",pi_doc.name)	
+	return invoice_list,count
 
 @frappe.whitelist()
 def web_form(doc):
@@ -292,44 +274,36 @@ def web_form(doc):
 	frappe.db.commit()
 	agent_comp=frappe.db.get_value('Company',{'company_name':pi_doc.company},'associate_agent_company')
 	users=get_agent_users(agent_comp,doc)
-	print(users)
 	for u in users:
 		for user in u:
 			template='<h2><span style="color: rgb(102, 185, 102);">Task Details</span></h2><table class="table table-bordered"><tbody><tr><td data-row="insert-column-right"><strong>Document Id</strong></td><td data-row="insert-column-right"><strong style="color: rgb(107, 36, 178);">'+doc+'</strong></td></tr><tr><td data-row="row-z48v"><strong>Approver</strong></td><td data-row="row-z48v"><strong style="color: rgb(107, 36, 178);">'+user+'</strong></td></tr><tr><td data-row="row-zajk"><strong>View Document in ERPNext</strong></td><td data-row="row-mze0"><strong style="color: rgb(230, 0, 0);"><a href="desk#Form/Purchase Invoice/'+doc+'" target="_blank" class="btn btn-success">Click to view document</a></strong></td></tr><tr><td data-row="row-779i"><strong>Note</strong></td><td data-row="row-779i"><strong style="color: rgb(255, 153, 0);">This is a system generated email, please do not reply to this message.</strong></td></tr></tbody></table>'	
-			print(user)
 			make(subject = "Pending For Approval", content=template, recipients=user,send_email=True)
 	
 	
 @frappe.whitelist()
 def web_call_vendor(vendor):
-	q1=frappe.db.sql("""
+	vendor_list=frappe.db.sql("""
 		select p.name as "name",
 		po.grand_total,p.grand_total,DATE_FORMAT(po.transaction_date,'%%d-%%m-%%Y'),DATE_FORMAT(p.due_date,'%%d-%%m-%%Y') as "due_date:Date",DATE_FORMAT(p.due_date,'%%d-%%m-%%Y')
 		from `tabPurchase Invoice` p left join `tabPurchase Order` po ON p.purchase_order=po.name 
 		where p.supplier=%s and p.workflow_state='Paid'""",(vendor))
-	print(q1)
-	return q1
+	return vendor_list
 	
 		
 @frappe.whitelist()
 def get_user_role():
-	print("In Context")
-	
-	q1=frappe.db.sql("""
+	estate_user=frappe.db.sql("""
 		select r.role
 		from tabUser u,`tabHas Role` r where 
 		u.name = r.parent and r.role = 'Estate Manager'
 		and u.enabled = 1 and u.name=%s
 	""",(frappe.session.user))
-	print("user",frappe.session.user)
-	print("result----------",q1)
 	if(frappe.session.user=="Administrator"):
 		return "Administrator";
 	else:
-		for q in q1:
-			for i in q:
-				print("actyula------------",i)
-				return i
+		for q in estate_user:
+			for user in q:
+				return user
 
 
 @frappe.whitelist()
@@ -358,13 +332,9 @@ def approve_invoice(doc):
 				"Authorization": "Bearer " + headers[0].authorization_key,
 				"content-type": "application/json"
 				}
-				print("URL",headers[0].url)
-				print("Auth Key",headers[0].authorization_key)
 				conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
 				document='{"documents":[{"buyer_name":"'+ pi_doc.company+'", "buyer_permid": "", "seller_name": "'+pi_doc.supplier_name+'", "seller_permid": "", "document_id": "'+pi_doc.name+'", "document_type": "I", "document_date": "'+str(pi_doc.posting_date)+'", "document_due_date":"'+str(pi_doc.due_date)+'", "amount_total": "'+str(pi_doc.outstanding_amount)+'", "currency_name": "SGD", "source": "community_erpnext", "document_category": "AP", "orig_transaction_ref":"'+pi_doc.bill_no+'"}]}'
-				print(document)
 				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
-				print("RESPONSE",res)
 				response_code=str(res)
 				res = conn.post_process(res)
 				if response_code=="<Response [200]>":
@@ -374,11 +344,9 @@ def approve_invoice(doc):
 					doc_posted=False
 					pi_doc.add_comment('Comment','Unable to send the '+pi_doc.name+' to '+headers[0].url)
 			except Exception:
-				print(Exception)
 				doc_posted=False
 				pi_doc.add_comment('Comment','Unable to send the '+pi_doc.name+' to '+headers[0].url) 
 				frappe.log_error(frappe.get_traceback())
-	print(doc_posted)
 
 @frappe.whitelist()
 def reject_invoice(doc):
@@ -413,31 +381,30 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 		conditions+=str('And p.workflow_state="'+status+'"')
 	if company:
 		conditions+=str('And p.company="'+company+'"')
-	q3=frappe.db.sql("""select u.name 
+	estate_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
-	q4=frappe.db.sql("""select u.name 
+	accounts_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""",frappe.session.user)
 	count=0
-	for i in q3:
-			for q in i:
-				if(q==frappe.session.user):
+	for i in estate_user:
+			for user in i:
+				if(user==frappe.session.user):
 					count+=1
-	for i in q4:
-			for q in i:
-				if(q==frappe.session.user):
+	for i in accounts_user:
+			for user in i:
+				if(user==frappe.session.user):
 					count+=2
 	
-	#q2=frappe.db.sql("""select c.company_name from `tabCompany` c,`tabUser` u  where u.name=%s and u.represents_company=c.associate_agent_company and c.associate_agent=%s""",(frappe.session.user,frappe.session.user))
 	company_names=''
 	if(frappe.session.user!="Administrator"):
-		q2=frappe.db.sql("""select c.company_name from `tabUser Permission` u left join `tabCompany` c ON c.company_name=u.for_value where allow="Company" and u.user=%s""",(frappe.session.user))
-		for i in q2:
+		company_list=frappe.db.sql("""select c.company_name from `tabUser Permission` u left join `tabCompany` c ON c.company_name=u.for_value where allow="Company" and u.user=%s""",(frappe.session.user))
+		for i in company_list:
 				for q in i:
 					if(q):
 						company_names=' and p.company in ('	
-						for idx,i in enumerate(q2):
+						for idx,i in enumerate(company_list):
 								if(idx!=0):
 									company_names+=','
 								for j in i:
@@ -474,16 +441,15 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 			u.name = r.parent and r.role = 'Accounts Payable'
 			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			when p.workflow_state="To Pay" Then (select group_concat(u.full_name)
-				from tabUser u,`tabHas Role` r where 
-				u.name = r.parent and r.role = 'Finance Manager'
-				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
+			from tabUser u,`tabHas Role` r where 
+			u.name = r.parent and r.role = 'Finance Manager'
+			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
 			when p.workflow_state="Rejected" Then (select distinct (u.full_name)
 			from tabUser u,`tabHas Role` r where 
 			u.name = r.parent
 			and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
 			END) as "user",
 			FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
-			
 			from 
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
@@ -519,31 +485,31 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 	if company:
 		conditions+=str('And p.company="'+company+'"')
 	
-	q3=frappe.db.sql("""select u.name 
+	estate_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
-	q4=frappe.db.sql("""select u.name 
+	accounts_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""",frappe.session.user)
 	count=0
-	for i in q3:
-			for q in i:
-				if(q==frappe.session.user):
+	for i in estate_user:
+			for user in i:
+				if(user==frappe.session.user):
 					count+=1
-	for i in q4:
-			for q in i:
-				if(q==frappe.session.user):
+	for i in accounts_user:
+			for user in i:
+				if(user==frappe.session.user):
 					count+=2
 	
 	company_names=''
 	if(frappe.session.user!="Administrator"):
-		q2=frappe.db.sql("""select c.company_name from `tabUser Permission` u left join `tabCompany` c ON c.company_name=u.for_value where allow="Company" and c.company_type="Customer" and u.user=%s""",(frappe.session.user))
+		company_list=frappe.db.sql("""select c.company_name from `tabUser Permission` u left join `tabCompany` c ON c.company_name=u.for_value where allow="Company" and c.company_type="Customer" and u.user=%s""",(frappe.session.user))
 		company_names=''
-		for i in q2:
+		for i in company_list:
 				for q in i:
 					if(q):
 						company_names=' and p.company in ('	
-						for idx,i in enumerate(q2):
+						for idx,i in enumerate(company_list):
 								if(idx!=0):
 									company_names+=','
 								for j in i:
@@ -562,11 +528,11 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 			sort+=" Order by po.transaction_date "+sort_order
 	
 	limit=' Limit 20 offset '+start
-	manager_role=frappe.db.sql("""select u.name 
+	finance_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Finance manager'""",frappe.session.user)
 	
-	if manager_role:
+	if finance_user:
 		records=frappe.db.sql("""select 
 			count(p.name) as "count"
 			from 
@@ -665,31 +631,30 @@ def create_payment(invoices,account,company):
 
 @frappe.whitelist()
 def get_user_roles_dashboard():
-	q3=frappe.db.sql("""select u.name 
+	estate_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
-	q4=frappe.db.sql("""select u.name 
+	accounts_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""",frappe.session.user)
-	q5=frappe.db.sql("""select u.name
+	finance_user=frappe.db.sql("""select u.name
 				from tabUser u,`tabHas Role` r where 
 				u.name = r.parent and r.role = 'Finance Manager'
 				and u.enabled = 1 and u.name=%s""",frappe.session.user)
 
-	count=0
-	for i in q3:
-			for q in i:
-				if(q==frappe.session.user):
-					count+=1
-	for i in q4:
-			for q in i:
-				if(q==frappe.session.user):
-					count+=2
-	for i in q5:
-			for q in i:
-				if(q==frappe.session.user):
-					count+=3
-	print(count)
-	return count
+	role_count=0
+	for user_list in estate_user:
+			for user in user_list:
+				if(user==frappe.session.user):
+					role_count+=1
+	for user_list in accounts_user:
+			for user in user_list:
+				if(user==frappe.session.user):
+					role_count+=2
+	for user_list in finance_user:
+			for user in user_list:
+				if(user==frappe.session.user):
+					role_count+=3
+	return role_count
 
 

@@ -5,7 +5,7 @@ frappe.pages['dashboardpage'].on_page_load = function(wrapper) {
 		title: 'Action Table',
 		single_column: true
 	});
-page.start = 0;
+	page.start = 0;
 
 	frappe.call({method:"seabridge_app.seabridge_app.api.get_user_roles_dashboard",
 				async:false, 
@@ -70,7 +70,16 @@ page.start = 0;
 			page.invoice_dashboard.refresh();
 		}
 	});
-	
+	page.match_field = page.add_field({
+		fieldname: 'match',
+		label: __('Match'),
+		fieldtype:'Select',
+		options:['Y','N'],
+		change: function() {
+			page.invoice_dashboard.start = 0;
+			page.invoice_dashboard.refresh();
+		}
+	});
 	page.sort_selector = new frappe.ui.SortSelector({
 		parent: page.wrapper.find('.page-form'),
 		args: {
@@ -90,7 +99,6 @@ page.start = 0;
 		}
 	});
 
-	 //page.sort_selector.wrapper.css({'margin-right': '15px', 'margin-top': '4px'});
 	frappe.require('/assets/seabridge_app/js/item-dashboard.min.js', function() {
 		page.invoice_dashboard = new seabridge_app.ActionTable({
 			parent: page.main,
@@ -100,6 +108,7 @@ page.start = 0;
 			this.supplier = page.item_field.get_value();
 			this.purchase_invoice = page.invoice_field.get_value();
 			this.status = page.status_field.get_value();
+			this.match = page.match_field.get_value();
 			var accounts_payable=0
 			frappe.call({method:"seabridge_app.seabridge_app.api.get_user_roles_dashboard",
 				async:false,
@@ -116,7 +125,6 @@ page.start = 0;
 
 		page.invoice_dashboard.refresh();
 
-		// item click
 		var setup_click = function(doctype) {
 			page.main.on('click', 'a[data-type="'+ doctype.toLowerCase() +'"]', function() {
 				var name = $(this).attr('data-name');

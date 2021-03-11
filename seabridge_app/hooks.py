@@ -122,7 +122,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Supplier-bank_name",
 		"Supplier-bank_account",
 		"Company-bank_name",
-		"Company-bank_account"
+		"Company-bank_account",
+		"Purchase Invoice-paid_date"
 		]
 	]
 ]
