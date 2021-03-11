@@ -84,9 +84,6 @@ page.start = 0;
 		}
 	});
 
-	 //page.sort_selector.wrapper.css({'margin-right': '15px', 'margin-top': '4px'});
-	//console.log("PAGE------------",page.status_field.get_value())
-	console.log("Company",this.company)
 	frappe.require('/assets/seabridge_app/js/payment_page.min.js', function() {
 		page.invoice_dashboard = new seabridge_app.ActionTable({
 			parent: page.main,
@@ -103,10 +100,8 @@ page.start = 0;
 
 		// item click
 		var setup_click = function(doctype) {
-			console.log("Doctype-------------",doctype)
 			page.main.on('click', 'a[data-type="'+ doctype.toLowerCase() +'"]', function() {
 				var name = $(this).attr('data-name');
-				console.log(name)
 				var field = page[doctype.toLowerCase() + '_field'];
 				if(field.get_value()===name) {
 					frappe.set_route('Form', doctype, name)
