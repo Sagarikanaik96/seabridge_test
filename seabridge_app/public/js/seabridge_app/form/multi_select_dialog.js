@@ -631,7 +631,6 @@ erpnext.utils.map_current_doc = function(opts) {
 				"args": opts.args
 			},
 			callback: function(r) {
-				console.log("r--------------",r)
 				if(!r.exc) {
 					var doc = frappe.model.sync(r.message);
 					cur_frm.dirty();
@@ -760,22 +759,18 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 			fields.push({ fieldtype: "Section Break" });
 			fields = fields.concat(this.data_fields);
 		}
-		console.log("FIELDS-------------",fields)
-
 		let doctype_plural = this.doctype.plural();
 
 		if(this.doctype=="Purchase Invoice"){
-			console.log("Target",this.target)
-			console.log("Target[0]",this.target[0])
 			if(this.target['window']){
-				console.log("IN Dashboard------------")
 				this.dialog = new frappe.ui.Dialog({
 				title:"Paid Invoices",
-				fields:fields
+				fields:fields,
+				secondary_action: function (e) {
+				}
 				});
 			}
 			else{
-				console.log("IN BPA-------------")
 				this.dialog = new frappe.ui.Dialog({
 				title: __("Select {0}", [(this.doctype == '[Select]') ? __("value") : __(doctype_plural)]),
 				fields: fields,
@@ -800,7 +795,6 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 					me.action(me.get_checked_values(), cur_dialog.get_values(), me.args, filters_data);
 				},
 				secondary_action: function (e) {
-
 					// If user wants to close the modal
 					if (e) {
 						frappe.route_options = {};
@@ -825,7 +819,6 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 		}
 
 		this.$parent = $(this.dialog.body);
-		console.log("width------------",this.target)
 		this.$wrapper = this.dialog.fields_dict.results_area.$wrapper.append(`<div class="results"
 			style="border: 1px solid #d1d8dd; border-radius: 3px; height: 300px;overflow: auto;"></div>`);
 
@@ -863,16 +856,46 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 		} else {
 			Object.keys(this.setters).forEach((setter, index) => {
 				let df_prop = frappe.meta.docfield_map[this.doctype][setter];
-
 				// Index + 1 to start filling from index 1
 				// Since Search is a standrd field already pushed
-				columns[(index + 1) % 3].push({
+				if(this.target['window']){
+					if(setter=="grand_total"){
+						columns[(index + 1) % 3].push({
+						fieldtype: df_prop.fieldtype,
+						label: "Inv$",
+						fieldname: setter,
+						options: df_prop.options,
+						default: this.setters[setter]
+						});
+					}
+					else if(setter=="due_date"){
+						columns[(index + 1) % 3].push({
+						fieldtype: df_prop.fieldtype,
+						label: "Invoice Date",
+						fieldname: setter,
+						options: df_prop.options,
+						default: this.setters[setter]
+						});
+					} 
+					else{
+					columns[(index + 1) % 3].push({
 					fieldtype: df_prop.fieldtype,
 					label: df_prop.label,
 					fieldname: setter,
 					options: df_prop.options,
 					default: this.setters[setter]
-				});
+					});
+				}
+				}
+				else{
+					columns[(index + 1) % 3].push({
+					fieldtype: df_prop.fieldtype,
+					label: df_prop.label,
+					fieldname: setter,
+					options: df_prop.options,
+					default: this.setters[setter]
+					});
+				}
 			});
 		}
 
@@ -899,7 +922,6 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 				}
 			);
 		}
-
 		return fields;
 	}
 
@@ -985,8 +1007,61 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 		} else {
 			columns = columns.concat(Object.keys(this.setters));
 		}
-
+		var dashboard=this.target
 		columns.forEach(function (column) {
+			var title=''
+			if(result[column]){
+			var row_value=result[column]}
+			else{row_value=''}
+			if(dashboard['window']){
+				if(frappe.model.unscrub(column)=="Name"){title="Inv#"}
+				else if(frappe.model.unscrub(column)=="Grand Total"){title="Inv$"
+					//var test=(result[column]).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+					var format = new Intl.NumberFormat('en-US', { 
+					style: 'currency', 
+					currency: 'USD', 
+					minimumFractionDigits: 2, 
+				    }); 
+					row_value=format.format(result[column])
+				}	
+				else if(frappe.model.unscrub(column)=="Due Date"){title="Invoice Date"
+					//row_value=frappe.utils.get_datetime(result[column]).strftime('%Y-%m-%d')	
+					
+				}
+				else{title=frappe.model.unscrub(column)}
+				if((frappe.model.unscrub(column)=="Due Date" || frappe.model.unscrub(column)=="Paid Date") && result[column]){
+					var date = new Date(result[column]);
+					var dd = date.getDate();
+					var mm = date.getMonth()+1;
+					var yyyy = date.getFullYear();
+					if(dd<10){
+					    dd='0'+dd;
+					} 
+					if(mm<10){
+					    mm='0'+mm;
+					} 
+					var row_value= dd+'-'+mm+'-'+yyyy;
+				}
+				if(frappe.model.unscrub(column)=="Grand Total"){
+					contents += `<div class="list-item__content ellipsis" style="text-align:right;">
+				${
+	head ? `<span class="ellipsis text-muted" title="${__(frappe.model.unscrub(column))}"><table><tr><td width="200">`+title+`</td></tr></table></span>`
+		: (column !== "name" ? `<span class="ellipsis result-row" title="${__(result[column] || '')}"><table><tr><td width="200">`+row_value+`</td></tr></table></span>`
+			: `<a href="${"#Form/" + me.doctype + "/" + result[column] || ''}" class="list-id ellipsis" title="${__(result[column] || '')}">
+							<font style="color:blue;" >${__(result[column] || '')}</font></a>`)}
+			</div>`;
+				}
+				else{
+				contents += `<div class="list-item__content ellipsis" style="text-align:right;">
+				${
+	head ? `<span class="ellipsis text-muted" title="${__(frappe.model.unscrub(column))}">`+title+`</span>`
+		: (column !== "name" ? `<span class="ellipsis result-row" title="${__(result[column] || '')}">`+row_value+`</span>`
+			: `<a href="${"#Form/" + me.doctype + "/" + result[column] || ''} "target="_blank" class="list-id ellipsis" title="${__(result[column] || '')}">
+							<font style="color:blue;" >${__(result[column] || '')}</font></a>`)}
+			</div>`;				
+			}
+		}
+		else{
 			contents += `<div class="list-item__content ellipsis">
 				${
 	head ? `<span class="ellipsis text-muted" title="${__(frappe.model.unscrub(column))}">${__(frappe.model.unscrub(column))}</span>`
@@ -994,14 +1069,22 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 			: `<a href="${"#Form/" + me.doctype + "/" + result[column] || ''}" class="list-id ellipsis" title="${__(result[column] || '')}">
 							${__(result[column] || '')}</a>`)}
 			</div>`;
+		}
 		});
-
-		let $row = $(`<div class="list-item">
+		if(dashboard['window']){
+			var $row = $(`<div class="list-item">
+				${contents}
+			</div>`);
+		}
+		else{
+			var $row = $(`<div class="list-item">
 			<div class="list-item__content" style="flex: 0 0 10px;">
 				<input type="checkbox" class="list-row-check" data-item-name="${result.name}" ${result.checked ? 'checked' : ''}>
 			</div>
 			${contents}
 		</div>`);
+			
+		}
 
 		head ? $row.addClass('list-item--head')
 			: $row = $(`<div class="list-item-container" data-item-name="${result.name}"></div>`).append($row);
@@ -1056,7 +1139,7 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 		let me = this;
 		let filters = this.get_query ? this.get_query().filters : {} || {};
 		let filter_fields = [];
-
+	
 		if ($.isArray(this.setters)) {
 			for (let df of this.setters) {
 				filters[df.fieldname] = me.dialog.fields_dict[df.fieldname].get_value() || undefined;
@@ -1123,8 +1206,6 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 		});
 	}
 };
-
-
 
 
 
