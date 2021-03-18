@@ -84,7 +84,7 @@ frappe.pages['dashboardpage'].on_page_load = function(wrapper) {
 		parent: page.wrapper.find('.page-form'),
 		args: {
 			sort_by: 'purchase_invoice',
-			sort_order: 'asc',
+			sort_order: 'desc',
 			options: [
 				{fieldname: 'purchase_invoice', label: __('Purchase Invoice')},
 				{fieldname: 'invoice_date', label: __('Invoice Date')},
