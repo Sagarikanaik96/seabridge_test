@@ -7,8 +7,6 @@ frappe.pages['finance-action-list'].on_page_load = function(wrapper) {
 page.start = 0;
 
 
-	
-
 	page.company_field = page.add_field({
 		fieldname: 'company',
 		label: __('Company'),
@@ -25,26 +23,64 @@ page.start = 0;
 		change: function() {
 			page.invoice_dashboard.start = 0;
 			page.invoice_dashboard.refresh();
+			if(page.account_field){
+				frappe.db.get_value("Bank Account",{'company':page.company_field.get_value(),'is_default':1},"name",(c)=>{
+				if(c.name){
+				page.account_field.set_value(c.name)
+				}
+				else{page.account_field.set_value('')}
+				})
+			}
+			else{
+			frappe.db.get_value("Bank Account",{'company':page.company_field.get_value(),'is_default':1},"name",(c)=>{
+				if(c.name){
+				page.account_field = page.add_field({
+					fieldname: 'account',
+					label: __('Bank account'),
+					fieldtype:'Link',
+					options:'Bank Account',
+					get_query: () => {
+									return {
+										filters: {
+											"company": ["in", [page.company_field.get_value()]]
+										}
+									}
+								},
+					reqd:1,
+					default:c.name,
+					change: function() {
+						page.invoice_dashboard.start = 0;
+						page.invoice_dashboard.refresh();
+					}
+				});
+				}
+				else{
+					page.account_field = page.add_field({
+					fieldname: 'account',
+					label: __('Bank account'),
+					fieldtype:'Link',
+					options:'Bank Account',
+					get_query: () => {
+									return {
+										filters: {
+											"company": ["in", [page.company_field.get_value()]]
+										}
+									}
+								},
+					reqd:1,
+					change: function() {
+						page.invoice_dashboard.start = 0;
+						page.invoice_dashboard.refresh();
+					}
+				});
+					
+				}
+			})
+			} 
+			
 		}
 	});
-	page.account_field = page.add_field({
-		fieldname: 'account',
-		label: __('Bank account'),
-		fieldtype:'Link',
-		options:'Bank Account',
-		get_query: () => {
-						return {
-							filters: {
-								"company": ["in", [page.company_field.get_value()]]
-							}
-						}
-					},
-		reqd:1,
-		change: function() {
-			page.invoice_dashboard.start = 0;
-			page.invoice_dashboard.refresh();
-		}
-	});
+	
 	page.supplier_field = page.add_field({
 		fieldname: 'supplier',
 		label: __('Vendor'),
@@ -70,7 +106,7 @@ page.start = 0;
 		parent: page.wrapper.find('.page-form'),
 		args: {
 			sort_by: 'purchase_invoice',
-			sort_order: 'asc',
+			sort_order: 'desc',
 			options: [
 				{fieldname: 'purchase_invoice', label: __('Purchase Invoice')},
 				{fieldname: 'invoice_date', label: __('Invoice Date')},
@@ -92,7 +128,8 @@ page.start = 0;
 
 		page.invoice_dashboard.before_refresh = function() {
 			this.company = page.company_field.get_value();
-			this.account=page.account_field.get_value();
+			if(page.account_field){
+			this.account=page.account_field.get_value();}
 			this.supplier = page.supplier_field.get_value();
 			this.purchase_invoice = page.invoice_field.get_value();
 		}
@@ -114,6 +151,5 @@ page.start = 0;
 		}
 
 		setup_click('Purchase Invoice');
-		setup_click('Warehouse');
 	});
 }

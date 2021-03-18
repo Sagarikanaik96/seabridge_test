@@ -7,6 +7,7 @@ frappe.pages['agent-action-list'].on_page_load = function(wrapper) {
 	});
 page.start = 0;
 
+
 	frappe.call({method:"seabridge_app.seabridge_app.api.get_user_roles_dashboard",
 				async:false, 
 				callback:function(r){
@@ -70,21 +71,33 @@ page.start = 0;
 			page.invoice_dashboard.refresh();
 		}
 	});
-	page.match_field = page.add_field({
-		fieldname: 'match',
-		label: __('Match'),
-		fieldtype:'Select',
-		options:['Y','N'],
-		change: function() {
-			page.invoice_dashboard.start = 0;
-			page.invoice_dashboard.refresh();
-		}
-	});
+
+	frappe.call({method:"seabridge_app.seabridge_app.api.get_user_roles_dashboard",
+				async:false, 
+				callback:function(r){
+					if(r.message==1){
+						page.match_field = page.add_field({
+							fieldname: 'match',
+							label: __('Match'),
+							fieldtype:'Select',
+							options:['','Y','N'],
+							change: function() {
+								page.invoice_dashboard.start = 0;
+								page.invoice_dashboard.refresh();
+							}
+						});
+						
+					}
+				}
+	})
+
+
+	
 	page.sort_selector = new frappe.ui.SortSelector({
 		parent: page.wrapper.find('.page-form'),
 		args: {
 			sort_by: 'purchase_invoice',
-			sort_order: 'asc',
+			sort_order: 'desc',
 			options: [
 				{fieldname: 'purchase_invoice', label: __('Purchase Invoice')},
 				{fieldname: 'invoice_date', label: __('Invoice Date')},
@@ -108,19 +121,25 @@ page.start = 0;
 			this.supplier = page.item_field.get_value();
 			this.purchase_invoice = page.invoice_field.get_value();
 			this.status = page.status_field.get_value();
-			this.match = page.match_field.get_value();
-			var accounts_payable=0
+			var role_check=0
 			frappe.call({method:"seabridge_app.seabridge_app.api.get_user_roles_dashboard",
 				async:false,
 				callback:function(r){
 					if(r.message==2){
-					accounts_payable=1
+					role_check=2
+					}
+					else if(r.message==1){
+						role_check=1
 					}
 				}
 			})
-			if(accounts_payable==1){
+			if(role_check==2){
 				this.company = page.company_field.get_value();
 			}
+			else if(role_check==1){
+				this.match = page.match_field.get_value();
+			}
+			else{this.match =''}
 		}
 
 		page.invoice_dashboard.refresh();

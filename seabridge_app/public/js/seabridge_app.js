@@ -9,11 +9,11 @@ $(document).on("startup", function () {
 		})
 		//dashboard for Accounts payable or Estate manager role
 		if(role==1 || role==2){
-			frappe.set_route("#dashboardpage");
+			frappe.set_route("#agent-action-list");
 		}
 		//payment dashboard for Finance manager
 		else if(role==3){
-			frappe.set_route("#payment-page");		
+			frappe.set_route("#finance-action-list");		
 		}
 	}
 });

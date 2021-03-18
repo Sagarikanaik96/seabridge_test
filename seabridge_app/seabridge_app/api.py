@@ -411,17 +411,69 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 									company_names+='"'+j+'"'
 						company_names+=')'
 	
-	sort=''
+	sort=" Order by p.name "+sort_order
 	if sort_by:
 		if(sort_by=="name"):
-			sort+=" Order by p.name "+sort_order
+			sort=" Order by p.name "+sort_order
 		elif(sort_by=="invoice_date"):
-			sort+=" Order by p.due_date "+sort_order
+			sort=" Order by p.due_date "+sort_order
 		elif(sort_by=="po_date"):
-			sort+=" Order by po.transaction_date "+sort_order
-	
+			sort=" Order by po.transaction_date "+sort_order
+
 	limit=' Limit 20 offset '+start
-	records=frappe.db.sql("""select 
+	if count==1:
+		records=frappe.db.sql("""select 
+				count(p.name) as "count"
+				from 
+				`tabPurchase Order` po right join
+				`tabPurchase Invoice` p
+				ON p.purchase_order=po.name
+				and p.purchase_order=po.name
+				where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names)
+		items=frappe.db.sql("""select p.name as "name",
+				p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
+		 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
+				(CASE
+				when p.workflow_state="Draft" Then (select u.full_name 
+				from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
+				c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
+				when p.workflow_state="Pending" Then (select group_concat(u.full_name)
+				from tabUser u,`tabHas Role` r where 
+				u.name = r.parent and r.role = 'Accounts Payable'
+				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
+				when p.workflow_state="To Pay" Then (select group_concat(u.full_name)
+				from tabUser u,`tabHas Role` r where 
+				u.name = r.parent and r.role = 'Finance Manager'
+				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
+				when p.workflow_state="Rejected" Then (select distinct (u.full_name)
+				from tabUser u,`tabHas Role` r where 
+				u.name = r.parent
+				and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
+				END) as "user",
+				FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
+				from 
+				`tabPurchase Order` po right join
+				`tabPurchase Invoice` p
+				ON p.purchase_order=po.name
+				LEFT JOIN(
+		                select sum(ba.budget_amount) as budget_amount,
+		                p.name as purchase_invoice from
+		                `tabBudget Account` ba inner join
+		                `tabBudget` b 
+		                ON ba.parent=b.name right join 
+		                `tabPurchase Invoice Item` i
+		                ON b.item_group=i.item_group right join
+		                `tabPurchase Invoice` p
+		                ON i.parent=p.name
+		                where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
+		                AND b.docstatus=1 group by p.name
+		                )T1
+		                ON T1.purchase_invoice=p.name
+				and p.purchase_order=po.name
+				where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names+sort+limit)
+		return items
+	elif count==2:
+		records=frappe.db.sql("""select 
 			count(p.name) as "count"
 			from 
 			`tabPurchase Order` po right join
@@ -429,7 +481,7 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 			ON p.purchase_order=po.name
 			and p.purchase_order=po.name
 			where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names)
-	items=frappe.db.sql("""select p.name as "name",
+		items=frappe.db.sql("""select p.name as "name",
 			p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
 	 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
 			(CASE
@@ -469,12 +521,12 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
                         )T1
                         ON T1.purchase_invoice=p.name
 			and p.purchase_order=po.name
-			where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names+sort+limit)
-	return items
+			where p.workflow_state not in ("Cancelled","Paid","Draft") and p.is_return=0 """+conditions+company_names+sort+limit)
+		return items
 
 @frappe.whitelist()
 def get_data_for_payment(name=None, supplier=None,company=None,
-	start=0, sort_by='name', sort_order='desc'):
+	start=0, sort_by='name', sort_order='asc'):
 	'''Return data to render the item dashboard'''
 	filters = []
 	conditions=""
@@ -518,14 +570,16 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 		
 	
 	
-	sort=''
+	sort=" Order by p.name "+sort_order
 	if sort_by:
 		if(sort_by=="name"):
-			sort+=" Order by p.name "+sort_order
+			sort=" Order by p.name "+sort_order
 		elif(sort_by=="invoice_date"):
-			sort+=" Order by p.due_date "+sort_order
+			sort=" Order by p.due_date "+sort_order
 		elif(sort_by=="po_date"):
-			sort+=" Order by po.transaction_date "+sort_order
+			sort=" Order by po.transaction_date "+sort_order
+	else:
+		sort=" Order by p.name "+sort_order
 	
 	limit=' Limit 20 offset '+start
 	finance_user=frappe.db.sql("""select u.name 
@@ -656,5 +710,6 @@ def get_user_roles_dashboard():
 				if(user==frappe.session.user):
 					role_count+=3
 	return role_count
+
 
 
