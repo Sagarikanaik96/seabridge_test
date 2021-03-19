@@ -65,7 +65,6 @@ var select={}
  }
  },
  action(selections) {
-
 select=selections
  $.each(selections,function(idx){
  frappe.call({
@@ -176,8 +175,6 @@ cur_frm.save();
 
 }); 
 
-	
-  });
 	frappe.call({
                 method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.sort_details",
                 args:{
@@ -214,9 +211,10 @@ cur_frm.save();
 				child.bank_name=r.message[i].bank_name
 			}
 			}
+			
 		}
 		})
-		
+  });	
    }
 	
 	},
