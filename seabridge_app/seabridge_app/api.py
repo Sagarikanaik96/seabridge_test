@@ -450,7 +450,8 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 				u.name = r.parent
 				and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
 				END) as "user",
-				FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
+				FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
+				T2.file_name as file_name
 				from 
 				`tabPurchase Order` po right join
 				`tabPurchase Invoice` p
@@ -468,8 +469,15 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 		                where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
 		                AND b.docstatus=1 group by p.name
 		                )T1
-		                ON T1.purchase_invoice=p.name
+		                ON T1.purchase_invoice=p.name 
 				and p.purchase_order=po.name
+				lEFT JOIN(
+				select count(f.file_name) as file_name,
+				f.attached_to_name as attached_to_name from
+				`tabFile` f 
+				where attached_to_doctype="Purchase Invoice" group by f.attached_to_name
+				)T2 
+				ON T2.attached_to_name=p.name
 				where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names+sort+limit)
 		return items
 	elif count==2:
@@ -501,7 +509,8 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 			u.name = r.parent
 			and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
 			END) as "user",
-			FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
+			FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
+			T2.file_name as file_name
 			from 
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
@@ -520,7 +529,13 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
                         AND b.docstatus=1 group by p.name
                         )T1
                         ON T1.purchase_invoice=p.name
-			and p.purchase_order=po.name
+			lEFT JOIN(
+			select count(f.file_name) as file_name,
+			f.attached_to_name as attached_to_name from
+			`tabFile` f 
+			where attached_to_doctype="Purchase Invoice" group by f.attached_to_name
+			)T2 
+			ON T2.attached_to_name=p.name
 			where p.workflow_state not in ("Cancelled","Paid","Draft") and p.is_return=0 """+conditions+company_names+sort+limit)
 		return items
 
@@ -602,7 +617,8 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 				from tabUser u,`tabHas Role` r where 
 				u.name = r.parent and r.role = 'Finance Manager'
 				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company)) as "user",
-				FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count"
+				FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
+				T2.file_name as file_name
 				from 
 				`tabPurchase Order` po right join
 				`tabPurchase Invoice` p
@@ -622,6 +638,13 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 		                )T1
 		                ON T1.purchase_invoice=p.name
 				and p.purchase_order=po.name
+				lEFT JOIN(
+				select count(f.file_name) as file_name,
+				f.attached_to_name as attached_to_name from
+				`tabFile` f 
+				where attached_to_doctype="Purchase Invoice" group by f.attached_to_name
+				)T2 
+				ON T2.attached_to_name=p.name
 				where p.workflow_state="To Pay" and p.is_return=0 """+conditions+company_names+sort+limit)
 	else:
 		items=''
@@ -680,6 +703,7 @@ def create_payment(invoices,account,company):
 						    'bank_account':bank_account,
 						    'bank_name':bank_name
 						})
+		bpa_doc.save()
 	bpa_doc.save()
 	frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name+"'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
 
