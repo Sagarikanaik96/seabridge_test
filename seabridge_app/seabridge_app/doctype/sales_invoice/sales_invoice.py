@@ -14,9 +14,7 @@ import requests
 class SalesInvoice(Document):
 	pass
 
-
 def auto_create_purchase_invoice(doc,method):
-	
 	supplier=frappe.db.get_value('Supplier',{'is_internal_supplier':1,'represents_company':doc.company},'supplier_name')
 	company=frappe.db.get_value('Customer',{'is_internal_Customer':1,'customer_name':doc.customer_name},'represents_company')
 	contact_person=frappe.db.get_value('Dynamic Link',{'parenttype':'Contact','link_doctype':'Supplier',"link_name":supplier},'parent')
@@ -87,7 +85,19 @@ def auto_create_purchase_invoice(doc,method):
 								v.po_qty=po.qty,
 								v.po_amount=po.amount
 					pi_doc.save()
-				doc.add_comment('Comment','  Purchase Invoice: '+pi_doc.name)  
+				doc.add_comment('Comment','  Purchase Invoice: '+pi_doc.name)
+				files=frappe.db.get_list('File',filters={'attached_to_doctype':'Sales Invoice','attached_to_name':doc.name},fields={'*'})
+				for single_file in files:
+					file_doc=frappe.get_doc(dict(doctype = 'File',
+						file_name=single_file.file_name,
+						is_private=single_file.is_private,
+						file_size=single_file.file_size,
+						file_url=single_file.file_url,
+						attached_to_doctype="Purchase Invoice",
+						attached_to_name=pi_doc.name
+					)).insert(ignore_mandatory=True)
+					file_doc.save()
+		  
 		else:
 			frappe.msgprint('Unable to create  Sales Invoice as customer: '+doc.customer_name +' is not associated with any company. Register the Customer for the Company and submit the document: '+doc.name+ '.')
 			raise frappe.ValidationError('Unable to create  Sales Invoice as customer: '+doc.customer_name +' is not associated with any company. Register the Customer for the Company and submit the document: '+doc.name+ '.')
