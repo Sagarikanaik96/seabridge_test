@@ -659,6 +659,7 @@ def create_payment(invoices,account,company):
 	date=datetime.date(datetime.now()),
 	bank_account=account
 	)).insert(ignore_mandatory=True)
+	bpa_doc.save()
 	for inv in purchase_invoices:
 		number=(datetime.date(datetime.now())-inv['due_date'])
 		days_val=number.days
@@ -703,7 +704,6 @@ def create_payment(invoices,account,company):
 						    'bank_account':bank_account,
 						    'bank_name':bank_name
 						})
-		bpa_doc.save()
 	bpa_doc.save()
 	frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name+"'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
 
@@ -736,4 +736,15 @@ def get_user_roles_dashboard():
 	return role_count
 
 
+@frappe.whitelist()
+def get_estate_company_detail():
+	company_detail=''
+	company_list=frappe.db.sql("""select group_concat(c.company_name)
+				from tabUser u,`tabHas Role` r, `tabCompany` c where 
+				u.name = r.parent and r.role = 'Estate Manager'
+				and u.enabled = 1 and u.name=c.associate_agent and c.associate_agent=%s""",frappe.session.user)
+	for company in company_list:
+		for company_name in company:
+			company_detail=company_name
+	return company_detail
 

@@ -859,33 +859,35 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 				// Index + 1 to start filling from index 1
 				// Since Search is a standrd field already pushed
 				if(this.target['window']){
-					if(setter=="grand_total"){
-						columns[(index + 1) % 3].push({
-						fieldtype: df_prop.fieldtype,
-						label: "Inv$",
-						fieldname: setter,
-						options: df_prop.options,
-						default: this.setters[setter]
-						});
-					}
-					else if(setter=="due_date"){
-						columns[(index + 1) % 3].push({
-						fieldtype: df_prop.fieldtype,
-						label: "Invoice Date",
-						fieldname: setter,
-						options: df_prop.options,
-						default: this.setters[setter]
-						});
-					} 
-					else{
-					columns[(index + 1) % 3].push({
-					fieldtype: df_prop.fieldtype,
-					label: df_prop.label,
-					fieldname: setter,
-					options: df_prop.options,
-					default: this.setters[setter]
-					});
-				}
+					
+						if(setter=="grand_total"){
+							columns[(index + 1) % 3].push({
+							fieldtype: df_prop.fieldtype,
+							label: "Inv$",
+							fieldname: setter,
+							options: df_prop.options,
+							default: this.setters[setter]
+							});
+						}
+						else if(setter=="due_date"){
+							columns[(index + 1) % 3].push({
+							fieldtype: df_prop.fieldtype,
+							label: "Invoice Date",
+							fieldname: setter,
+							options: df_prop.options,
+							default: this.setters[setter]
+							});
+						} 
+						else{
+							columns[(index + 1) % 3].push({
+							fieldtype: df_prop.fieldtype,
+							label: df_prop.label,
+							fieldname: setter,
+							options: df_prop.options,
+							default: this.setters[setter]
+							});
+						}
+					
 				}
 				else{
 					columns[(index + 1) % 3].push({
@@ -936,6 +938,7 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 	}
 
 	get_custom_filters() {
+		
 		if (this.add_filters_group && this.filter_group) {
 			return this.filter_group.get_filters().reduce((acc, filter) => {
 				return Object.assign(acc, {
@@ -1043,16 +1046,33 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 					var row_value= dd+'-'+mm+'-'+yyyy;
 				}
 				if(frappe.model.unscrub(column)=="Grand Total"){
-					contents += `<div class="list-item__content ellipsis" style="text-align:right;">
+					contents += `<div class="list-item__content ellipsis">
 				${
-	head ? `<span class="ellipsis text-muted" title="${__(frappe.model.unscrub(column))}"><table><tr><td width="200">`+title+`</td></tr></table></span>`
-		: (column !== "name" ? `<span class="ellipsis result-row" title="${__(result[column] || '')}"><table><tr><td width="200">`+row_value+`</td></tr></table></span>`
+	head ? `<span class="ellipsis text-muted" title="${__(frappe.model.unscrub(column))}">`+title+`</span>`
+		: (column !== "name" ? `<span class="ellipsis result-row" title="${__(result[column] || '')}"><table><tr><td width="200" align="right">`+row_value+`</td></tr></table></span>`
+			: `<a href="${"#Form/" + me.doctype + "/" + result[column] || ''}" class="list-id ellipsis" title="${__(result[column] || '')}">
+							<font style="color:blue;" >${__(result[column] || '')}</font></a>`)}
+			</div>`;
+				
+				}
+				else if(frappe.model.unscrub(column)=="Due Date"){
+					contents += `<div class="list-item__content ellipsis">
+					${
+		head ? `<span class="ellipsis text-muted" title="${__(frappe.model.unscrub(column))}">`+title+`</span>`
+			: (column !== "name" ? `<span class="ellipsis result-row" title="${__(result[column] || '')}">`+row_value+`</span>`
+				: `<a href="${"#Form/" + me.doctype + "/" + result[column] || ''} "target="_blank" class="list-id ellipsis" title="${__(result[column] || '')}">
+								<font style="color:blue;" >${__(result[column] || '')}</font></a>`)}
+				</div>`;
+				contents += `<div class="list-item__content ellipsis">
+				${
+	head ? `<span class="ellipsis text-muted" title="Status">Status</span>`
+		: (column !== "name" ? `<span class="ellipsis result-row" title="Paid">Paid</span>`
 			: `<a href="${"#Form/" + me.doctype + "/" + result[column] || ''}" class="list-id ellipsis" title="${__(result[column] || '')}">
 							<font style="color:blue;" >${__(result[column] || '')}</font></a>`)}
 			</div>`;
 				}
 				else{
-				contents += `<div class="list-item__content ellipsis" style="text-align:right;">
+				contents += `<div class="list-item__content ellipsis">
 				${
 	head ? `<span class="ellipsis text-muted" title="${__(frappe.model.unscrub(column))}">`+title+`</span>`
 		: (column !== "name" ? `<span class="ellipsis result-row" title="${__(result[column] || '')}">`+row_value+`</span>`
@@ -1169,10 +1189,8 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 				}
 			});
 		}
-
 		let filter_group = this.get_custom_filters();
 		Object.assign(filters, filter_group);
-
 		let args = {
 			doctype: me.doctype,
 			txt: me.dialog.fields_dict["search_term"].get_value(),

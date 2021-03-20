@@ -7,7 +7,6 @@ frappe.pages['agent-action-list'].on_page_load = function(wrapper) {
 	});
 page.start = 0;
 
-
 	frappe.call({method:"seabridge_app.seabridge_app.api.get_user_roles_dashboard",
 				async:false, 
 				callback:function(r){
@@ -86,7 +85,19 @@ page.start = 0;
 								page.invoice_dashboard.refresh();
 							}
 						});
-						
+						frappe.call({method:"seabridge_app.seabridge_app.api.get_estate_company_detail",
+							async:false, 
+							callback:function(r){
+								page.company_detail_field = page.add_field({
+									fieldname: 'company_detail',
+									label: __('Company Detail'),
+									fieldtype:'Data',
+									default:r.message,
+									read_only:1
+								});
+							}
+						})
+							
 					}
 				}
 	})
