@@ -1019,7 +1019,6 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 			if(dashboard['window']){
 				if(frappe.model.unscrub(column)=="Name"){title="Inv#"}
 				else if(frappe.model.unscrub(column)=="Grand Total"){title="Inv$"
-					//var test=(result[column]).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
 					var format = new Intl.NumberFormat('en-US', { 
 					style: 'currency', 
 					currency: 'USD', 
@@ -1028,7 +1027,6 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 					row_value=format.format(result[column])
 				}	
 				else if(frappe.model.unscrub(column)=="Due Date"){title="Invoice Date"
-					//row_value=frappe.utils.get_datetime(result[column]).strftime('%Y-%m-%d')	
 					
 				}
 				else{title=frappe.model.unscrub(column)}
@@ -1046,13 +1044,15 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 					var row_value= dd+'-'+mm+'-'+yyyy;
 				}
 				if(frappe.model.unscrub(column)=="Grand Total"){
-					contents += `<div class="list-item__content ellipsis">
+					contents += `<div class="list-item__content ellipsis" style="text-align:right;">
 				${
-	head ? `<span class="ellipsis text-muted" title="${__(frappe.model.unscrub(column))}">`+title+`</span>`
+	head ? `<span class="ellipsis text-muted" title="${__(frappe.model.unscrub(column))}"><table><tr><td width="200">`+title+`</td></tr></table></span>`
 		: (column !== "name" ? `<span class="ellipsis result-row" title="${__(result[column] || '')}"><table><tr><td width="200" align="right">`+row_value+`</td></tr></table></span>`
 			: `<a href="${"#Form/" + me.doctype + "/" + result[column] || ''}" class="list-id ellipsis" title="${__(result[column] || '')}">
 							<font style="color:blue;" >${__(result[column] || '')}</font></a>`)}
 			</div>`;
+
+				
 				
 				}
 				else if(frappe.model.unscrub(column)=="Due Date"){
