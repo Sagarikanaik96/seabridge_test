@@ -349,12 +349,11 @@ def approve_invoice(doc):
 				frappe.log_error(frappe.get_traceback())
 
 @frappe.whitelist()
-def reject_invoice(doc):
+def reject_invoice(doc,remarks):
 	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
 	pi_doc.db_set('workflow_state','Rejected')
+	pi_doc.db_set('rejection_reason',remarks)
 	frappe.db.commit()
-
-
 
 @frappe.whitelist()
 def get_user_accounts_payable():

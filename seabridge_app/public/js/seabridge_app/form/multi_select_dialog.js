@@ -741,14 +741,19 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 		this.page_length = 20;
 		this.start = 0;
 		let fields = this.get_primary_filters();
-
 		// Make results area
 		fields = fields.concat([
 			{ fieldtype: "HTML", fieldname: "results_area" },
 			{
 				fieldtype: "Button", fieldname: "more_btn", label: __("More"),
 				click: () => {
-					this.start += 20;
+					if(this.target['window']){
+						this.start = 0;
+						this.page_length +=20;
+					}
+					else{
+						this.start += 20;
+					}
 					this.get_results();
 				}
 			}
@@ -763,8 +768,10 @@ frappe.ui.form.MultiSelectDialog = class MultiSelectDialog {
 
 		if(this.doctype=="Purchase Invoice"){
 			if(this.target['window']){
+				let supplier = this.get_query ? this.get_query().filters : {} || {};
+				var title1=supplier['supplier'][1]
 				this.dialog = new frappe.ui.Dialog({
-				title:"Paid Invoices",
+				title:title1.concat(" - Paid Invoices"),
 				fields:fields,
 				secondary_action: function (e) {
 				}

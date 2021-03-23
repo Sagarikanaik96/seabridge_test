@@ -16,6 +16,7 @@ app_include_css = [
 ]
 app_include_js = [
 	"/assets/seabridge_app/js/seabridge_app/form/multi_select_dialog.js",
+	"/assets/seabridge_app/js/seabridge_app/utils",
 	"/assets/seabridge_app/js/bootstrap-selectpicker.js",
 	"/assets/seabridge_app/js/jquery.datatables.js",
 	"/assets/seabridge_app/js/bootstrap-notify.js",
@@ -59,7 +60,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 	    "Agent",
 	    "API Integration",
 	    "Bank Payment Advice",
-	    "Bank Payment Advice Details"
+	    "Bank Payment Advice Details",
+	    "Rejection Reason"
         ]
     ]
 ]
@@ -123,7 +125,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Supplier-bank_account",
 		"Company-bank_name",
 		"Company-bank_account",
-		"Purchase Invoice-paid_date"
+		"Purchase Invoice-paid_date",
+		"Purchase Invoice-rejection_reason"
 		]
 	]
 ]
