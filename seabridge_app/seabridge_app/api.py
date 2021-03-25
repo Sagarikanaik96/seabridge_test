@@ -449,7 +449,7 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 				from tabUser u,`tabHas Role` r where 
 				u.name = r.parent and r.role = 'Finance Manager'
 				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
-				when p.workflow_state="Rejected" or p.workflow_state="Debit Note Issued" Then (select distinct (u.full_name)
+				when p.workflow_state="Rejected" Then (select distinct (u.full_name)
 				from tabUser u,`tabHas Role` r where 
 				u.name = r.parent
 				and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
