@@ -14,9 +14,8 @@ after_save:function(frm,cdt,cdn){
                 }
             });
 
-		
-	    //frappe.model.set_value("Purchase Invoice", frm.doc.return_against, "status", "Debit Note Initialized");
 	}
+
 
 
 },
@@ -133,6 +132,17 @@ if(frm.doc.workflow_state=="Submitted"){
 				
 		        }
 		    });
+	}
+	if(frm.doc.workflow_state=="Return"){
+		frappe.call({
+                method:"seabridge_app.seabridge_app.api.update_status_after_return",
+                args:{
+			doc:cur_frm.doc.return_against		
+		},
+                async:false,
+                callback: function(r){
+                }
+            });
 	}
 },
 
