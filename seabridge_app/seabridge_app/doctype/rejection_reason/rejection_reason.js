@@ -6,7 +6,7 @@ frappe.ui.form.on('Rejection Reason', {
 		frm.set_query("company",function(){
                 return{
                     filters: {
-                        "company_type":'Agent'
+                        "company_type":['in',['Agent','Customer']]
                     }
                 };
              });

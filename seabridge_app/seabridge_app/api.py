@@ -135,6 +135,11 @@ def update_status(doc):
     pi_doc.db_set('workflow_state','Debit Note Initialized')
 
 @frappe.whitelist()
+def update_status_after_return(doc): 
+    pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+    pi_doc.db_set('status','Debit Note Issued')
+
+@frappe.whitelist()
 def get_user_email(name):
         user=frappe.db.get_value('Has Role',{'parent':name,'parenttype':'User','role':'Accounts Payable'},'parent')
         return user
@@ -746,4 +751,31 @@ def get_estate_company_detail():
 		for company_name in company:
 			company_detail=company_name
 	return company_detail
+
+	
+@frappe.whitelist()
+def get_invoice_details(invoice_name):
+	invoice='"'+invoice_name+'"'
+	invoice_data=frappe.db.sql("""select p.company,p.supplier,DATE_FORMAT(p.due_date,"%d-%m-%Y"),FORMAT(p.grand_total,2),
+	po.name,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),T2.file_name
+	from `tabPurchase Invoice` p left join `tabPurchase Order` po 
+	ON p.purchase_order=po.name 
+	lEFT JOIN(
+	select (f.file_name) as file_name,
+	f.attached_to_name as attached_to_name from
+	`tabFile` f 
+	where attached_to_doctype="Purchase Invoice" group by f.attached_to_name)T2 
+	ON T2.attached_to_name=p.name
+	where p.name="""+invoice)
+	invoice_attachments=frappe.db.sql("""select f.file_name,
+	f.file_url from
+	`tabFile` f 
+	right join `tabPurchase Invoice` p
+	ON f.attached_to_name=p.name	
+	where attached_to_doctype="Purchase Invoice" 
+	and p.name="""+invoice)
+	if invoice_attachments:
+		return invoice_data,invoice_attachments
+	else:
+		return invoice_data,0
 
