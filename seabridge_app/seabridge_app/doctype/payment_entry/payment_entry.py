@@ -21,6 +21,7 @@ def update_status(doc,method):
                 if val.outstanding_amount==0: 
                     pi_doc=frappe.get_doc("Purchase Invoice",val.reference_name) 
                     pi_doc.db_set('workflow_state','Paid')
+                    pi_doc.db_set('status','Paid')
                     pi_doc.db_set('paid_date',datetime.date(datetime.now()))
 
 
