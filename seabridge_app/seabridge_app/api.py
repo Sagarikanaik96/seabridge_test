@@ -454,27 +454,12 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 				u.name = r.parent
 				and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
 				END) as "user",
-				FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
+				FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
 				T2.file_name as file_name
 				from 
 				`tabPurchase Order` po right join
 				`tabPurchase Invoice` p
 				ON p.purchase_order=po.name
-				LEFT JOIN(
-		                select sum(ba.budget_amount) as budget_amount,
-		                p.name as purchase_invoice from
-		                `tabBudget Account` ba inner join
-		                `tabBudget` b 
-		                ON ba.parent=b.name right join 
-		                `tabPurchase Invoice Item` i
-		                ON b.item_group=i.item_group right join
-		                `tabPurchase Invoice` p
-		                ON i.parent=p.name
-		                where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
-		                AND b.docstatus=1 group by p.name
-		                )T1
-		                ON T1.purchase_invoice=p.name 
-				and p.purchase_order=po.name
 				lEFT JOIN(
 				select count(f.file_name) as file_name,
 				f.attached_to_name as attached_to_name from
@@ -513,26 +498,12 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 			u.name = r.parent
 			and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
 			END) as "user",
-			FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
+			FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
 			T2.file_name as file_name
 			from 
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
 			ON p.purchase_order=po.name
-			LEFT JOIN(
-                        select sum(ba.budget_amount) as budget_amount,
-                        p.name as purchase_invoice from
-                        `tabBudget Account` ba inner join
-                        `tabBudget` b 
-                        ON ba.parent=b.name right join 
-                        `tabPurchase Invoice Item` i
-                        ON b.item_group=i.item_group right join
-                        `tabPurchase Invoice` p
-                        ON i.parent=p.name
-                        where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
-                        AND b.docstatus=1 group by p.name
-                        )T1
-                        ON T1.purchase_invoice=p.name
 			lEFT JOIN(
 			select count(f.file_name) as file_name,
 			f.attached_to_name as attached_to_name from
@@ -621,27 +592,12 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 				from tabUser u,`tabHas Role` r where 
 				u.name = r.parent and r.role = 'Finance Manager'
 				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company)) as "user",
-				FORMAT(T1.budget_amount,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
+				FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
 				T2.file_name as file_name
 				from 
 				`tabPurchase Order` po right join
 				`tabPurchase Invoice` p
 				ON p.purchase_order=po.name
-				LEFT JOIN(
-		                select sum(ba.budget_amount) as budget_amount,
-		                p.name as purchase_invoice from
-		                `tabBudget Account` ba inner join
-		                `tabBudget` b 
-		                ON ba.parent=b.name right join 
-		                `tabPurchase Invoice Item` i
-		                ON b.item_group=i.item_group right join
-		                `tabPurchase Invoice` p
-		                ON i.parent=p.name
-		                where i.expense_account=ba.account and b.fiscal_year=YEAR(CURDATE())
-		                AND b.docstatus=1 group by p.name
-		                )T1
-		                ON T1.purchase_invoice=p.name
-				and p.purchase_order=po.name
 				lEFT JOIN(
 				select count(f.file_name) as file_name,
 				f.attached_to_name as attached_to_name from
@@ -757,15 +713,9 @@ def get_estate_company_detail():
 def get_invoice_details(invoice_name):
 	invoice='"'+invoice_name+'"'
 	invoice_data=frappe.db.sql("""select p.company,p.supplier,DATE_FORMAT(p.due_date,"%d-%m-%Y"),FORMAT(p.grand_total,2),
-	po.name,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),T2.file_name
+	po.name,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),FORMAT(p.month_budget,2)
 	from `tabPurchase Invoice` p left join `tabPurchase Order` po 
-	ON p.purchase_order=po.name 
-	lEFT JOIN(
-	select (f.file_name) as file_name,
-	f.attached_to_name as attached_to_name from
-	`tabFile` f 
-	where attached_to_doctype="Purchase Invoice" group by f.attached_to_name)T2 
-	ON T2.attached_to_name=p.name
+	ON p.purchase_order=po.name
 	where p.name="""+invoice)
 	invoice_attachments=frappe.db.sql("""select f.file_name,
 	f.file_url from
@@ -779,3 +729,24 @@ def get_invoice_details(invoice_name):
 	else:
 		return invoice_data,0
 
+
+@frappe.whitelist()
+def update_monthly_budget(doc):
+	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+	pi_items=frappe.db.get_list('Purchase Invoice Item',filters={'parenttype':'Purchase Invoice','parent':pi_doc.name},fields={'*'})
+	fiscal_year=frappe.db.get_list('Fiscal Year',filters={'year_start_date':['<=',pi_doc.posting_date],'year_end_date':['>=',pi_doc.posting_date]},fields={'*'})
+	if fiscal_year:
+		budget_list=frappe.db.get_list('Budget',filters={'company':pi_doc.company,'item_group':pi_items[0]['item_group'],'fiscal_year':fiscal_year[0]['name']},fields={'*'})
+		if budget_list:
+			budget_name=budget_list[0]['name']
+			budget_account=frappe.db.get_list('Budget Account',filters={'parenttype':'Budget','parent':budget_list[0]['name'],'account':pi_items[0]['expense_account']},fields={'*'})
+			if budget_account:
+				if budget_list[0]['monthly_distribution']:
+					invoice_date = pi_doc.posting_date
+					month = invoice_date.strftime("%B")
+					monthly_distribution=frappe.db.get_list('Monthly Distribution Percentage',filters={'parenttype':'Monthly Distribution','parent':budget_list[0]['monthly_distribution'],'month':month},fields={'*'})
+					monthly_budget=monthly_distribution[0]['percentage_allocation']*budget_account[0]['budget_amount']/100
+					pi_doc.db_set('month_budget',monthly_budget)
+				else:
+					monthly_budget=budget_account[0]['budget_amount']/12
+					pi_doc.db_set('month_budget',monthly_budget)

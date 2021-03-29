@@ -5,16 +5,25 @@ frappe.ui.form.on('Purchase Invoice', {
 after_save:function(frm,cdt,cdn){
 	if(frm.doc.is_return==1){
 		frappe.call({
-                method:"seabridge_app.seabridge_app.api.update_status",
-                args:{
-			doc:cur_frm.doc.return_against		
-		},
-                async:false,
-                callback: function(r){
-                }
-            });
+		        method:"seabridge_app.seabridge_app.api.update_status",
+		        args:{
+				doc:cur_frm.doc.return_against		
+			},
+		        async:false,
+		        callback: function(r){
+		        }
+            	});
 
 	}
+	frappe.call({
+		        method:"seabridge_app.seabridge_app.api.update_monthly_budget",
+		        args:{
+				doc:frm.doc.name		
+			},
+		        async:false,
+		        callback: function(r){
+		        }
+            	});
 
 
 
