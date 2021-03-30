@@ -736,7 +736,7 @@ def update_monthly_budget(doc):
 	pi_items=frappe.db.get_list('Purchase Invoice Item',filters={'parenttype':'Purchase Invoice','parent':pi_doc.name},fields={'*'})
 	fiscal_year=frappe.db.get_list('Fiscal Year',filters={'year_start_date':['<=',pi_doc.posting_date],'year_end_date':['>=',pi_doc.posting_date]},fields={'*'})
 	if fiscal_year:
-		budget_list=frappe.db.get_list('Budget',filters={'company':pi_doc.company,'item_group':pi_items[0]['item_group'],'fiscal_year':fiscal_year[0]['name']},fields={'*'})
+		budget_list=frappe.db.get_list('Budget',filters={'company':pi_doc.company,'item_group':pi_items[0]['item_group'],'fiscal_year':fiscal_year[0]['name'],'docstatus':['!=',2]},fields={'*'})
 		if budget_list:
 			budget_name=budget_list[0]['name']
 			budget_account=frappe.db.get_list('Budget Account',filters={'parenttype':'Budget','parent':budget_list[0]['name'],'account':pi_items[0]['expense_account']},fields={'*'})
