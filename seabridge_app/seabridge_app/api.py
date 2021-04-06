@@ -359,6 +359,11 @@ def reject_invoice(doc,remarks):
 	pi_doc.db_set('workflow_state','Rejected')
 	pi_doc.db_set('rejection_reason',remarks)
 	frappe.db.commit()
+	user=frappe.db.sql("""select c.associate_agent 
+			from `tabCompany` c, `tabPurchase Invoice` p where c.company_name=p.company and  
+			p.name=%s""",pi_doc.name)
+	template='<h2><span style="color: rgb(102, 185, 102);">Task Details</span></h2><table class="table table-bordered"><tbody><tr><td data-row="insert-column-right"><strong>Document Id</strong></td><td data-row="insert-column-right"><strong style="color: rgb(107, 36, 178);">'+pi_doc.name+'</strong></td></tr><tr><td data-row="row-z48v"><strong>Rejection Reason</strong></td><td data-row="row-z48v"><strong style="color: rgb(107, 36, 178);">'+remarks+'</strong></td></tr><tr><td data-row="row-zajk"><strong>View Document in ERPNext</strong></td><td data-row="row-mze0"><strong style="color: rgb(230, 0, 0);"><a href="desk#Form/Purchase Invoice/'+pi_doc.name+'" target="_blank" class="btn btn-success">Click to view document</a></strong></td></tr><tr><td data-row="row-779i"><strong>Note</strong></td><td data-row="row-779i"><strong style="color: rgb(255, 153, 0);">This is a system generated email, please do not reply to this message.</strong></td></tr></tbody></table>'
+	make(subject = "Rejected Invoice", content=template, recipients=user[0][0],send_email=True)
 
 @frappe.whitelist()
 def get_user_accounts_payable():
@@ -734,19 +739,25 @@ def get_invoice_details(invoice_name):
 def update_monthly_budget(doc):
 	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
 	pi_items=frappe.db.get_list('Purchase Invoice Item',filters={'parenttype':'Purchase Invoice','parent':pi_doc.name},fields={'*'})
-	fiscal_year=frappe.db.get_list('Fiscal Year',filters={'year_start_date':['<=',pi_doc.posting_date],'year_end_date':['>=',pi_doc.posting_date]},fields={'*'})
+	fiscal_year=frappe.db.get_list('Fiscal Year',filters={'disabled':0,'year_start_date':['<=',pi_doc.posting_date],'year_end_date':['>=',pi_doc.posting_date]},fields={'*'})
 	if fiscal_year:
-		budget_list=frappe.db.get_list('Budget',filters={'company':pi_doc.company,'item_group':pi_items[0]['item_group'],'fiscal_year':fiscal_year[0]['name'],'docstatus':['!=',2]},fields={'*'})
-		if budget_list:
-			budget_name=budget_list[0]['name']
-			budget_account=frappe.db.get_list('Budget Account',filters={'parenttype':'Budget','parent':budget_list[0]['name'],'account':pi_items[0]['expense_account']},fields={'*'})
-			if budget_account:
-				if budget_list[0]['monthly_distribution']:
-					invoice_date = pi_doc.posting_date
-					month = invoice_date.strftime("%B")
-					monthly_distribution=frappe.db.get_list('Monthly Distribution Percentage',filters={'parenttype':'Monthly Distribution','parent':budget_list[0]['monthly_distribution'],'month':month},fields={'*'})
-					monthly_budget=monthly_distribution[0]['percentage_allocation']*budget_account[0]['budget_amount']/100
-					pi_doc.db_set('month_budget',monthly_budget)
-				else:
-					monthly_budget=budget_account[0]['budget_amount']/12
-					pi_doc.db_set('month_budget',monthly_budget)
+		fiscal_year_name=''
+		for year in fiscal_year:
+			fiscal_year_items=frappe.db.get_list('Fiscal Year Company',filters={'parenttype':'Fiscal Year','parent':year['name'],'company':pi_doc.company},fields={'*'})
+			if fiscal_year_items:
+				fiscal_year_name=year['name']
+		if fiscal_year_name!='':
+			budget_list=frappe.db.get_list('Budget',filters={'company':pi_doc.company,'item_group':pi_items[0]['item_group'],'fiscal_year':fiscal_year_name,'docstatus':['!=',2]},fields={'*'})
+			if budget_list:
+				budget_name=budget_list[0]['name']
+				budget_account=frappe.db.get_list('Budget Account',filters={'parenttype':'Budget','parent':budget_list[0]['name'],'account':pi_items[0]['expense_account']},fields={'*'})
+				if budget_account:
+					if budget_list[0]['monthly_distribution']:
+						invoice_date = pi_doc.posting_date
+						month = invoice_date.strftime("%B")
+						monthly_distribution=frappe.db.get_list('Monthly Distribution Percentage',filters={'parenttype':'Monthly Distribution','parent':budget_list[0]['monthly_distribution'],'month':month},fields={'*'})
+						monthly_budget=monthly_distribution[0]['percentage_allocation']*budget_account[0]['budget_amount']/100
+						pi_doc.db_set('month_budget',monthly_budget)
+					else:
+						monthly_budget=budget_account[0]['budget_amount']/12
+						pi_doc.db_set('month_budget',monthly_budget)
