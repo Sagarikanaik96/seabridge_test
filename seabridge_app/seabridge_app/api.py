@@ -617,12 +617,13 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 
 @frappe.whitelist()
 def create_payment(invoices,account,company):
+	bank_account=account.strip()
 	invoice_list=json.loads(invoices)
 	purchase_invoices=frappe.db.get_list("Purchase Invoice",filters={'name':['in',invoice_list]},fields={'*'})
 	bpa_doc=frappe.get_doc(dict(doctype = 'Bank Payment Advice',
 	company=company,
 	date=datetime.date(datetime.now()),
-	bank_account=account
+	bank_account=bank_account
 	)).insert(ignore_mandatory=True)
 	bpa_doc.save()
 	for inv in purchase_invoices:
@@ -718,7 +719,7 @@ def get_estate_company_detail():
 def get_invoice_details(invoice_name):
 	invoice='"'+invoice_name+'"'
 	invoice_data=frappe.db.sql("""select p.company,p.supplier,DATE_FORMAT(p.due_date,"%d-%m-%Y"),FORMAT(p.grand_total,2),
-	po.name,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),FORMAT(p.month_budget,2)
+	po.name,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),FORMAT(p.month_budget,2),invoice_description
 	from `tabPurchase Invoice` p left join `tabPurchase Order` po 
 	ON p.purchase_order=po.name
 	where p.name="""+invoice)
