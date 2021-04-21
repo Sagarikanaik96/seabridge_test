@@ -61,7 +61,9 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 	    "API Integration",
 	    "Bank Payment Advice",
 	    "Bank Payment Advice Details",
-	    "Rejection Reason"
+	    "Rejection Reason",
+	    "Attachment Checklist Template",
+	    "Attachment Checklist Detail"
         ]
     ]
 ]
@@ -126,7 +128,19 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Company-bank_name",
 		"Company-bank_account",
 		"Purchase Invoice-paid_date",
-		"Purchase Invoice-rejection_reason"
+		"Purchase Invoice-rejection_reason",
+		"Sales Invoice-section_break_74",
+		"Sales Invoice-attachment_checklist_template",
+		"Sales Invoice-attachment_checklist",
+		"Purchase Invoice-section_break_71",
+		"Purchase Invoice-attachment_checklist_template",
+		"Purchase Invoice-attachment_checklist",
+		"Sales Order-section_break_58",
+		"Sales Order-attachment_checklist_template",
+		"Sales Order-attachment_checklist",
+		"Purchase Order-section_break_64",
+		"Purchase Order-attachment_checklist_template",
+		"Purchase Order-attachment_checklist"
 		]
 	]
 ]
