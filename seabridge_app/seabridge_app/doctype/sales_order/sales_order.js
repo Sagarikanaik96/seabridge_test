@@ -41,6 +41,19 @@ before_save:function(frm,cdt,cdn){
             })
         if(flag==1){ frm.set_df_property("total_net_weight", "hidden", 0);
         } else {  frm.set_df_property("total_net_weight", "hidden", 1);  }
+
+	$.each(frm.doc.attachment_checklist, function(idx, item){
+	    if (!item.options){
+		frappe.validated = false;
+		msgprint('Select Option for Attachment Checklist','Alert')
+            }
+	    if (item.options=="No"){
+		if(!item.remarks){
+			frappe.validated = false;
+			msgprint('Please enter the remarks in Attachment Checklist','Alert')
+		}
+            }
+        })
     },
 customer:function(frm,cdt,cdn){
 	frappe.db.get_value("Customer",{"name":frm.doc.customer},"represents_company",(c)=>{
@@ -82,7 +95,21 @@ _agent_contact_person:function(frm,cdt,cdn){
 			frm.set_value("agent_contact_phone",c.message)
 		}
 	});
-}
+},
+	attachment_checklist_template:function(frm,cdt,cdn){
+	if(frm.doc.attachment_checklist_template){
+		frappe.model.with_doc("Attachment Checklist Template", frm.doc.attachment_checklist_template, function() {
+		var tabletransfer= frappe.model.get_doc("Attachment Checklist Template", frm.doc.attachment_checklist_template)
+		    $.each(tabletransfer.attachment_checklist_detail, function(index, detail){
+			var child = cur_frm.add_child("attachment_checklist");
+			child.description=detail.description
+			child.options=detail.options
+			child.remarks=detail.remarks
+			cur_frm.refresh_field("attachment_checklist")
+		    })
+		})
+	}
+    }
 })
 
 frappe.ui.form.on('Sales Order','company',function(frm, doctype, name){

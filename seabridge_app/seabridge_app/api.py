@@ -719,8 +719,8 @@ def get_estate_company_detail():
 def get_invoice_details(invoice_name):
 	invoice='"'+invoice_name+'"'
 	invoice_data=frappe.db.sql("""select p.company,p.supplier,DATE_FORMAT(p.due_date,"%d-%m-%Y"),FORMAT(p.grand_total,2),
-	po.name,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),FORMAT(p.month_budget,2),invoice_description
-	from `tabPurchase Invoice` p left join `tabPurchase Order` po 
+	po.name,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),FORMAT(p.month_budget,2),p.invoice_description,pi.item_name,pi.qty,FORMAT(pi.rate,2),FORMAT(pi.amount,2)
+	from `tabPurchase Invoice Item` pi right join `tabPurchase Invoice` p ON p.name=pi.parent left join `tabPurchase Order` po
 	ON p.purchase_order=po.name
 	where p.name="""+invoice)
 	invoice_attachments=frappe.db.sql("""select f.file_name,
@@ -730,11 +730,21 @@ def get_invoice_details(invoice_name):
 	ON f.attached_to_name=p.name	
 	where attached_to_doctype="Purchase Invoice" 
 	and p.name="""+invoice)
+	checklist=frappe.db.sql("""select IFNULL(acd.description,''),IFNULL(acd.options,''),IFNULL(acd.remarks,'') from
+	`tabAttachment Checklist Detail` acd right join
+	`tabPurchase Invoice` p
+	ON acd.parent=p.name
+	where p.name="""+invoice)
 	if invoice_attachments:
-		return invoice_data,invoice_attachments
+		if checklist[0][0]!='':
+			return invoice_data,invoice_attachments,checklist
+		else:
+			return invoice_data,invoice_attachments,0
 	else:
-		return invoice_data,0
-
+		if checklist[0][0]!='':
+			return invoice_data,0,checklist 
+		else:
+			return invoice_data,0,0
 
 @frappe.whitelist()
 def update_monthly_budget(doc):
