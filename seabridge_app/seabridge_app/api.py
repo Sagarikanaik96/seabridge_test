@@ -420,7 +420,7 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 									company_names+='"'+j+'"'
 						company_names+=')'
 	
-	sort=" Order by p.name "+sort_order
+	sort=" Order by p.due_date "+sort_order
 	if sort_by:
 		if(sort_by=="name"):
 			sort=" Order by p.name "+sort_order
@@ -428,6 +428,8 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 			sort=" Order by p.due_date "+sort_order
 		elif(sort_by=="po_date"):
 			sort=" Order by po.transaction_date "+sort_order
+		elif(sort_by=="status"):
+			sort=" Order by p.workflow_state "+sort_order
 
 	limit=' Limit 20 offset '+start
 	if count==1:
@@ -460,7 +462,7 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 				and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
 				END) as "user",
 				FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
-				T2.file_name as file_name
+				T2.file_name as file_name,p.invoice_description
 				from 
 				`tabPurchase Order` po right join
 				`tabPurchase Invoice` p
@@ -504,7 +506,7 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 			and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
 			END) as "user",
 			FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
-			T2.file_name as file_name
+			T2.file_name as file_name,p.invoice_description
 			from 
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
@@ -521,7 +523,7 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 
 @frappe.whitelist()
 def get_data_for_payment(name=None, supplier=None,company=None,
-	start=0, sort_by='name', sort_order='asc'):
+	start=0, sort_by='name', sort_order='desc'):
 	'''Return data to render the item dashboard'''
 	filters = []
 	conditions=""
@@ -565,7 +567,7 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 		
 	
 	
-	sort=" Order by p.name "+sort_order
+	sort=" Order by p.due_date "+sort_order
 	if sort_by:
 		if(sort_by=="name"):
 			sort=" Order by p.name "+sort_order
@@ -573,8 +575,8 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 			sort=" Order by p.due_date "+sort_order
 		elif(sort_by=="po_date"):
 			sort=" Order by po.transaction_date "+sort_order
-	else:
-		sort=" Order by p.name "+sort_order
+		elif(sort_by=="status"):
+			sort=" Order by p.workflow_state "+sort_order
 	
 	limit=' Limit 20 offset '+start
 	finance_user=frappe.db.sql("""select u.name 
@@ -598,7 +600,7 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 				u.name = r.parent and r.role = 'Finance Manager'
 				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company)) as "user",
 				FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
-				T2.file_name as file_name
+				T2.file_name as file_name,p.invoice_description
 				from 
 				`tabPurchase Order` po right join
 				`tabPurchase Invoice` p
@@ -719,8 +721,8 @@ def get_estate_company_detail():
 def get_invoice_details(invoice_name):
 	invoice='"'+invoice_name+'"'
 	invoice_data=frappe.db.sql("""select p.company,p.supplier,DATE_FORMAT(p.due_date,"%d-%m-%Y"),FORMAT(p.grand_total,2),
-	po.name,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),FORMAT(p.month_budget,2),invoice_description
-	from `tabPurchase Invoice` p left join `tabPurchase Order` po 
+	po.name,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),FORMAT(p.month_budget,2),p.invoice_description,pi.item_name,pi.qty,FORMAT(pi.rate,2),FORMAT(pi.amount,2),FORMAT(p.net_total,2),FORMAT(p.total_taxes_and_charges,2)
+	from `tabPurchase Invoice Item` pi right join `tabPurchase Invoice` p ON p.name=pi.parent left join `tabPurchase Order` po
 	ON p.purchase_order=po.name
 	where p.name="""+invoice)
 	invoice_attachments=frappe.db.sql("""select f.file_name,
@@ -730,11 +732,21 @@ def get_invoice_details(invoice_name):
 	ON f.attached_to_name=p.name	
 	where attached_to_doctype="Purchase Invoice" 
 	and p.name="""+invoice)
+	checklist=frappe.db.sql("""select IFNULL(acd.description,''),IFNULL(acd.options,''),IFNULL(acd.remarks,'') from
+	`tabAttachment Checklist Detail` acd right join
+	`tabPurchase Invoice` p
+	ON acd.parent=p.name
+	where p.name="""+invoice)
 	if invoice_attachments:
-		return invoice_data,invoice_attachments
+		if checklist[0][0]!='':
+			return invoice_data,invoice_attachments,checklist
+		else:
+			return invoice_data,invoice_attachments,0
 	else:
-		return invoice_data,0
-
+		if checklist[0][0]!='':
+			return invoice_data,0,checklist 
+		else:
+			return invoice_data,0,0
 
 @frappe.whitelist()
 def update_monthly_budget(doc):

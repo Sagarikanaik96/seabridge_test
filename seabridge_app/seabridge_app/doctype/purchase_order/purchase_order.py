@@ -24,6 +24,7 @@ def auto_create_sales_order(doc,method):
 			if company:
 					taxes=frappe.db.get_value('Sales Taxes and Charges Template',{'company':doc.supplier_name},'name')
 					tax=frappe.db.get_list("Sales Taxes and Charges",filters={'parent':taxes,'parenttype':'Sales Taxes and Charges Template'},fields={'*'})
+					attachment_list=frappe.db.get_list("Attachment Checklist Detail",filters={'parent':doc.name,'parenttype':'Purchase Order'},fields={'*'})
 					agent=frappe.db.get_value('Company',{'Company_name':doc.company},'associate_agent')
 					so_doc=frappe.get_doc(dict(doctype = 'Sales Order',
 						    company=company,
@@ -43,7 +44,9 @@ def auto_create_sales_order(doc,method):
 						    base_rounded_total=doc.base_rounded_total,
 						    payment_terms_template=doc.payment_terms_template,
 						    tc_name=doc.tc_name,
-						    terms=doc.terms
+						    terms=doc.terms,
+						    attachment_checklist_template=doc.attachment_checklist_template,
+						    invoice_description=doc.invoice_description
 						)).insert(ignore_mandatory=True)
 					if agent:
 						contact=frappe.db.get_value('Contact',{'user':agent},'name')
@@ -73,6 +76,12 @@ def auto_create_sales_order(doc,method):
 						'account_head':row.account_head,
 						'charge_type':row.charge_type,
 						'rate':row.rate
+					    })
+					for detail in attachment_list:
+					    so_doc.append('attachment_checklist',{
+						'description':detail.description,
+						'options':detail.options,
+						'remarks':detail.remarks
 					    })
 					agent_name=frappe.db.get_value('User',{'email':frappe.session.user},'full_name')
 					agent_company=frappe.db.get_value('User',{'email':frappe.session.user},'represents_company')

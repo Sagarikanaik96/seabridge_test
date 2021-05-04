@@ -82,3 +82,37 @@ def on_registration_submit(doc,method):
 
         if doc.company_type=="Customer":
                     frappe.msgprint('Customer '+doc.customer_name+', Company '+doc.company+' and User '+doc.first_name+' is created successfully. Please check Is Internal Customer and update Represents Company as '+doc.company,'Alert')
+
+def before_cancel(doc,method):
+	supplier=frappe.db.get_list("Supplier",filters={'name':doc.supplier_name},fields={'*'})
+	if supplier:
+		supplier_doc=frappe.get_doc("Supplier",doc.supplier_name)
+		supplier_doc.delete()
+		frappe.db.commit()
+	customer=frappe.db.get_list("Customer",filters={'name':doc.customer_name},fields={'*'})
+	if customer:
+		customer_doc=frappe.get_doc("Customer",doc.customer_name)
+		customer_doc.delete()
+		frappe.db.commit()
+	users=frappe.db.get_list("User",filters={'name':doc.email},fields={'*'})
+	if users:
+		permissions=frappe.db.get_list("User Permission",filters={'user':doc.email},fields={'*'})
+		if permissions:
+			for perm in permissions:
+				perm_doc=frappe.get_doc("User Permission",perm.name)
+				perm_doc.delete()
+				frappe.db.commit()
+		user_doc=frappe.get_doc("User",doc.email)
+		user_doc.delete()
+		frappe.db.commit()
+	
+	registration_doc=frappe.get_doc("Registration",doc.name)
+	registration_doc.db_set('represents_company','')
+	registration_doc.db_set('represents_companys','')
+	frappe.db.commit()
+	company=frappe.db.get_list("Company",filters={'name':doc.company},fields={'*'})
+	if company:
+		company_doc=frappe.get_doc("Company",doc.company)
+		company_doc.delete()
+		frappe.db.commit()	
+
