@@ -141,7 +141,10 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Order-section_break_64",
 		"Purchase Order-attachment_checklist_template",
 		"Purchase Order-attachment_checklist",
-		"Sales Invoice-invoice_description"
+		"Sales Invoice-invoice_description",
+		"Purchase Invoice-invoice_description",
+		"Sales Order-invoice_description",
+		"Purchase Order-invoice_description"
 		]
 	]
 ]

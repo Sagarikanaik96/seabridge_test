@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "naming_series:",
- "creation": "2020-12-02 15:04:33.802723",
+ "creation": "2021-04-29 20:31:03.464354",
  "doctype": "DocType",
  "document_type": "Document",
  "editable_grid": 1,
@@ -125,8 +125,7 @@
   "lr_no",
   "lr_date",
   "reference_no",
-  "check",
-  "amended_from"
+  "check"
  ],
  "fields": [
   {
@@ -1063,15 +1062,6 @@
    "options": "Purchase Order"
   },
   {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Service Completion Note",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
    "fieldname": "check",
    "fieldtype": "Data",
    "label": "Check"
@@ -1080,7 +1070,7 @@
  "icon": "fa fa-truck",
  "is_submittable": 1,
  "links": [],
- "modified": "2021-01-15 22:58:33.598814",
+ "modified": "2021-05-04 18:50:48.449271",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Service Completion Note",
