@@ -1,6 +1,6 @@
 {
  "actions": [],
- "creation": "2021-04-20 15:47:25.709423",
+ "creation": "2021-04-29 20:31:04.694252",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -21,7 +21,7 @@
    "fieldname": "options",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Options",
+   "label": "Mandatory",
    "options": "\nYes\nNo"
   },
   {
@@ -29,13 +29,14 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Remarks",
-   "mandatory_depends_on": "eval:(doc.options==\"No\")"
+   "mandatory_depends_on": "eval:(doc.options==\"No\")",
+   "read_only_depends_on": "eval:(doc.options==\"Yes\")"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-04-20 16:06:25.510683",
+ "modified": "2021-05-04 20:34:40.579917",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Attachment Checklist Detail",
