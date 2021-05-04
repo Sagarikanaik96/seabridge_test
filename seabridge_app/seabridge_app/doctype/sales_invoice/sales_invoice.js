@@ -68,6 +68,12 @@ frappe.ui.form.on('Sales Invoice', {
 		}
             }
         })
+	if(!frm.doc.invoice_description){
+		frappe.db.get_value("Purchase Order",frm.doc.po_no, "invoice_description",(s)=>{
+			frm.set_value('invoice_description',s.invoice_description)
+			cur_frm.refresh_field("invoice_description")
+		})
+	}
     },
 	attachment_checklist_template:function(frm,cdt,cdn){
 		if(frm.doc.attachment_checklist_template){

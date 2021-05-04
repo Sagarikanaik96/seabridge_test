@@ -105,12 +105,12 @@ page.start = 0;
 	page.sort_selector = new frappe.ui.SortSelector({
 		parent: page.wrapper.find('.page-form'),
 		args: {
-			sort_by: 'purchase_invoice',
+			sort_by: 'invoice_date',
 			sort_order: 'desc',
 			options: [
-				{fieldname: 'purchase_invoice', label: __('Purchase Invoice')},
 				{fieldname: 'invoice_date', label: __('Invoice Date')},
 				{fieldname: 'po_date', label: __('PO Date')},
+				{fieldname: 'status', label: __('Status')},
 			]
 		},
 		change: function(sort_by, sort_order) {
