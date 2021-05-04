@@ -52,7 +52,8 @@ def auto_create_purchase_invoice(doc,method):
 							rounded_total=doc.rounded_total,
 							base_rounded_total=doc.base_rounded_total,
 							purchase_order=doc.po_no,
-							attachment_checklist_template=doc.attachment_checklist_template
+							attachment_checklist_template=doc.attachment_checklist_template,
+							invoice_description=doc.invoice_description
 						)).insert(ignore_mandatory=True)
 				for val in doc.items:
 						pi_doc.append('items', {
@@ -83,9 +84,21 @@ def auto_create_purchase_invoice(doc,method):
 						po_items=frappe.db.get_list("Purchase Order Item",filters={'parent':doc.po_no,'parenttype':'Purchase Order','item_code':v.item_code},fields={'*'})
 						for po in po_items:
 							if v.item_code==po.item_code:
-								v.po_rate=po.rate,
-								v.po_qty=po.qty,
+								v.po_qty=po.qty
+					pi_doc.save()
+				for v in pi_doc.items:
+					if doc.po_no:
+						po_items=frappe.db.get_list("Purchase Order Item",filters={'parent':doc.po_no,'parenttype':'Purchase Order','item_code':v.item_code},fields={'*'})
+						for po in po_items:
+							if v.item_code==po.item_code:
 								v.po_amount=po.amount
+					pi_doc.save()
+				for v in pi_doc.items:
+					if doc.po_no:
+						po_items=frappe.db.get_list("Purchase Order Item",filters={'parent':doc.po_no,'parenttype':'Purchase Order','item_code':v.item_code},fields={'*'})
+						for po in po_items:
+							if v.item_code==po.item_code:
+								v.po_rate=po.rate
 					pi_doc.save()
 				attachment_list=frappe.db.get_list("Attachment Checklist Detail",filters={'parent':doc.name,'parenttype':'Sales Invoice'},fields={'*'})
 				for detail in attachment_list:

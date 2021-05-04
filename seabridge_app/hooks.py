@@ -140,7 +140,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Sales Order-attachment_checklist",
 		"Purchase Order-section_break_64",
 		"Purchase Order-attachment_checklist_template",
-		"Purchase Order-attachment_checklist"
+		"Purchase Order-attachment_checklist",
+		"Sales Invoice-invoice_description"
 		]
 	]
 ]
@@ -256,7 +257,8 @@ doc_events = {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.quotation.quotation.auto_create_supplier_quotation"]
     },
 	"Registration": {
-		"on_submit": ["seabridge_app.seabridge_app.doctype.registration.registration.on_registration_submit"]
+		"on_submit": ["seabridge_app.seabridge_app.doctype.registration.registration.on_registration_submit"],
+		"before_cancel":["seabridge_app.seabridge_app.doctype.registration.registration.before_cancel"]
     },
 	"Purchase Order": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.auto_create_sales_order"]
