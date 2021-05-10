@@ -23,9 +23,6 @@ frappe.ui.form.on('Sales Invoice', {
                 }
     
     },
-    before_cancel:function(frm,cdt,cdn){
-        frappe.throw(('Unable to cancel the document as Sales Invoice: '+frm.doc.name+' is linked with purchase invoice documents.'))
-    },
     before_save:function(frm,cdt,cdn){
         var count=0;
         frappe.model.with_doc("Company", frm.doc.company, function() {
