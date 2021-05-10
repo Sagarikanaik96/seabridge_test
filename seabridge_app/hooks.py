@@ -251,7 +251,8 @@ doctype_js = {
 
 doc_events = {
     	"Sales Invoice": {
-		"on_submit": ["seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.auto_create_purchase_invoice"]
+		"on_submit": ["seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.auto_create_purchase_invoice"],
+		"before_cancel": ["seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.delete_purchase_invoice"]
     },
 	"Request for Quotation": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.auto_create_opportunity"]
@@ -281,7 +282,19 @@ doc_events = {
 }
 
 override_doctype_dashboards = {
-"Purchase Order": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order_dashboard.get_dashboard_data"]
+"Purchase Order": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order_dashboard.get_dashboard_data"],
+"Item": ["seabridge_app.seabridge_app.doctype.item.item_dashboard.get_dashboard_data"],
+"Supplier": ["seabridge_app.seabridge_app.doctype.supplier.supplier_dashboard.get_dashboard_data"],
+"Request for Quotation": ["seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation_dashboard.get_dashboard_data"],
+"Customer": ["seabridge_app.seabridge_app.doctype.customer.customer_dashboard.get_dashboard_data"],
+"Company": ["seabridge_app.seabridge_app.doctype.company.company_dashboard.get_dashboard_data"],
+"Sales Order": ["seabridge_app.seabridge_app.doctype.sales_order.sales_order_dashboard.get_dashboard_data"],
+"Sales Invoice": ["seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice_dashboard.get_dashboard_data"],
+"Purchase Invoice": ["seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice_dashboard.get_dashboard_data"],
+"Material Request": ["seabridge_app.seabridge_app.doctype.material_request.material_request_dashboard.get_dashboard_data"],
+"Opportunity": ["seabridge_app.seabridge_app.doctype.opportunity.opportunity_dashboard.get_dashboard_data"],
+"Quotation": ["seabridge_app.seabridge_app.doctype.quotation.quotation_dashboard.get_dashboard_data"],
+"Supplier Quotation": ["seabridge_app.seabridge_app.doctype.supplier_quotation.supplier_quotation_dashboard.get_dashboard_data"]
 }
 
 # Includes in <head>

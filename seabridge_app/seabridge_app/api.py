@@ -373,7 +373,7 @@ def get_user_accounts_payable():
 
 @frappe.whitelist()
 def get_data(name=None, supplier=None, match=None,status=None,company=None,
-	start=0, sort_by='name', sort_order='desc'):
+	start=0, sort_by='invoice_date', sort_order='desc'):
 	'''Return data to render the item dashboard'''
 	filters = []
 	conditions=""
@@ -430,7 +430,6 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 			sort=" Order by po.transaction_date "+sort_order
 		elif(sort_by=="status"):
 			sort=" Order by p.workflow_state "+sort_order
-
 	limit=' Limit 20 offset '+start
 	if count==1:
 		records=frappe.db.sql("""select 

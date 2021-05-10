@@ -31,6 +31,6 @@ def update_status_on_cancel(doc,method):
             if val.reference_doctype=="Purchase Invoice":
                 if val.outstanding_amount>0:
                     pi_doc=frappe.get_doc("Purchase Invoice",val.reference_name) 
-                    pi_doc.db_set('workflow_state','To Bill')
+                    pi_doc.db_set('workflow_state','To Pay')
              
 
