@@ -160,3 +160,13 @@ def auto_create_purchase_invoice(doc,method):
 				frappe.log_error(frappe.get_traceback())
 		print(doc_posted)
 
+def delete_purchase_invoice(doc,method):
+	purchase_invoice=frappe.db.get_value('Purchase Invoice',{'bill_no':doc.name},'name')
+	if purchase_invoice:
+		pi_doc=frappe.get_doc("Purchase Invoice",purchase_invoice)
+		if pi_doc.docstatus!=1:
+			pi_doc.delete()
+			frappe.db.commit()
+		else:
+			frappe.throw("Unable to cancel Sales Invoice as Submitted Purchase Invoice "+purchase_invoice+" is linked with this document")	
+
