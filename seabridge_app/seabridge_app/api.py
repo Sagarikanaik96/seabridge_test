@@ -420,12 +420,12 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 									company_names+='"'+j+'"'
 						company_names+=')'
 	
-	sort=" Order by p.due_date "+sort_order
+	sort=" Order by p.due_date "+sort_order+" ,p.name "+sort_order
 	if sort_by:
 		if(sort_by=="name"):
 			sort=" Order by p.name "+sort_order
 		elif(sort_by=="invoice_date"):
-			sort=" Order by p.due_date "+sort_order
+			sort=" Order by p.due_date "+sort_order+" ,p.name "+sort_order
 		elif(sort_by=="po_date"):
 			sort=" Order by po.transaction_date "+sort_order
 		elif(sort_by=="status"):
@@ -566,12 +566,12 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 		
 	
 	
-	sort=" Order by p.due_date "+sort_order
+	sort=" Order by p.due_date "+sort_order+" ,p.name "+sort_order
 	if sort_by:
 		if(sort_by=="name"):
 			sort=" Order by p.name "+sort_order
 		elif(sort_by=="invoice_date"):
-			sort=" Order by p.due_date "+sort_order
+			sort=" Order by p.due_date "+sort_order+" ,p.name "+sort_order
 		elif(sort_by=="po_date"):
 			sort=" Order by po.transaction_date "+sort_order
 		elif(sort_by=="status"):

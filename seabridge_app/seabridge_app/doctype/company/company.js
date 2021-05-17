@@ -163,9 +163,21 @@ associate_agent:function(frm,cdt,cdn){
 						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
 				            sendEmail(frm.doc.name,frm.doc.associate_agent,emailTemplate);
                          }
-						
+				frappe.db.get_value("Registration",{"company":frm.doc.name}, "name",(s)=>{
+					frappe.call({
+                                            async: false,
+                                            "method": "frappe.client.set_value",
+                                            "args": {
+                                                "doctype": "Registration",
+                                                "name":s.name ,
+                                                "fieldname": "agent_user",
+                                                "value":frm.doc.associate_agent
+                                            }
+                                        });
+					})		
 					}
 					);
+			
       
 }
 });
