@@ -84,6 +84,10 @@ def on_registration_submit(doc,method):
                     frappe.msgprint('Customer '+doc.customer_name+', Company '+doc.company+' and User '+doc.first_name+' is created successfully. Please check Is Internal Customer and update Represents Company as '+doc.company,'Alert')
 
 def before_cancel(doc,method):
+	
+	#doc.internal_supplier=0
+	#doc.represents_company=''
+	#doc.save()
 	supplier=frappe.db.get_list("Supplier",filters={'name':doc.supplier_name},fields={'*'})
 	if supplier:
 		supplier_doc=frappe.get_doc("Supplier",doc.supplier_name)
@@ -106,13 +110,15 @@ def before_cancel(doc,method):
 		user_doc.delete()
 		frappe.db.commit()
 	
-	registration_doc=frappe.get_doc("Registration",doc.name)
-	registration_doc.db_set('represents_company','')
-	registration_doc.db_set('represents_companys','')
-	frappe.db.commit()
+	
 	company=frappe.db.get_list("Company",filters={'name':doc.company},fields={'*'})
 	if company:
 		company_doc=frappe.get_doc("Company",doc.company)
 		company_doc.delete()
-		frappe.db.commit()	
+		frappe.db.commit()
+	agent=frappe.db.get_list("Agent",filters={'name':doc.company},fields={'*'})
+	if agent:
+		agent_doc=frappe.get_doc("Agent",doc.company)
+		agent_doc.delete()
+		frappe.db.commit()
 
