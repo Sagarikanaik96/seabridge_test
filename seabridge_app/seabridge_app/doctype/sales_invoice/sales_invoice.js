@@ -22,6 +22,17 @@ frappe.ui.form.on('Sales Invoice', {
                     sendEmail(doc.name,email,emailTemplate);
                 }
     
+    }, 
+    after_save:function(frm,cdt,cdn){
+	frappe.call({
+                    method:"seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.on_save",
+                    args:{
+                        name:frm.doc.name
+                    },
+                   async:false,
+                    callback: function(r){
+                    }
+                });
     },
     before_save:function(frm,cdt,cdn){
         var count=0;
