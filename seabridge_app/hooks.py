@@ -252,7 +252,8 @@ doctype_js = {
 doc_events = {
     	"Sales Invoice": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.auto_create_purchase_invoice"],
-		"before_cancel": ["seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.delete_purchase_invoice"]
+		"before_cancel": ["seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.delete_purchase_invoice"],
+		"on_save": ["seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.on_save"]
     },
 	"Request for Quotation": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.auto_create_opportunity"]
