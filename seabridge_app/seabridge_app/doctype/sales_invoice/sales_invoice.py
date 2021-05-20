@@ -170,3 +170,38 @@ def delete_purchase_invoice(doc,method):
 		else:
 			frappe.throw("Unable to cancel Sales Invoice as Submitted Purchase Invoice "+purchase_invoice+" is linked with this document")	
 
+@frappe.whitelist()
+def on_save(name):
+	doc=frappe.get_doc("Sales Invoice",name)
+	if doc.po_no:
+		files=frappe.db.get_list('File',filters={'attached_to_doctype':'Purchase Order','attached_to_name':doc.po_no},fields={'*'})
+		si_files=frappe.db.get_list('File',filters={'attached_to_doctype':'Sales Invoice','attached_to_name':doc.name},fields={'*'})
+		if files:
+			if si_files:
+				for single_file in files:
+					count=0
+					for si_file in si_files:
+						if single_file.file_url==si_file.file_url:
+							count=1
+					if count==0:
+						file_doc=frappe.get_doc(dict(doctype = 'File',
+							file_name=single_file.file_name,
+							is_private=single_file.is_private,
+							file_size=single_file.file_size,
+							file_url=single_file.file_url,
+							attached_to_doctype="Sales Invoice",
+							attached_to_name=doc.name
+						)).insert(ignore_mandatory=True)
+						file_doc.save()
+			else:
+				for single_file in files:
+					file_doc=frappe.get_doc(dict(doctype = 'File',
+							file_name=single_file.file_name,
+							is_private=single_file.is_private,
+							file_size=single_file.file_size,
+							file_url=single_file.file_url,
+							attached_to_doctype="Sales Invoice",
+							attached_to_name=doc.name
+						)).insert(ignore_mandatory=True)
+					file_doc.save()
+
