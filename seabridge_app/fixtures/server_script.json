@@ -1,0 +1,34 @@
+[
+ {
+  "allow_guest": 0,
+  "api_method": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "After Save",
+  "modified": "2020-10-15 14:56:30.505575",
+  "name": "On User Save",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "reference_doctype": "User",
+  "script": "same_user=frappe.db.get_list(\"User Permission\",filters={'user':doc.email,'allow':'Company','for_value':doc.represents_company},fields={'*'})\nif not same_user:\n    user=frappe.db.get_list(\"User Permission\",filters={'user':doc.email,'allow':'Company'},fields={'*'})\n    if user:\n            frappe.get_doc(dict(\n                    doctype = 'User Permission',\n                    user = doc.email,\n                    allow='Company',\n                    name=user[0].name,\n                    apply_to_all_doctypes=1\n                    )).delete()\n    \n    if(doc.is_system_admin!=1):                \n        up_doc=frappe.get_doc(dict(doctype = 'User Permission',\n                            user=doc.email,\n                            allow=\"Company\",\n                            for_value=doc.represents_company,\n                            apply_to_all_doctypes=1\n                )).insert(ignore_mandatory=True)\n        up_doc.save()\n    \n\n",
+  "script_type": "DocType Event"
+ },
+ {
+  "allow_guest": 0,
+  "api_method": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Save",
+  "modified": "2020-10-19 23:10:21.668893",
+  "name": "Check Item",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "reference_doctype": "Request for Quotation",
+  "script": "for rfq_item in doc.items:\n    bankets=frappe.db.get_list('Blanket Order',filters={'company':doc.company,'blanket_order_type':\"Purchasing\"},fields={'name'})\n    for i in bankets:\n        items=frappe.db.get_list(\"Blanket Order Item\",filters={'parent':i.name,'parenttype':'Blanket Order'},fields={'item_code'})\n        for val in items:\n            if val.item_code==rfq_item.item_code:\n                frappe.throw(\"Blanket Order already exists for Item: \"+val.item_code+\". Please clear the item to Submit the document.\")\n  ",
+  "script_type": "DocType Event"
+ }
+]

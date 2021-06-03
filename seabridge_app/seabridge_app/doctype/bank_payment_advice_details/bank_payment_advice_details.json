@@ -1,0 +1,174 @@
+{
+ "actions": [],
+ "creation": "2020-12-02 15:04:39.714784",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "invoice_document",
+  "overdue_days",
+  "supplier_name",
+  "has_sbtfx_contract",
+  "purchase_order",
+  "purchase_order_amount",
+  "column_break_5",
+  "invoice_amount",
+  "due_date",
+  "debit_note",
+  "debit_note_amount",
+  "outstanding_amount",
+  "payment_transaction_amount",
+  "payment_cheque_details_section",
+  "cheque_no",
+  "column_break_12",
+  "cheque_date",
+  "account_details_section",
+  "bank_account",
+  "column_break_24",
+  "bank_name"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "invoice_document",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Invoice Document",
+   "options": "Purchase Invoice",
+   "reqd": 1
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "Due Date"
+  },
+  {
+   "columns": 2,
+   "fieldname": "supplier_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Supplier Name",
+   "options": "Supplier"
+  },
+  {
+   "columns": 1,
+   "fieldname": "invoice_amount",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Invoice Amount",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Float",
+   "label": "Outstanding Amount"
+  },
+  {
+   "fieldname": "debit_note",
+   "fieldtype": "Link",
+   "label": "Debit Note",
+   "options": "Purchase Invoice"
+  },
+  {
+   "fieldname": "debit_note_amount",
+   "fieldtype": "Float",
+   "label": "Debit Note Amount"
+  },
+  {
+   "columns": 1,
+   "fieldname": "payment_transaction_amount",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Payment Transaction Amount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "payment_cheque_details_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Cheque Details"
+  },
+  {
+   "fieldname": "cheque_no",
+   "fieldtype": "Data",
+   "label": "Cheque/Reference No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cheque_date",
+   "fieldtype": "Date",
+   "label": "Cheque/Reference Date",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "purchase_order",
+   "fieldtype": "Link",
+   "label": "Purchase Order",
+   "options": "Purchase Order"
+  },
+  {
+   "columns": 1,
+   "fieldname": "purchase_order_amount",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Purchase Order Amount"
+  },
+  {
+   "columns": 1,
+   "fieldname": "overdue_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Overdue Days"
+  },
+  {
+   "fieldname": "bank_name",
+   "fieldtype": "Data",
+   "label": "Bank Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "bank_account",
+   "fieldtype": "Data",
+   "label": "Bank Account",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "account_details_section",
+   "fieldtype": "Section Break",
+   "label": "Account Details"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "has_sbtfx_contract",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Has SBTFX Contract"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2020-12-04 15:01:51.357123",
+ "modified_by": "Administrator",
+ "module": "seabridge_app",
+ "name": "Bank Payment Advice Details",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -1,0 +1,49 @@
+{
+ "actions": [],
+ "creation": "2021-04-29 20:31:04.694252",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "description",
+  "options",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "options",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Mandatory",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Remarks",
+   "mandatory_depends_on": "eval:(doc.options==\"No\")",
+   "read_only_depends_on": "eval:(doc.options==\"Yes\")"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2021-05-04 20:34:40.579917",
+ "modified_by": "Administrator",
+ "module": "seabridge_app",
+ "name": "Attachment Checklist Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

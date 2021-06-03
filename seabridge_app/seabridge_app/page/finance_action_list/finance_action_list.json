@@ -1,0 +1,18 @@
+{
+ "content": null,
+ "creation": "2021-03-10 17:47:27.277036",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2021-03-10 17:47:27.277036",
+ "modified_by": "Administrator",
+ "module": "seabridge_app",
+ "name": "finance-action-list",
+ "owner": "Administrator",
+ "page_name": "Finance Action List",
+ "roles": [],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0
+}

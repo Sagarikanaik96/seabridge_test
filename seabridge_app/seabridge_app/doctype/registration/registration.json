@@ -1,0 +1,335 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2021-04-29 20:31:05.799067",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "column_break_2",
+  "date",
+  "company_registration_details_section",
+  "company",
+  "abbr",
+  "default_currency",
+  "is_group",
+  "column_break_8",
+  "parent_company",
+  "company_type",
+  "country",
+  "has_sbtfx_contract",
+  "vendor_registration_details_section",
+  "supplier_name",
+  "internal_supplier",
+  "represents_company",
+  "column_break_16",
+  "supplier_group",
+  "supplier_type",
+  "bank_name",
+  "bank_account",
+  "customer_registration_details_section",
+  "customer_name",
+  "is_internal_customer",
+  "represents_companys",
+  "column_break_23",
+  "customer_group",
+  "customer_type",
+  "management_agent_registration_details_section",
+  "agent_company",
+  "agent_user",
+  "column_break_30",
+  "start_date",
+  "end_date",
+  "user_registration_details_section",
+  "email",
+  "last_name",
+  "column_break_22",
+  "first_name",
+  "send_welcome_email"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "REG-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "company_registration_details_section",
+   "fieldtype": "Section Break",
+   "label": "Company Registration Details"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Data",
+   "label": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "abbr",
+   "fieldtype": "Data",
+   "label": "Abbr",
+   "reqd": 1
+  },
+  {
+   "fieldname": "default_currency",
+   "fieldtype": "Link",
+   "label": "Default Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "parent_company",
+   "fieldtype": "Link",
+   "label": "Parent Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "company_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Company Type",
+   "options": "\nVendor\nCustomer\nAgent",
+   "reqd": 1
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country"
+  },
+  {
+   "fieldname": "vendor_registration_details_section",
+   "fieldtype": "Section Break",
+   "label": "Vendor Registration Details"
+  },
+  {
+   "fieldname": "supplier_name",
+   "fieldtype": "Data",
+   "label": "Supplier Name",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\")"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "depends_on": "eval:(doc.company_type==\"Vendor\" || doc.company_type==\"Agent\")",
+   "fieldname": "internal_supplier",
+   "fieldtype": "Check",
+   "label": "Is Internal Supplier"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:(doc.company_type==\"Vendor\" || doc.company_type==\"Agent\")",
+   "fieldname": "represents_company",
+   "fieldtype": "Link",
+   "label": "Represents Company",
+   "mandatory_depends_on": "eval:(doc.internal_supplier==1)",
+   "options": "Company"
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier_group",
+   "fieldtype": "Link",
+   "label": "Supplier Group",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\")",
+   "options": "Supplier Group"
+  },
+  {
+   "fieldname": "supplier_type",
+   "fieldtype": "Select",
+   "label": "Supplier Type",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\")",
+   "options": "\nCompany\nIndividual"
+  },
+  {
+   "fieldname": "user_registration_details_section",
+   "fieldtype": "Section Break",
+   "label": "User Registration Details"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "reqd": 1
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First Name",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "send_welcome_email",
+   "fieldtype": "Check",
+   "label": "Send Welcome Email"
+  },
+  {
+   "fieldname": "customer_registration_details_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Registration Details"
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Customer\")"
+  },
+  {
+   "fieldname": "customer_group",
+   "fieldtype": "Link",
+   "label": "Customer Group",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Customer\")",
+   "options": "Customer Group"
+  },
+  {
+   "fieldname": "customer_type",
+   "fieldtype": "Select",
+   "label": "Customer Type",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Customer\")",
+   "options": "\nCompany\nIndividual"
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "depends_on": "eval:(doc.company_type==\"Customer\")",
+   "fieldname": "is_internal_customer",
+   "fieldtype": "Check",
+   "label": "Is Internal Customer"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:(doc.company_type==\"Customer\")",
+   "fieldname": "represents_companys",
+   "fieldtype": "Link",
+   "label": "Represents Company",
+   "mandatory_depends_on": "eval:(doc.is_internal_customer==1)",
+   "options": "Company"
+  },
+  {
+   "depends_on": "eval:doc.company_type=='Customer' && doc.docstatus==1",
+   "fieldname": "management_agent_registration_details_section",
+   "fieldtype": "Section Break",
+   "label": "Management Agent Registration Details"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "agent_company",
+   "fieldtype": "Link",
+   "label": "Agent Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.agent_company!=undefined",
+   "fieldname": "agent_user",
+   "fieldtype": "Link",
+   "label": "Agent User",
+   "mandatory_depends_on": "eval:doc.agent_company!=undefined",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_break_30",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "mandatory_depends_on": "eval:doc.agent_company!=undefined",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date",
+   "mandatory_depends_on": "eval:doc.agent_company!=undefined",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "label": "Is Group"
+  },
+  {
+   "depends_on": "eval:(doc.has_sbtfx_contract!=1)",
+   "fieldname": "bank_name",
+   "fieldtype": "Data",
+   "label": "Bank Name",
+   "mandatory_depends_on": "eval:(doc.has_sbtfx_contract!=1 && doc.company_type==\"Vendor\")"
+  },
+  {
+   "depends_on": "eval:(doc.has_sbtfx_contract!=1)",
+   "fieldname": "bank_account",
+   "fieldtype": "Data",
+   "label": "Bank Account",
+   "mandatory_depends_on": "eval:(doc.has_sbtfx_contract!=1 && doc.company_type==\"Vendor\")"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:(doc.company_type==\"Vendor\")",
+   "fieldname": "has_sbtfx_contract",
+   "fieldtype": "Check",
+   "label": "Has SBTFX Contract"
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2021-05-04 18:51:17.889820",
+ "modified_by": "Administrator",
+ "module": "seabridge_app",
+ "name": "Registration",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

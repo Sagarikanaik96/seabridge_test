@@ -1,0 +1,22 @@
+[
+ {
+  "content": null,
+  "docstatus": 0,
+  "doctype": "Page",
+  "icon": null,
+  "modified": "2021-02-08 16:32:52.344248",
+  "module": "seabridge_app",
+  "name": "condomanager",
+  "page_name": "condomanager",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "restrict_to_domain": null,
+  "roles": [],
+  "script": null,
+  "standard": "Yes",
+  "style": null,
+  "system_page": 0,
+  "title": "condomanager"
+ }
+]
