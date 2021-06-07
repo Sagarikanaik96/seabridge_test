@@ -166,7 +166,21 @@ associate_agent:function(frm,cdt,cdn){
 						
 					}
 					);
-      
+				frappe.db.get_value("Registration",{"company":frm.doc.name}, "name",(s)=>{
+					frappe.call({
+                                            async: false,
+                                            "method": "frappe.client.set_value",
+                                            "args": {
+                                                "doctype": "Registration",
+                                                "name":s.name ,
+                                                "fieldname": "agent_user",
+                                                "value":frm.doc.associate_agent
+                                            }
+                                        });
+					})		
+					}
+					);
+			      
 }
 });
 

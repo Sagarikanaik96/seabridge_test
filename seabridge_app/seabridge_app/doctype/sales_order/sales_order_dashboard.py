@@ -1,18 +1,18 @@
 from __future__ import unicode_literals
 from frappe import _
-import frappe
 
 def get_dashboard_data(data):
 	return {
-		'fieldname': 'purchase_order',
+		'fieldname': 'sales_order',
 		'non_standard_fieldnames': {
+			'Delivery Note': 'against_sales_order',
 			'Journal Entry': 'reference_name',
 			'Payment Entry': 'reference_name',
-			'Auto Repeat': 'reference_document'
+			'Payment Request': 'reference_name',
+			'Auto Repeat': 'reference_document',
+			'Maintenance Visit': 'prevdoc_docname'
 		},
 		'internal_links': {
-			'Material Request': ['items', 'material_request'],
-			'Supplier Quotation': ['items', 'supplier_quotation'],
-			'Project': ['items', 'project'],
+			'Quotation': ['items', 'prevdoc_docname']
 		}
 	}

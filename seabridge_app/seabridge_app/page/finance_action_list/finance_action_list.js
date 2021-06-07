@@ -107,8 +107,8 @@ page.start = 0;
 		args: {
 			sort_by: 'invoice_date',
 			sort_order: 'desc',
-			options: [
-				{fieldname: 'invoice_date', label: __('Invoice Date')},
+			options: 
+				{fieldname: 'invoice_date', label: __('Invoice Due Date')},
 				{fieldname: 'po_date', label: __('PO Date')},
 				{fieldname: 'status', label: __('Status')},
 			]

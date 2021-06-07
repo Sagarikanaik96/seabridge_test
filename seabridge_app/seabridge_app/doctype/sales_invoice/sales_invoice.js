@@ -21,10 +21,17 @@ frappe.ui.form.on('Sales Invoice', {
                     var emailTemplate='<h1><strong> Sales Invoice is created and Submitted Successfully.Please find the attachment.</strong></h1>';
                     sendEmail(doc.name,email,emailTemplate);
                 }
-    
-    },
-    before_cancel:function(frm,cdt,cdn){
-        frappe.throw(('Unable to cancel the document as Sales Invoice: '+frm.doc.name+' is linked with purchase invoice documents.'))
+    }, 
+    after_save:function(frm,cdt,cdn){
+	frappe.call({
+                    method:"seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.on_save",
+                    args:{
+                        name:frm.doc.name
+                    },
+                   async:false,
+                    callback: function(r){
+                    }
+                });
     },
     before_save:function(frm,cdt,cdn){
         var count=0;

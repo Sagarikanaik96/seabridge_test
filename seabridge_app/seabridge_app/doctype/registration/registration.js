@@ -140,7 +140,54 @@ before_save:function(frm,cdt,cdn){
 	if(frm.doc.date==null){
         	frm.set_value("date",frappe.datetime.get_today())
 	}
-    }
+    },
+
+before_cancel:function(frm,cdt,cdn){
+	frappe.call({
+                                            async: false,
+                                            "method": "frappe.client.set_value",
+                                            "args": {
+                                                "doctype": "Registration",
+                                                "name":frm.doc.name ,
+                                                "fieldname": "internal_supplier",
+                                                "value":0
+                                            }
+                                        });
+	frappe.call({
+                                            async: false,
+                                            "method": "frappe.client.set_value",
+                                            "args": {
+                                                "doctype": "Registration",
+                                                "name":frm.doc.name ,
+                                                "fieldname": "represents_company",
+                                                "value":''
+                                            }
+                                        });
+	frappe.call({
+                                            async: false,
+                                            "method": "frappe.client.set_value",
+                                            "args": {
+                                                "doctype": "Registration",
+                                                "name":frm.doc.name ,
+                                                "fieldname": "is_internal_customer",
+                                                "value":0
+                                            }
+                                        });
+	frappe.call({
+                                            async: false,
+                                            "method": "frappe.client.set_value",
+                                            "args": {
+                                                "doctype": "Registration",
+                                                "name":frm.doc.name ,
+                                                "fieldname": "represents_companys",
+                                                "value":''
+                                            }
+                                        });
+	cur_frm.refresh_fields("internal_supplier");
+	cur_frm.refresh_fields("represents_company");
+	cur_frm.refresh_fields("is_internal_customer");
+	cur_frm.refresh_fields("represents_companys");
+}
 })
 
 function create_user_permission(agent_user,company){
