@@ -179,9 +179,6 @@ associate_agent:function(frm,cdt,cdn){
                                         });
 					})		
 					}
-					);
-			      
-}
 });
 
 function create_user_permission(associate_agent,company_name){
