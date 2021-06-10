@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from . import __version__ as app_version
-
 app_name = "seabridge_app"
 app_title = "seabridge_app"
 app_publisher = "seabridge_app"
@@ -266,7 +265,9 @@ doc_events = {
 		"before_cancel":["seabridge_app.seabridge_app.doctype.registration.registration.before_cancel"]
     },
 	"Purchase Order": {
-		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.auto_create_sales_order"]
+		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.auto_create_sales_order"],
+		"before_insert": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.before_insert"],
+		"on_insert": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.on_insert"]
     },
 	"Bank Payment Advice": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.auto_create_payment_entry"],
@@ -297,6 +298,8 @@ override_doctype_dashboards = {
 "Quotation": ["seabridge_app.seabridge_app.doctype.quotation.quotation_dashboard.get_dashboard_data"],
 "Supplier Quotation": ["seabridge_app.seabridge_app.doctype.supplier_quotation.supplier_quotation_dashboard.get_dashboard_data"]
 }
+
+
 
 # Includes in <head>
 # ------------------
