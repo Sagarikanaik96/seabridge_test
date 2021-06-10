@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+import os
 
 class PurchaseOrder(Document):
 	pass
@@ -72,6 +73,7 @@ def auto_create_sales_order(doc,method):
 						    'conversion_factor':val.conversion_factor
 						})
 					for row in tax:
+
 					    so_doc.append('taxes',{
 						'account_head':row.account_head,
 						'charge_type':row.charge_type,
@@ -102,4 +104,18 @@ def auto_create_sales_order(doc,method):
 						file_doc.save()
 	else:
     		frappe.throw("Unable to save the Sales Order as the naming series are unavailable . Please provide the naming series at the Company: "+company+" to save the document");
+
+
+
+def before_insert(doc,method):
+	series_list=frappe.db.get_list('Document Specific Naming Series',filters={'parenttype':'Company','parent':doc.company,'reference_document':'Purchase Order'},fields={'*'})
+	if series_list:
+		for series in series_list:
+			naming_series=series.series
+		frappe.response['message']="Naming series fetched from the Company"
+	else:
+		naming_series=doc.naming_series
+		if naming_series=='':
+			frappe.response['message']="Naming Series not passed in JSON and unavailable at the Company, default naming series used"
+	doc.naming_series=naming_series
 
