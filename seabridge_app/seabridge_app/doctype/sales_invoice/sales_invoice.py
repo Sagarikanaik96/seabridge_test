@@ -139,7 +139,8 @@ def auto_create_purchase_invoice(doc,method):
 					"content-type": "application/json"
 				}
 				conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
-				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.grand_total)+'", "currency_name": "SGD", "source": "community_erpnext", "document_category": "AR", "orig_transaction_ref":""}]}'
+				credit_days=frappe.db.sql("""select sum(credit_days) as credit_days from `tabPayment Terms Template Detail` where parent=%s""",(doc.payment_terms_template), as_list=True)
+				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.grand_total)+'", "currency_name": "SGD", "source": "seaprop","credit_days": credit_days, "document_category": "AR", "orig_transaction_ref":""}]}'
 				print(document)
 				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
 				print("RESPONSE",res)
