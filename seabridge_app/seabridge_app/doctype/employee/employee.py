@@ -12,7 +12,6 @@ class Employee(Document):
 
 @frappe.whitelist()
 def create_permissions(reports_to,user_id,saved_doc,name):
-	print(name)
 	if saved_doc==0: 
 		if reports_to!="":
 			reports_to_user=frappe.db.get_value('Employee',{'name':reports_to},'user_id')

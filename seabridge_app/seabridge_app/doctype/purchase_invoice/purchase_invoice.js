@@ -1,10 +1,7 @@
 // Copyright (c) 2020, seabridge_app and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Purchase Invoice', { 
-onload:function(frm,cdt,cdn){
-	
-},
+frappe.ui.form.on('Purchase Invoice', {
 after_save:function(frm,cdt,cdn){
 	if(frm.doc.is_return==1){
 		frappe.call({
