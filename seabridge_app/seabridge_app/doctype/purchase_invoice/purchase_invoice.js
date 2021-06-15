@@ -2,6 +2,9 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Purchase Invoice', { 
+onload:function(frm,cdt,cdn){
+	
+},
 after_save:function(frm,cdt,cdn){
 	if(frm.doc.is_return==1){
 		frappe.call({
@@ -26,8 +29,8 @@ after_save:function(frm,cdt,cdn){
             	});
 
 
-
 },
+
 before_save:function(frm,cdt,cdn){
 	var count=0;
 	if(frm.doc.naming_series){}
@@ -155,7 +158,7 @@ if(frm.doc.workflow_state=="Submitted"){
         	});
 }
 
-	if(frm.doc.workflow_state=="To Bill"){
+	if(frm.doc.workflow_state=="To Pay"){
 	frappe.call({
 		        method:"seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.post_invoice",
 		        args:{
@@ -182,7 +185,7 @@ if(frm.doc.workflow_state=="Submitted"){
 },
 
 refresh:function(frm,cdt,cdn){
-
+	
 	if(frm.doc.purchase_order){
 		if(frm.doc.purchase_receipt){}
 		else{
