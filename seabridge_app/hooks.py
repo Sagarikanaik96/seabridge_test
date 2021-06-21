@@ -245,7 +245,8 @@ doctype_js = {
 	"Registration" : "seabridge_app/doctype/registration/registration.js",
 	"Company" : "seabridge_app/doctype/company/company.js",
 	"Blanket Order" : "seabridge_app/doctype/blanket_order/blanket_order.js",
-	"Contract" : "seabridge_app/doctype/contract/contract.js"
+	"Contract" : "seabridge_app/doctype/contract/contract.js",
+	"Employee" : "seabridge_app/doctype/employee/employee.js"
 }
 
 doc_events = {
