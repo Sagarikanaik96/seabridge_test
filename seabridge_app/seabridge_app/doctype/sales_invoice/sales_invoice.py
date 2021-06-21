@@ -54,7 +54,7 @@ def auto_create_purchase_invoice(doc,method):
 							purchase_order=doc.po_no,
 							attachment_checklist_template=doc.attachment_checklist_template,
 							invoice_description=doc.invoice_description
-						)).insert(ignore_mandatory=True)
+						)).insert(ignore_mandatory=True,ignore_permissions=True)
 				for val in doc.items:
 						pi_doc.append('items', {
 							'item_code':val.item_code,
@@ -78,7 +78,7 @@ def auto_create_purchase_invoice(doc,method):
 							'rate':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Sales Invoice'},'rate')
 						})
 				pi_doc.add_comment('Comment',' System created  '+pi_doc.name)
-				pi_doc.save()
+				pi_doc.save(ignore_permissions=True)
 				for v in pi_doc.items:
 					if doc.po_no:
 						po_items=frappe.db.get_list("Purchase Order Item",filters={'parent':doc.po_no,'parenttype':'Purchase Order','item_code':v.item_code},fields={'*'})
@@ -131,7 +131,7 @@ def auto_create_purchase_invoice(doc,method):
 	has_sbtfx_contract=frappe.db.get_value('Company',{'company_name':doc.company},'has_sbtfx_contract')
 	if has_sbtfx_contract==1:
 		doc_posted=False
-		headers=frappe.db.get_list("API Integration",fields={'*'})
+		headers=frappe.db.get_all("API Integration",fields={'*'})
 		if headers:
 			try:
 				headers_list = {
@@ -209,7 +209,3 @@ def on_save(name):
 						)).insert(ignore_mandatory=True)
 					file_doc.save()
 
-@frappe.whitelist()
-def get_customers(doctype, txt, searchfield, start, page_len, filters):
-	company=filters['company_name']
-	return frappe.db.sql(""" select parent from `tabAllowed To Transact With` where company=%s""",(company))
