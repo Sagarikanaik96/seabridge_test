@@ -12,5 +12,16 @@ frappe.ui.form.on('Supplier',{
                 }
             });
         })
-    }
+    },
+	after_save:function(frm,cdt,cdn){
+		frappe.call({
+				method:"seabridge_app.seabridge_app.doctype.supplier.supplier.create_permissions",
+				args:{
+					name:frm.doc.name
+				},
+				async:false,
+				callback: function(r){	 	
+				}
+			});
+	}
 })

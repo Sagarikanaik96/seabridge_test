@@ -48,7 +48,7 @@ def auto_create_sales_order(doc,method):
 						    terms=doc.terms,
 						    attachment_checklist_template=doc.attachment_checklist_template,
 						    invoice_description=doc.invoice_description
-						)).insert(ignore_mandatory=True)
+						)).insert(ignore_mandatory=True,ignore_permissions=True)
 					if agent:
 						contact=frappe.db.get_value('Contact',{'user':agent},'name')
 						if contact:
@@ -89,7 +89,7 @@ def auto_create_sales_order(doc,method):
 					agent_company=frappe.db.get_value('User',{'email':frappe.session.user},'represents_company')
 					if agent_company:
 						so_doc.add_comment('Comment',agent_name+' created '+so_doc.name+' from '+agent_company)
-					so_doc.save()
+					so_doc.save(ignore_permissions=True)
 					doc.add_comment('Comment','  Sales Order: '+so_doc.name)
 					files=frappe.db.get_list('File',filters={'attached_to_doctype':'Purchase Order','attached_to_name':doc.name},fields={'*'})
 					for single_file in files:
