@@ -3,7 +3,6 @@
 
 frappe.ui.form.on('Customer',{
 	after_save:function(frm,cdt,cdn){
-console.log('INSAVE-------------')
 		frappe.call({
 				method:"seabridge_app.seabridge_app.doctype.customer.customer.create_permissions",
 				args:{

@@ -18,13 +18,11 @@ def create_permissions(name):
 	if users:
 		if companies:
 			for user in users:
-				print('USER-------------',user.name)
 				for company in companies:
 					customers=frappe.db.get_list("Customer",filters={'represents_company':company.company},fields={'*'})
 					for customer in customers:
 						permission=frappe.db.get_list('User Permission',filters={'user':user.name,'for_value':customer.name},fields={'*'})
 						if not permission:
-							print('Customer--------------',customer.name)
 							up_doc=frappe.get_doc(dict(doctype = 'User Permission',
 								user=user.name,
 								allow="Customer",
