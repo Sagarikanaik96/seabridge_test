@@ -55,7 +55,7 @@ def update_status(doc,method):
 def post_invoice(name):
         doc=frappe.get_doc("Purchase Invoice",name)
         doc_posted=False
-        headers=frappe.db.get_list("API Integration",fields={'*'})
+        headers=frappe.db.get_all("API Integration",fields={'*'})
         has_sbtfx_contract=frappe.db.get_value('Supplier',{'supplier_name':doc.supplier_name},'has_sbtfx_contract')
         if has_sbtfx_contract==1:
             if headers:
