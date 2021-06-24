@@ -23,18 +23,7 @@ frappe.ui.form.on('Sales Invoice', {
                 }
     
     }, 
-	company:function(frm,cdt,cdn){
-		if(frm.doc.company){var company=frm.doc.company}
-	else{var company=""}
-	frm.set_query("customer",function(){
-					return{
-					    query: "seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.get_customers",
-					    filters:{
-						"company_name":company
-					    },
-					}
-				    });
-	},
+
     after_save:function(frm,cdt,cdn){
 	frappe.call({
                     method:"seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.on_save",

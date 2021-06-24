@@ -1,0 +1,32 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) 2020, seabridge_app and contributors
+# For license information, please see license.txt
+
+from __future__ import unicode_literals
+import frappe
+from frappe.model.document import Document
+import os
+
+class Customer(Document):
+	pass
+
+@frappe.whitelist()
+def create_permissions(name):
+	cust_doc=frappe.get_doc("Customer",name) 
+	users=frappe.db.get_list("User",filters={'represents_company':cust_doc.represents_company},fields={'*'})
+	companies=frappe.db.get_list("Allowed To Transact With",filters={'parent':cust_doc.name,'parenttype':'Customer'},fields={'*'})
+	if users:
+		if companies:
+			for user in users:
+				for company in companies:
+					suppliers=frappe.db.get_all("Supplier",filters={'represents_company':company.company},fields={'*'})
+					for supplier in suppliers:
+						permission=frappe.db.get_list('User Permission',filters={'user':user.name,'for_value':supplier.name},fields={'*'})
+						if not permission:
+							up_doc=frappe.get_doc(dict(doctype = 'User Permission',
+								user=user.name,
+								allow="Supplier",
+								for_value=supplier.name,
+								apply_to_all_doctypes=1
+							)).insert(ignore_mandatory=True)
+							up_doc.save()
