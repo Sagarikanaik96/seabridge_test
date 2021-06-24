@@ -19,7 +19,7 @@ def create_permissions(name):
 		if companies:
 			for user in users:
 				for company in companies:
-					customers=frappe.db.get_list("Customer",filters={'represents_company':company.company},fields={'*'})
+					customers=frappe.db.get_all("Customer",filters={'represents_company':company.company},fields={'*'})
 					for customer in customers:
 						permission=frappe.db.get_list('User Permission',filters={'user':user.name,'for_value':customer.name},fields={'*'})
 						if not permission:
