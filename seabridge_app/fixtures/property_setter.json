@@ -13,6 +13,7 @@
   "parenttype": null,
   "property": "columns",
   "property_type": "Int",
+  "row_name": null,
   "value": "1"
  },
  {
@@ -29,6 +30,7 @@
   "parenttype": null,
   "property": "columns",
   "property_type": "Int",
+  "row_name": null,
   "value": "2"
  },
  {
@@ -45,6 +47,7 @@
   "parenttype": null,
   "property": "columns",
   "property_type": "Int",
+  "row_name": null,
   "value": "1"
  },
  {
@@ -61,6 +64,7 @@
   "parenttype": null,
   "property": "options",
   "property_type": "Text",
+  "row_name": null,
   "value": "PUR-REQ-"
  },
  {
@@ -77,6 +81,7 @@
   "parenttype": null,
   "property": "options",
   "property_type": "Text",
+  "row_name": null,
   "value": "PUR-RFQ-"
  },
  {
@@ -93,6 +98,7 @@
   "parenttype": null,
   "property": "options",
   "property_type": "Text",
+  "row_name": null,
   "value": "Purchase"
  },
  {
@@ -109,6 +115,7 @@
   "parenttype": null,
   "property": "in_list_view",
   "property_type": "Check",
+  "row_name": null,
   "value": "0"
  },
  {
@@ -125,6 +132,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -141,6 +149,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -157,6 +166,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -173,6 +183,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -189,6 +200,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -205,6 +217,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -221,6 +234,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -237,6 +251,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -253,6 +268,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -269,6 +285,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -285,6 +302,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -301,6 +319,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -317,6 +336,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -333,6 +353,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -349,6 +370,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -365,6 +387,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -381,6 +404,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -397,6 +421,7 @@
   "parenttype": null,
   "property": "in_list_view",
   "property_type": "Check",
+  "row_name": null,
   "value": "0"
  },
  {
@@ -413,6 +438,7 @@
   "parenttype": null,
   "property": "depends_on",
   "property_type": "Data",
+  "row_name": null,
   "value": "eval:doc.quotation_type!='Sealed'"
  },
  {
@@ -429,6 +455,7 @@
   "parenttype": null,
   "property": "options",
   "property_type": "Text",
+  "row_name": null,
   "value": "Agent"
  },
  {
@@ -445,6 +472,7 @@
   "parenttype": null,
   "property": "default",
   "property_type": "Text",
+  "row_name": null,
   "value": ""
  },
  {
@@ -461,6 +489,7 @@
   "parenttype": null,
   "property": "hidden",
   "property_type": "Check",
+  "row_name": null,
   "value": "1"
  },
  {
@@ -477,6 +506,24 @@
   "parenttype": null,
   "property": "label",
   "property_type": "Data",
+  "row_name": null,
   "value": "Party Company"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Allowed To Transact With",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "company",
+  "modified": "2021-06-22 02:22:44.543042",
+  "name": "Allowed To Transact With-company-ignore_user_permissions",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "ignore_user_permissions",
+  "property_type": "Check",
+  "row_name": null,
+  "value": "1"
  }
 ]
