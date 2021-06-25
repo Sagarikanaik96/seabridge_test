@@ -91,7 +91,7 @@ def auto_create_sales_order(doc,method):
 						so_doc.add_comment('Comment',agent_name+' created '+so_doc.name+' from '+agent_company)
 					so_doc.save(ignore_permissions=True)
 					doc.add_comment('Comment','  Sales Order: '+so_doc.name)
-					files=frappe.db.get_list('File',filters={'attached_to_doctype':'Purchase Order','attached_to_name':doc.name},fields={'*'})
+					files=frappe.db.get_all('File',filters={'attached_to_doctype':'Purchase Order','attached_to_name':doc.name},fields={'*'})
 					for single_file in files:
 						file_doc=frappe.get_doc(dict(doctype = 'File',
 							file_name=single_file.file_name,
@@ -100,7 +100,7 @@ def auto_create_sales_order(doc,method):
 							file_url=single_file.file_url,
 							attached_to_doctype="Sales Order",
 							attached_to_name=so_doc.name
-						)).insert(ignore_mandatory=True)
+						)).insert(ignore_mandatory=True,ignore_permissions=True)
 						file_doc.save()
 	else:
     		frappe.throw("Unable to save the Sales Order as the naming series are unavailable . Please provide the naming series at the Company: "+company+" to save the document");
