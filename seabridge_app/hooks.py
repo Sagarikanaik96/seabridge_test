@@ -143,7 +143,12 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Sales Invoice-invoice_description",
 		"Purchase Invoice-invoice_description",
 		"Sales Order-invoice_description",
-		"Purchase Order-invoice_description"
+		"Purchase Order-invoice_description",
+		"Purchase Order-source",
+		"Purchase Order-source_po_number",
+		"Purchase Order-po_type",
+		"Purchase Order-remarks"
+		"Purchase Order Item-remarks"
 		]
 	]
 ]
@@ -184,7 +189,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 				"Purchase Invoice Item-qty-columns",
 				"Purchase Invoice Item-item_code-columns",
 				"Purchase Invoice Item-rate-columns",
-				"Purchase Invoice Item-amount-columns"		
+				"Purchase Invoice Item-amount-columns",
+				"Allowed To Transact With-company-ignore_user_permissions"	
 						
 			]
 	]
