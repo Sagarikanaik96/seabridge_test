@@ -109,7 +109,7 @@ def auto_create_purchase_invoice(doc,method):
 					    })
 				pi_doc.save()
 				doc.add_comment('Comment','  Purchase Invoice: '+pi_doc.name)
-				files=frappe.db.get_list('File',filters={'attached_to_doctype':'Sales Invoice','attached_to_name':doc.name},fields={'*'})
+				files=frappe.db.get_all('File',filters={'attached_to_doctype':'Sales Invoice','attached_to_name':doc.name},fields={'*'})
 				for single_file in files:
 					file_doc=frappe.get_doc(dict(doctype = 'File',
 						file_name=single_file.file_name,
@@ -118,7 +118,7 @@ def auto_create_purchase_invoice(doc,method):
 						file_url=single_file.file_url,
 						attached_to_doctype="Purchase Invoice",
 						attached_to_name=pi_doc.name
-					)).insert(ignore_mandatory=True)
+					)).insert(ignore_mandatory=True,ignore_permissions=True)
 					file_doc.save()
 				update_monthly_budget(pi_doc.name)
 		  
@@ -178,8 +178,8 @@ def delete_purchase_invoice(doc,method):
 def on_save(name):
 	doc=frappe.get_doc("Sales Invoice",name)
 	if doc.po_no:
-		files=frappe.db.get_list('File',filters={'attached_to_doctype':'Purchase Order','attached_to_name':doc.po_no},fields={'*'})
-		si_files=frappe.db.get_list('File',filters={'attached_to_doctype':'Sales Invoice','attached_to_name':doc.name},fields={'*'})
+		files=frappe.db.get_all('File',filters={'attached_to_doctype':'Purchase Order','attached_to_name':doc.po_no},fields={'*'})
+		si_files=frappe.db.get_all('File',filters={'attached_to_doctype':'Sales Invoice','attached_to_name':doc.name},fields={'*'})
 		if files:
 			if si_files:
 				for single_file in files:
@@ -195,7 +195,7 @@ def on_save(name):
 							file_url=single_file.file_url,
 							attached_to_doctype="Sales Invoice",
 							attached_to_name=doc.name
-						)).insert(ignore_mandatory=True)
+						)).insert(ignore_mandatory=True,ignore_permissions=True)
 						file_doc.save()
 			else:
 				for single_file in files:
@@ -206,7 +206,7 @@ def on_save(name):
 							file_url=single_file.file_url,
 							attached_to_doctype="Sales Invoice",
 							attached_to_name=doc.name
-						)).insert(ignore_mandatory=True)
+						)).insert(ignore_mandatory=True,ignore_permissions=True)
 					file_doc.save()
 
 
