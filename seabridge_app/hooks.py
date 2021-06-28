@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from . import __version__ as app_version
-
 app_name = "seabridge_app"
 app_title = "seabridge_app"
 app_publisher = "seabridge_app"
@@ -144,7 +143,12 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Sales Invoice-invoice_description",
 		"Purchase Invoice-invoice_description",
 		"Sales Order-invoice_description",
-		"Purchase Order-invoice_description"
+		"Purchase Order-invoice_description",
+		"Purchase Order-source",
+		"Purchase Order-source_po_number",
+		"Purchase Order-po_type",
+		"Purchase Order-remarks"
+		"Purchase Order Item-remarks"
 		]
 	]
 ]
@@ -185,7 +189,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 				"Purchase Invoice Item-qty-columns",
 				"Purchase Invoice Item-item_code-columns",
 				"Purchase Invoice Item-rate-columns",
-				"Purchase Invoice Item-amount-columns"		
+				"Purchase Invoice Item-amount-columns",
+				"Allowed To Transact With-company-ignore_user_permissions"	
 						
 			]
 	]
@@ -246,7 +251,9 @@ doctype_js = {
 	"Registration" : "seabridge_app/doctype/registration/registration.js",
 	"Company" : "seabridge_app/doctype/company/company.js",
 	"Blanket Order" : "seabridge_app/doctype/blanket_order/blanket_order.js",
-	"Contract" : "seabridge_app/doctype/contract/contract.js"
+	"Contract" : "seabridge_app/doctype/contract/contract.js",
+	"Employee" : "seabridge_app/doctype/employee/employee.js",
+	"Customer" : "seabridge_app/doctype/customer/customer.js"
 }
 
 doc_events = {
@@ -266,7 +273,9 @@ doc_events = {
 		"before_cancel":["seabridge_app.seabridge_app.doctype.registration.registration.before_cancel"]
     },
 	"Purchase Order": {
-		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.auto_create_sales_order"]
+		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.auto_create_sales_order"],
+		"before_insert": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.before_insert"],
+		"on_insert": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.on_insert"]
     },
 	"Bank Payment Advice": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.auto_create_payment_entry"],
@@ -297,6 +306,8 @@ override_doctype_dashboards = {
 "Quotation": ["seabridge_app.seabridge_app.doctype.quotation.quotation_dashboard.get_dashboard_data"],
 "Supplier Quotation": ["seabridge_app.seabridge_app.doctype.supplier_quotation.supplier_quotation_dashboard.get_dashboard_data"]
 }
+
+
 
 # Includes in <head>
 # ------------------

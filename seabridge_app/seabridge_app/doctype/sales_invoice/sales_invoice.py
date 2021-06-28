@@ -54,7 +54,7 @@ def auto_create_purchase_invoice(doc,method):
 							purchase_order=doc.po_no,
 							attachment_checklist_template=doc.attachment_checklist_template,
 							invoice_description=doc.invoice_description
-						)).insert(ignore_mandatory=True)
+						)).insert(ignore_mandatory=True,ignore_permissions=True)
 				for val in doc.items:
 						pi_doc.append('items', {
 							'item_code':val.item_code,
@@ -78,7 +78,7 @@ def auto_create_purchase_invoice(doc,method):
 							'rate':frappe.db.get_value("Sales Taxes and Charges",{'parent':doc.name,'parenttype':'Sales Invoice'},'rate')
 						})
 				pi_doc.add_comment('Comment',' System created  '+pi_doc.name)
-				pi_doc.save()
+				pi_doc.save(ignore_permissions=True)
 				for v in pi_doc.items:
 					if doc.po_no:
 						po_items=frappe.db.get_list("Purchase Order Item",filters={'parent':doc.po_no,'parenttype':'Purchase Order','item_code':v.item_code},fields={'*'})
@@ -109,7 +109,7 @@ def auto_create_purchase_invoice(doc,method):
 					    })
 				pi_doc.save()
 				doc.add_comment('Comment','  Purchase Invoice: '+pi_doc.name)
-				files=frappe.db.get_list('File',filters={'attached_to_doctype':'Sales Invoice','attached_to_name':doc.name},fields={'*'})
+				files=frappe.db.get_all('File',filters={'attached_to_doctype':'Sales Invoice','attached_to_name':doc.name},fields={'*'})
 				for single_file in files:
 					file_doc=frappe.get_doc(dict(doctype = 'File',
 						file_name=single_file.file_name,
@@ -118,7 +118,7 @@ def auto_create_purchase_invoice(doc,method):
 						file_url=single_file.file_url,
 						attached_to_doctype="Purchase Invoice",
 						attached_to_name=pi_doc.name
-					)).insert(ignore_mandatory=True)
+					)).insert(ignore_mandatory=True,ignore_permissions=True)
 					file_doc.save()
 				update_monthly_budget(pi_doc.name)
 		  
@@ -131,7 +131,7 @@ def auto_create_purchase_invoice(doc,method):
 	has_sbtfx_contract=frappe.db.get_value('Company',{'company_name':doc.company},'has_sbtfx_contract')
 	if has_sbtfx_contract==1:
 		doc_posted=False
-		headers=frappe.db.get_list("API Integration",fields={'*'})
+		headers=frappe.db.get_all("API Integration",fields={'*'})
 		if headers:
 			try:
 				headers_list = {
@@ -139,8 +139,12 @@ def auto_create_purchase_invoice(doc,method):
 					"content-type": "application/json"
 				}
 				conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
-				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.grand_total)+'", "currency_name": "SGD", "source": "community_erpnext", "document_category": "AR", "orig_transaction_ref":""}]}'
+				credit_days=frappe.db.sql("""select sum(credit_days) as credit_days from `tabPayment Terms Template Detail` where parent=%s""",(doc.payment_terms_template), as_list=True)
+				if credit_days[0][0]==None:
+					credit_days[0][0]=0
+				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.grand_total)+'", "currency_name": "SGD", "source": "seaprop","credit_days": '+str(credit_days[0][0])+', "document_category": "AR", "orig_transaction_ref":""}]}'
 				print(document)
+				
 				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
 				print("RESPONSE",res)
 				response_code=str(res)
@@ -174,8 +178,8 @@ def delete_purchase_invoice(doc,method):
 def on_save(name):
 	doc=frappe.get_doc("Sales Invoice",name)
 	if doc.po_no:
-		files=frappe.db.get_list('File',filters={'attached_to_doctype':'Purchase Order','attached_to_name':doc.po_no},fields={'*'})
-		si_files=frappe.db.get_list('File',filters={'attached_to_doctype':'Sales Invoice','attached_to_name':doc.name},fields={'*'})
+		files=frappe.db.get_all('File',filters={'attached_to_doctype':'Purchase Order','attached_to_name':doc.po_no},fields={'*'})
+		si_files=frappe.db.get_all('File',filters={'attached_to_doctype':'Sales Invoice','attached_to_name':doc.name},fields={'*'})
 		if files:
 			if si_files:
 				for single_file in files:
@@ -191,7 +195,7 @@ def on_save(name):
 							file_url=single_file.file_url,
 							attached_to_doctype="Sales Invoice",
 							attached_to_name=doc.name
-						)).insert(ignore_mandatory=True)
+						)).insert(ignore_mandatory=True,ignore_permissions=True)
 						file_doc.save()
 			else:
 				for single_file in files:
@@ -202,5 +206,7 @@ def on_save(name):
 							file_url=single_file.file_url,
 							attached_to_doctype="Sales Invoice",
 							attached_to_name=doc.name
-						)).insert(ignore_mandatory=True)
+						)).insert(ignore_mandatory=True,ignore_permissions=True)
 					file_doc.save()
+
+

@@ -67,6 +67,8 @@ frappe.ui.form.on('Purchase Order', {
                 msgprint('Unable to create Sales Order as supplier:'+frm.doc.supplier_name+' is not associated with any company. Register the Supplier for this Company and submit the document:'+frm.doc.name)
             }
         })
+	
+
 
     },
 
@@ -82,13 +84,11 @@ frm.add_custom_button(__("Service Completion Note"), function() {
         }, __("Create"));
 }
 
-	
-
-
 },
 
     before_save:function(frm,cdt,cdn){
         var count=0;
+	if(frm.doc.__islocal==1){
         frappe.model.with_doc("Company", frm.doc.company, function() {
             var tabletransfer= frappe.model.get_doc("Company", frm.doc.company)
             $.each(tabletransfer.series, function(index, row){
@@ -102,7 +102,7 @@ frm.add_custom_button(__("Service Completion Note"), function() {
                 msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
             }
         })
-	
+	}
 	var flag=0;
 	$.each(frm.doc.items, function(idx, item){
 	            if (item.parent_item_group != "Services"){

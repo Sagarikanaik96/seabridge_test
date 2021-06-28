@@ -133,52 +133,78 @@ associate_agent_company:function(frm,cdt,cdn){
 
 },
 associate_agent:function(frm,cdt,cdn){
-	if(agent){
-
-	}
-    const doc = frm.doc;
-      frappe.confirm(
-					__("Do you want to assign the company "+frm.doc.associate_agent_company+" for the agent "+frm.doc.associate_agent+"?"),
-					function () {
-					    if(frm.doc.associate_agent!==undefined && agent!==undefined){
-						delete_user_permission(agent,frm.doc.company_name);
-						 frappe.call({
-                        			method: "seabridge_app.seabridge_app.api.validate_user_permission",
-                        			async:false,
-                        			args: {
-                        				doctype: "User Permission",
-                        				user: agent,
-                        				allow:'Company',
-                        				value:frm.doc.company_name
-                        			}
-                            });
-						    create_user_permission(frm.doc.associate_agent,frm.doc.company_name);
-				
-						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
-				            sendEmail(frm.doc.name,frm.doc.associate_agent,emailTemplate);
-                         }
-                         else if(frm.doc.associate_agent!==undefined){
-                            create_user_permission(frm.doc.associate_agent,frm.doc.company_name);
-
-						    var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
-				            sendEmail(frm.doc.name,frm.doc.associate_agent,emailTemplate);
-                         }
-						
+	const doc = frm.doc;
+	frappe.confirm(__("Do you want to assign the company "+frm.doc.associate_agent_company+" for the agent "+frm.doc.associate_agent+"?"),
+	function () {
+		if(frm.doc.associate_agent!==undefined && agent!==undefined){
+			delete_user_permission(agent,frm.doc.company_name);
+			frappe.call({
+				method: "seabridge_app.seabridge_app.api.validate_user_permission",
+				async:false,
+				args: {
+					doctype: "User Permission",
+					user: agent,
+					allow:'Company',
+					value:frm.doc.company_name
+				}
+			});
+			create_user_permission(frm.doc.associate_agent,frm.doc.company_name);
+			var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
+			sendEmail(frm.doc.name,frm.doc.associate_agent,emailTemplate);
+			if(frm.doc.company_type=="Customer"){
+				frappe.db.get_value("Customer",{"represents_company":frm.doc.company_name}, "customer_name",(s)=>{
+					if(s.customer_name){
+						frappe.call({
+							method: "seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.create_user_permission",
+							async:false,
+							args: {
+								doctype: "User Permission",
+								user: frm.doc.associate_agent,
+								allow:'Customer',
+								value:s.customer_name,
+								check:1
+							}
+						   });	
 					}
-					);
-				frappe.db.get_value("Registration",{"company":frm.doc.name}, "name",(s)=>{
-					frappe.call({
-                                            async: false,
-                                            "method": "frappe.client.set_value",
-                                            "args": {
-                                                "doctype": "Registration",
-                                                "name":s.name ,
-                                                "fieldname": "agent_user",
-                                                "value":frm.doc.associate_agent
-                                            }
-                                        });
-					})		
+				})
+			}
+		}
+		else if(frm.doc.associate_agent!==undefined){
+			create_user_permission(frm.doc.associate_agent,frm.doc.company_name);
+			var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
+			sendEmail(frm.doc.name,frm.doc.associate_agent,emailTemplate);
+			if(frm.doc.company_type=="Customer"){
+				frappe.db.get_value("Customer",{"represents_company":frm.doc.company_name}, "customer_name",(s)=>{
+					if(s.customer_name){
+						frappe.call({
+							method: "seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.create_user_permission",
+							async:false,
+							args: {
+								doctype: "User Permission",
+								user: frm.doc.associate_agent,
+								allow:'Customer',
+								value:s.customer_name,
+								check:1
+							}
+						   });	
 					}
+				})
+			}
+		}
+		frappe.db.get_value("Registration",{"company":frm.doc.name}, "name",(s)=>{
+			frappe.call({
+				async: false,
+				"method": "frappe.client.set_value",
+				"args": {
+					"doctype": "Registration",
+					"name":s.name ,
+					"fieldname": "agent_user",
+					"value":frm.doc.associate_agent
+				}
+			});
+		})		
+	});    
+}
 });
 
 function create_user_permission(associate_agent,company_name){
