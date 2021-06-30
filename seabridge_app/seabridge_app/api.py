@@ -338,7 +338,11 @@ def approve_invoice(doc):
 				"content-type": "application/json"
 				}
 				conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
-				document='{"documents":[{"buyer_name":"'+ pi_doc.company+'", "buyer_permid": "", "seller_name": "'+pi_doc.supplier_name+'", "seller_permid": "", "document_id": "'+pi_doc.name+'", "document_type": "I", "document_date": "'+str(pi_doc.posting_date)+'", "document_due_date":"'+str(pi_doc.due_date)+'", "amount_total": "'+str(pi_doc.outstanding_amount)+'", "currency_name": "SGD", "source": "community_erpnext", "document_category": "AP", "orig_transaction_ref":"'+pi_doc.bill_no+'"}]}'
+				credit_days=frappe.db.sql("""select sum(credit_days) as credit_days from `tabPayment Terms Template Detail` where parent=%s""",(pi_doc.payment_terms_template), as_list=True)
+				if credit_days[0][0]==None:
+					credit_days[0][0]=0
+				document='{"documents":[{"buyer_name":"'+ pi_doc.company+'", "buyer_permid": "", "seller_name": "'+pi_doc.supplier_name+'", "seller_permid": "", "document_id": "'+pi_doc.name+'", "document_type": "I", "document_date": "'+str(pi_doc.posting_date)+'", "document_due_date":"'+str(pi_doc.due_date)+'", "amount_total": "'+str(pi_doc.outstanding_amount)+'", "currency_name": "SGD", "source": "seaprop","credit_days": '+str(credit_days[0][0])+', "document_category": "AP", "orig_transaction_ref":"'+pi_doc.bill_no+'"}]}'
+				print(document)
 				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
 				response_code=str(res)
 				res = conn.post_process(res)
@@ -348,6 +352,7 @@ def approve_invoice(doc):
 				else:
 					doc_posted=False
 					pi_doc.add_comment('Comment','Unable to send the '+pi_doc.name+' to '+headers[0].url)
+					frappe.log_error(frappe.get_traceback())
 			except Exception:
 				doc_posted=False
 				pi_doc.add_comment('Comment','Unable to send the '+pi_doc.name+' to '+headers[0].url) 
@@ -773,3 +778,5 @@ def update_monthly_budget(doc):
 					else:
 						monthly_budget=budget_account[0]['budget_amount']/12
 						pi_doc.db_set('month_budget',monthly_budget)
+
+
