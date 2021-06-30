@@ -338,7 +338,11 @@ def approve_invoice(doc):
 				"content-type": "application/json"
 				}
 				conn=FrappeOAuth2Client(headers[0].url,headers[0].authorization_key)
-				document='{"documents":[{"buyer_name":"'+ pi_doc.company+'", "buyer_permid": "", "seller_name": "'+pi_doc.supplier_name+'", "seller_permid": "", "document_id": "'+pi_doc.name+'", "document_type": "I", "document_date": "'+str(pi_doc.posting_date)+'", "document_due_date":"'+str(pi_doc.due_date)+'", "amount_total": "'+str(pi_doc.outstanding_amount)+'", "currency_name": "SGD", "source": "community_erpnext", "document_category": "AP", "orig_transaction_ref":"'+pi_doc.bill_no+'"}]}'
+				credit_days=frappe.db.sql("""select sum(credit_days) as credit_days from `tabPayment Terms Template Detail` where parent=%s""",(pi_doc.payment_terms_template), as_list=True)
+				if credit_days[0][0]==None:
+					credit_days[0][0]=0
+				document='{"documents":[{"buyer_name":"'+ pi_doc.company+'", "buyer_permid": "", "seller_name": "'+pi_doc.supplier_name+'", "seller_permid": "", "document_id": "'+pi_doc.name+'", "document_type": "I", "document_date": "'+str(pi_doc.posting_date)+'", "document_due_date":"'+str(pi_doc.due_date)+'", "amount_total": "'+str(pi_doc.outstanding_amount)+'", "currency_name": "SGD", "source": "seaprop","credit_days": '+str(credit_days[0][0])+', "document_category": "AP", "orig_transaction_ref":"'+pi_doc.bill_no+'"}]}'
+				print(document)
 				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
 				response_code=str(res)
 				res = conn.post_process(res)
@@ -348,6 +352,7 @@ def approve_invoice(doc):
 				else:
 					doc_posted=False
 					pi_doc.add_comment('Comment','Unable to send the '+pi_doc.name+' to '+headers[0].url)
+					frappe.log_error(frappe.get_traceback())
 			except Exception:
 				doc_posted=False
 				pi_doc.add_comment('Comment','Unable to send the '+pi_doc.name+' to '+headers[0].url) 
@@ -848,30 +853,40 @@ def get_fund_details(seller_name,status=None):
     return response_data
 
 @frappe.whitelist()
-def get_programs(seller_name,status=None):
-    doc_posted = False
-    headers = frappe.db.get_list("API Integration", filters={
-                                 'url': 'https://devapi.seabridgetfx.com/financing/get-funding-opportunitites'}, fields={'*'})
-    if headers:
-        try:
-            headers_list = {
-                "Authorization": "Bearer " + headers[0].authorization_key,
-                "content-type": "application/json"
-            }
-            print("URL", headers[0].url)
-            print("Auth Key", headers[0].authorization_key)
-            conn = FrappeOAuth2Client(
-                headers[0].url, headers[0].authorization_key)
-            document = '{"seller_name": "'+seller_name +'"}'
-            res = requests.post(
-                headers[0].url, document, headers=headers_list, verify=True)
-            response = res.json()
-            program_list = response['Data']['programs']
-            response_data = []
-            for val in program_list:
-                response_data.append(val)
+def get_programs(status=None):
+    contact_list=frappe.db.sql(""" SELECT name from `tabContact` where user=%s""", frappe.session.user, as_list=True)
+    supplier_list=[]
+    for contact_name in contact_list:
+        supplier_list=frappe.db.sql("""SELECT link_name as seller_name from `tabDynamic Link` where link_doctype="Supplier" and parent=%s""",contact_name,as_dict=True)
+    response_data = []
+    for supplier in supplier_list:
+        doc_posted = False
+        headers = frappe.db.get_list("API Integration", filters={
+                                    'url': 'https://devapi.seabridgetfx.com/financing/get-funding-opportunitites'}, fields={'*'})
+        if headers:
+            try:
+                headers_list = {
+                    "Authorization": "Bearer " + headers[0].authorization_key,
+                    "content-type": "application/json"
+                }
+                print("URL", headers[0].url)
+                print("Auth Key", headers[0].authorization_key)
+                conn = FrappeOAuth2Client(
+                    headers[0].url, headers[0].authorization_key)
+                document = '{"seller_name": "'+supplier['seller_name']+'"}'
+                res = requests.post(
+                    headers[0].url, document, headers=headers_list, verify=True)
+                response = res.json()
+                program_list = response['Data']['programs']
+                for val in program_list:
+                    for row in val['invoices']:
+                        if status=='':
+                            row['status']="NaN"
+                        else:
+                            row['status']=status
+                    response_data.append(val)
 
-        except Exception:
-            doc_posted = False
-            frappe.log_error(frappe.get_traceback())
-    return response_data
+            except Exception:
+                doc_posted = False
+                frappe.log_error(frappe.get_traceback())
+        return response_data
