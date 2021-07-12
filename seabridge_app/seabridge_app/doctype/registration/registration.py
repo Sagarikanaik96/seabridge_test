@@ -110,7 +110,6 @@ def before_cancel(doc,method):
 		user_doc.delete()
 		frappe.db.commit()
 	
-	
 	company=frappe.db.get_list("Company",filters={'name':doc.company},fields={'*'})
 	if company:
 		company_doc=frappe.get_doc("Company",doc.company)

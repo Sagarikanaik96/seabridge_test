@@ -21,9 +21,7 @@ frappe.ui.form.on('Sales Invoice', {
                     var emailTemplate='<h1><strong> Sales Invoice is created and Submitted Successfully.Please find the attachment.</strong></h1>';
                     sendEmail(doc.name,email,emailTemplate);
                 }
-    
     }, 
-
     after_save:function(frm,cdt,cdn){
 	frappe.call({
                     method:"seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.on_save",
