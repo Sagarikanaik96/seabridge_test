@@ -1,13 +1,25 @@
 {
  "actions": [],
- "creation": "2020-10-28 13:46:44.576256",
+ "creation": "2021-06-22 02:07:23.841298",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "invoice_submission_api_details_section",
   "url",
   "authorization_key",
-  "email"
+  "column_break_4",
+  "email",
+  "enquiry_api_details_section",
+  "enquiry_url",
+  "enquiry_authorization_key",
+  "column_break_9",
+  "enquiry_email",
+  "fund_request_api_details_section",
+  "fund_request_url",
+  "fund_request_authorization_key",
+  "column_break_14",
+  "fund_request_email"
  ],
  "fields": [
   {
@@ -28,11 +40,71 @@
    "fieldname": "email",
    "fieldtype": "Data",
    "label": "Email",
+   "options": "Email",
    "reqd": 1
+  },
+  {
+   "fieldname": "invoice_submission_api_details_section",
+   "fieldtype": "Section Break",
+   "label": "Invoice Submission API Details"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enquiry_api_details_section",
+   "fieldtype": "Section Break",
+   "label": "Enquiry API Details"
+  },
+  {
+   "fieldname": "enquiry_url",
+   "fieldtype": "Data",
+   "label": "URL"
+  },
+  {
+   "fieldname": "enquiry_authorization_key",
+   "fieldtype": "Data",
+   "label": "Authorization Key"
+  },
+  {
+   "fieldname": "enquiry_email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "fund_request_api_details_section",
+   "fieldtype": "Section Break",
+   "label": "Fund Request API Details"
+  },
+  {
+   "fieldname": "fund_request_url",
+   "fieldtype": "Data",
+   "label": "URL"
+  },
+  {
+   "fieldname": "fund_request_authorization_key",
+   "fieldtype": "Data",
+   "label": "Authorization Key"
+  },
+  {
+   "fieldname": "fund_request_email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
   }
  ],
  "links": [],
- "modified": "2020-10-30 19:15:43.964259",
+ "modified": "2021-07-07 18:39:55.754108",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "API Integration",

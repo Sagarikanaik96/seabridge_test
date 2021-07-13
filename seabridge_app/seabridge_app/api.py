@@ -784,98 +784,61 @@ def update_monthly_budget(doc):
 @frappe.whitelist()
 def post_fund_opportunities(seller_name):
     doc_posted = False
-    headers = frappe.db.get_list("API Integration", filters={
-                                 'url': 'https://devapi.seabridgetfx.com/financing/get-funding-opportunitites'}, fields={'*'})
-    if headers:
-        try:
-            headers_list = {
-                "Authorization": "Bearer " + headers[0].authorization_key,
-                "content-type": "application/json"
-            }
-            print("URL", headers[0].url)
-            print("Auth Key", headers[0].authorization_key)
-            conn = FrappeOAuth2Client(
-                headers[0].url, headers[0].authorization_key)
-            document = '{"seller_name": "'+seller_name+'"}'
-            print(document)
-            res = requests.post(
-                headers[0].url, document, headers=headers_list, verify=True)
-            print("RESPONSE", res)
-            response = res.json()
-            response_data = {}
-            response_data['total_credit_limit'] = response['Data']['headers']['total_credit_limit']
-            response_data['total_funds_claimed'] = response['Data']['headers']['total_funds_claimed']
-            response_data['total_credit_available'] = response['Data']['headers']['total_credit_available']
-            response_data['total_invoices_available_for_funding'] = response['Data'][
-                'headers']['total_invoices_available_for_funding']
-            response_data['total_financing_amount_available_for_funding'] = response['Data'][
-                'headers']['total_financing_amount_available_for_funding']
-        except Exception:
-            doc_posted = False
-            frappe.log_error(frappe.get_traceback())
-    return response_data
-
-
-
-@frappe.whitelist()
-def get_fund_details(seller_name,status=None):
-    doc_posted = False
-    headers = frappe.db.get_list("API Integration", filters={
-                                 'url': 'https://devapi.seabridgetfx.com/financing/get-funding-opportunitites'}, fields={'*'})
-    if headers:
-        try:
-            headers_list = {
-                "Authorization": "Bearer " + headers[0].authorization_key,
-                "content-type": "application/json"
-            }
-            print("URL", headers[0].url)
-            print("Auth Key", headers[0].authorization_key)
-            conn = FrappeOAuth2Client(
-                headers[0].url, headers[0].authorization_key)
-            document = '{"seller_name": "'+seller_name +'"}'
-            res = requests.post(
-                headers[0].url, document, headers=headers_list, verify=True)
-            print("RESPONSE", res)
-            response = res.json()
-            invoice_list = response['Data']['programs']
-            response_data = []
-            for val in invoice_list:
-                for row in val['invoices']:
-                    if status==None or status=='':
-                        response_data.append(row)
-                    else:
-                        if row['inv_status']==status:
-                            response_data.append(row)
-
-        except Exception:
-            doc_posted = False
-            frappe.log_error(frappe.get_traceback())
-    return response_data
-
-@frappe.whitelist()
-def get_programs(status=None):
-    contact_list=frappe.db.sql(""" SELECT name from `tabContact` where user=%s""", frappe.session.user, as_list=True)
-    supplier_list=[]
-    for contact_name in contact_list:
-        supplier_list=frappe.db.sql("""SELECT link_name as seller_name from `tabDynamic Link` where link_doctype="Supplier" and parent=%s""",contact_name,as_dict=True)
-    response_data = []
-    for supplier in supplier_list:
-        doc_posted = False
-        headers = frappe.db.get_list("API Integration", filters={
-                                    'url': 'https://devapi.seabridgetfx.com/financing/get-funding-opportunitites'}, fields={'*'})
+    response_data = {}
+    represents_company=frappe.db.sql(""" SELECT represents_company from `tabUser` where name=%s""", frappe.session.user, as_list=True)
+    supplier_list=frappe.db.sql("""SELECT supplier_name from `tabSupplier` where represents_company=%s and has_sbtfx_contract=1""",represents_company[0][0],as_list=True)
+    if supplier_list:
+        headers = frappe.db.get_list("API Integration", fields={'*'})
         if headers:
             try:
                 headers_list = {
-                    "Authorization": "Bearer " + headers[0].authorization_key,
+                    "Authorization": "Bearer " + headers[0].enquiry_authorization_key,
                     "content-type": "application/json"
                 }
-                print("URL", headers[0].url)
-                print("Auth Key", headers[0].authorization_key)
                 conn = FrappeOAuth2Client(
-                    headers[0].url, headers[0].authorization_key)
-                document = '{"seller_name": "'+supplier['seller_name']+'"}'
+                    headers[0].url, headers[0].enquiry_authorization_key)
+                document = '{"seller_name": "'+supplier_list[0][0]+'"}'
+                print(document)
                 res = requests.post(
-                    headers[0].url, document, headers=headers_list, verify=True)
+                    headers[0].enquiry_url, document, headers=headers_list, verify=True)
+                print("RESPONSE", res)
+                response = res.json()
+                response_data = {}
+                response_data['total_credit_limit'] = response['Data']['headers']['total_credit_limit']
+                response_data['total_funds_claimed'] = response['Data']['headers']['total_funds_claimed']
+                response_data['total_credit_available'] = response['Data']['headers']['total_credit_available']
+                response_data['total_invoices_available_for_funding'] = response['Data'][
+                    'headers']['total_invoices_available_for_funding']
+                response_data['total_financing_amount_available_for_funding'] = response['Data'][
+                    'headers']['total_financing_amount_available_for_funding']
+            except Exception:
+                doc_posted = False
+                frappe.log_error(frappe.get_traceback())
+    return response_data
+
+
+
+@frappe.whitelist()
+def get_programs(status=None):
+    represents_company=frappe.db.sql(""" SELECT represents_company from `tabUser` where name=%s""", frappe.session.user, as_list=True)
+    supplier_list=frappe.db.sql("""SELECT supplier_name from `tabSupplier` where represents_company=%s and has_sbtfx_contract=1""",represents_company[0][0],as_list=True)
+    response_data = []
+    if supplier_list:
+        doc_posted = False
+        headers = frappe.db.get_list("API Integration", fields={'*'})
+        if headers:
+            try:
+                headers_list = {
+                    "Authorization": "Bearer " + headers[0].enquiry_authorization_key,
+                    "content-type": "application/json"
+                }
+                print("URL", headers[0].enquiry_url)
+                print("Auth Key", headers[0].enquiry_authorization_key)
+                conn = FrappeOAuth2Client(
+                    headers[0].enquiry_url, headers[0].enquiry_authorization_key)
+                document = '{"seller_name": "'+supplier_list[0][0]+'"}'
+                res = requests.post(
+                    headers[0].enquiry_url, document, headers=headers_list, verify=True)
                 response = res.json()
                 program_list = response['Data']['programs']
                 for val in program_list:
@@ -890,3 +853,22 @@ def get_programs(status=None):
                 doc_posted = False
                 frappe.log_error(frappe.get_traceback())
         return response_data
+
+
+@frappe.whitelist()
+def fund_invoice(invoice_id):
+	headers = frappe.db.get_list("API Integration", fields={'*'})
+	if headers:
+		try:
+			headers_list = {
+			"Authorization": "Bearer " + headers[0].fund_request_authorization_key,
+			"content-type": "application/json"
+			}
+			conn = FrappeOAuth2Client(headers[0].fund_request_url, headers[0].fund_request_authorization_key)
+			document = '{"invoices": ["'+invoice_id+'"]}'
+			res = requests.post(headers[0].fund_request_url, document, headers=headers_list, verify=True)
+			response = res.json()
+			response_code=str(res)
+		except Exception:
+                        doc_posted = False
+               	        frappe.log_error(frappe.get_traceback())
