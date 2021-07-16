@@ -21,7 +21,7 @@ def create_permissions(name):
 				for company in companies:
 					suppliers=frappe.db.get_all("Supplier",filters={'represents_company':company.company},fields={'*'})
 					for supplier in suppliers:
-						permission=frappe.db.get_all('User Permission',filters={'user':user.name,'for_value':supplier.name},fields={'*'})
+						permission=frappe.db.get_all('User Permission',filters={'user':user.name,'allow':"Supplier",'for_value':supplier.name},fields={'*'})
 						if not permission:
 							up_doc=frappe.get_doc(dict(doctype = 'User Permission',
 								user=user.name,
@@ -30,12 +30,22 @@ def create_permissions(name):
 								apply_to_all_doctypes=1
 							)).insert(ignore_mandatory=True,ignore_permissions=True)
 							up_doc.save()
+
+						permission=frappe.db.get_all('User Permission',filters={'user':user.name,'allow':"Customer",'for_value':cust_doc.customer_name},fields={'*'})
+						if not permission:
+							up_doc=frappe.get_doc(dict(doctype = 'User Permission',
+								user=user.name,
+								allow="Customer",
+								for_value=cust_doc.customer_name,
+								apply_to_all_doctypes=1
+							)).insert(ignore_mandatory=True,ignore_permissions=True)
+							up_doc.save()
 	agent_user=frappe.db.get_value('Company',{'company_name':cust_doc.represents_company},'associate_agent')
 	if agent_user:
 		for company in companies:
 			suppliers=frappe.db.get_all("Supplier",filters={'represents_company':company.company},fields={'*'})
 			for supplier in suppliers:
-						permission=frappe.db.get_all('User Permission',filters={'user':agent_user,'for_value':supplier.name},fields={'*'})
+						permission=frappe.db.get_all('User Permission',filters={'user':agent_user,'allow':"Supplier",'for_value':supplier.name},fields={'*'})
 						if not permission:
 							up_doc=frappe.get_doc(dict(doctype = 'User Permission',
 								user=agent_user,
@@ -44,4 +54,14 @@ def create_permissions(name):
 								apply_to_all_doctypes=1
 							)).insert(ignore_mandatory=True,ignore_permissions=True)
 							up_doc.save()
+		permission=frappe.db.get_all('User Permission',filters={'user':agent_user,'allow':"Customer",'for_value':cust_doc.customer_name},fields={'*'})
+		if not permission:
+			up_doc=frappe.get_doc(dict(doctype = 'User Permission',
+				user=agent_user,
+				allow="Customer",
+				for_value=cust_doc.customer_name,
+				apply_to_all_doctypes=1
+			)).insert(ignore_mandatory=True,ignore_permissions=True)
+			up_doc.save()
 		
+

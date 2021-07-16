@@ -46,18 +46,22 @@ var total_credit_limit;
 		},
 		async: false,
 		callback: function (r) {
-			total_credit_limit = ((parseFloat(r.message.total_credit_limit)).toLocaleString('en-US'));
-        total_funds_claimed = ((parseFloat(r.message.total_funds_claimed)).toLocaleString('en-US'));
-        total_credit_available =((parseFloat(r.message.total_credit_available)).toLocaleString('en-US'));
-        total_invoices_available_for_funding=((parseFloat(r.message.total_invoices_available_for_funding)).toLocaleString('en-US'));
-        total_financing_amount_available_for_funding = ((parseFloat(r.message.total_financing_amount_available_for_funding)).toLocaleString('en-US'));
+		total_credit_limit = ((parseFloat(r.message.total_credit_limit)).toLocaleString('en-US'));
+		if(total_credit_limit=="NaN"){total_credit_limit = 0}
+		total_funds_claimed = ((parseFloat(r.message.total_funds_claimed)).toLocaleString('en-US'));
+		if(total_funds_claimed=="NaN"){total_funds_claimed = 0}
+		total_credit_available =((parseFloat(r.message.total_credit_available)).toLocaleString('en-US'));
+		if(total_credit_available=="NaN"){total_credit_available = 0}
+		total_invoices_available_for_funding=((parseFloat(r.message.total_invoices_available_for_funding)).toLocaleString('en-US'));
+		if(total_invoices_available_for_funding=="NaN"){total_invoices_available_for_funding = 0}
+		total_financing_amount_available_for_funding = ((parseFloat(r.message.total_financing_amount_available_for_funding)).toLocaleString('en-US'));
+		if(total_financing_amount_available_for_funding=="NaN"){total_financing_amount_available_for_funding = 0}
 
 
 		}
 	});
 
 $("<style>.row:after {content: '';display: table;clear: both;}@media screen and (max-width: 700px) {.column {width: 100%;display: block;margin-bottom: 30px;}}.column {float: left;width: 33.3%;padding: 10px 10px;}.card {box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);padding: 16px;text-align: right;background-color: #ddd;align:right;}</style><div style='width:100%' style='margin-left:100px;'><div class='row'><div class='column'><div class='card bg-success'><table width='100%'><tr width='100%'><td width='40%' align='left'><i class='fa fa-credit-card fa-3x' aria-hidden='true' style='color:orange;text-align:left;'></i></td><td width='60%'><font style='font-size:12px;'>Total Credit Limit </font><h4>" + total_credit_limit + "</h4></td></tr></table></div></div><div class='column'><div class='card bg-success'><table width='100%'><tr width='100%'><td width='20%' align='left'><i class='fa fa-money fa-3x' aria-hidden='true' style='color:brown;text-align:left;'></i></td><td width='80%'><font style='font-size:12px;'>Total Funds Claimed</font><h4>" + total_funds_claimed + "</h4></td></tr></table></div></div><div class='column'><div class='card bg-success'><table width='100%'><tr width='100%'><td width='40%' align='left'><i class='fa fa-credit-card fa-3x' aria-hidden='true' style='color:green;text-align:left;'></i></td><td width='60%'><font style='font-size:12px;'>Total Credit Available</font><h4>" + total_credit_available + "</h4></td></tr></table></div></div><br><br><br><br><div class='column'><div class='card bg-success'><table width='100%'><tr width='100%'><td width='20%' align='left'><i class='fa fa-credit-card fa-3x' aria-hidden='true' style='color:orange;text-align:left;'></i></td><td width='80%'><font style='font-size:12px;'>Total Invoices Available For Funding</font><h4>" + total_invoices_available_for_funding + "</h4></td></tr></table></div></div><div class= 'column'><div class='card bg-success'><table width='100%'><tr width='100%'><td width='20%' align='left'><i class='fa fa-usd fa-3x' aria-hidden='true' style='color:green;text-align:left;'></i></td><td width='80%'><font style='font-size:12px;'>Total Funding Amount Available For Funding</font><h4>" + total_financing_amount_available_for_funding + "</h4></td></tr></table></div></div><div class='column'><div class='card bg-success'><table width='100%'><tr width='100%'><td width='20%' align='left'><i class='fa fa-usd fa-3x' aria-hidden='true' style='color:green;text-align:left;'></i></td><td width='80%'><font style='font-size:12px;'>Today's Claim </font><h4><div class='todays-claims'>" + today_claim + "</div></h4></td></tr></table></div></div></div></div>").appendTo('.page-form')
-
 
 
 
