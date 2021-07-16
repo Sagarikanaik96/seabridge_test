@@ -11,8 +11,10 @@ class Customer(Document):
 	pass
 
 @frappe.whitelist()
-def create_permissions(name):
-	#validate_user_permission(name)
+def create_permissions(name,represents_company):
+	if not represents_company:
+        	validate_user_permission(name)
+        	delete_role()
 	cust_doc=frappe.get_doc("Customer",name) 
 	users=frappe.db.get_list("User",filters={'represents_company':cust_doc.represents_company},fields={'*'})
 	companies=frappe.db.get_list("Allowed To Transact With",filters={'parent':cust_doc.name,'parenttype':'Customer'},fields={'*'})
@@ -65,13 +67,38 @@ def create_permissions(name):
 			)).insert(ignore_mandatory=True,ignore_permissions=True)
 			up_doc.save()
 		
-
 def validate_user_permission(name):
-    if not frappe.db.exists('User Permission', {'for_value': name, 'user': frappe.session.user, 'allow': 'Customer'}):
-        up_doc = frappe.get_doc(dict(doctype='User Permission',
-                                     user=frappe.session.user,
-                                     allow="Customer",
-                                     for_value=name,
-                                     apply_to_all_doctypes=1
-                                     )).insert(ignore_mandatory=True, ignore_permissions=True)
-        up_doc.save()
+    represents_company=frappe.db.get_value('User',{'name':frappe.session.user},'represents_company')
+    user_list=frappe.db.get_all('User',filters={'represents_company':represents_company},fields=['name'])
+    for user in user_list:
+        if not frappe.db.exists('User Permission', {'for_value': name, 'user': user['name'], 'allow': 'Customer'}):
+            up_doc = frappe.get_doc(dict(doctype='User Permission',
+                                        user=user['name'],
+                                        allow="Customer",
+                                        for_value=name,
+                                        apply_to_all_doctypes=1
+                                        )).insert(ignore_mandatory=True, ignore_permissions=True)
+            up_doc.save(ignore_permissions=True)
+
+@frappe.whitelist()
+def create_role(user):
+    if not frappe.db.exists('Has Role', {'parent': user, 'parentfield':'roles','role': 'System Manager','parenttype':'User'}):
+        up_doc = frappe.get_doc(dict(doctype='Has Role',
+                                     parent=user,
+                                     role='System Manager',
+                                     parenttype='User',
+                                     parentfield='roles'
+                                     )).insert(ignore_permissions=True)
+        up_doc.save(ignore_permissions=True)
+
+@frappe.whitelist()
+def delete_role():
+    docVal= frappe.db.get_list('Has Role', filters={'parent': frappe.session.user, 'parentfield':'roles','role': 'System Manager','parenttype':'User'})
+    if docVal:
+        frappe.get_doc(dict(doctype='Has Role',
+                                     parent=frappe.session.user,
+                                     role='System Manager',
+                                     parenttype='User',
+                                     parentfield='roles',
+                                     name=docVal[0].name
+                                     )).delete(ignore_permissions=True)

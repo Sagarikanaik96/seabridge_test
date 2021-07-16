@@ -121,10 +121,7 @@ def auto_create_purchase_invoice(doc,method):
 					)).insert(ignore_mandatory=True,ignore_permissions=True)
 					file_doc.save()
 				update_monthly_budget(pi_doc.name)
-		  
-		else:
-			frappe.msgprint('Unable to create  Sales Invoice as customer: '+doc.customer_name +' is not associated with any company. Register the Customer for the Company and submit the document: '+doc.name+ '.')
-			raise frappe.ValidationError('Unable to create  Sales Invoice as customer: '+doc.customer_name +' is not associated with any company. Register the Customer for the Company and submit the document: '+doc.name+ '.')
+		
 	else:
 		frappe.throw("Unable to save the Purchase Invoice as the naming series are unavailable . Please provide the naming series at the Company: "+company+" to save the document");
 
