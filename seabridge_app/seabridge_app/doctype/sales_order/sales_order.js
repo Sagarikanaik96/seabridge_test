@@ -3,20 +3,22 @@
 
 frappe.ui.form.on("Sales Order", {
 before_submit: function(frm,cdt,cdn){
-    frappe.db.get_value("Purchase Order",frm.doc.po_no,"base_grand_total",(c)=>{
-        if(frm.doc.total>c.base_grand_total){
-                frappe.validated = false;
-                msgprint('Unable to submit the '+frm.doc.name+ ' as the rate should not be more than the '+frm.doc.po_no+'. Please maintain the same rate to submit the document.', 'Alert');
-                return false;
-        }
-    })
-    frappe.db.get_value("Purchase Order",frm.doc.po_no,"total_qty",(c)=>{
-        if(frm.doc.total_qty>c.total_qty){
-                frappe.validated = false;
-                msgprint('Unable to submit the '+frm.doc.name+ ' as the quantity should not be more than the '+frm.doc.po_no+'. Please maintain the same quantity to submit the document.', 'Alert');
-                return false;
-        }
-    })
+    if (frm.doc.po_no != undefined) {
+	    frappe.db.get_value("Purchase Order",frm.doc.po_no,"base_grand_total",(c)=>{
+		if(frm.doc.total>c.base_grand_total){
+		        frappe.validated = false;
+		        msgprint('Unable to submit the '+frm.doc.name+ ' as the rate should not be more than the '+frm.doc.po_no+'. Please maintain the same rate to submit the document.', 'Alert');
+		        return false;
+		}
+	    })
+	    frappe.db.get_value("Purchase Order",frm.doc.po_no,"total_qty",(c)=>{
+		if(frm.doc.total_qty>c.total_qty){
+		        frappe.validated = false;
+		        msgprint('Unable to submit the '+frm.doc.name+ ' as the quantity should not be more than the '+frm.doc.po_no+'. Please maintain the same quantity to submit the document.', 'Alert');
+		        return false;
+		}
+	    })
+    }
 },
 before_save:function(frm,cdt,cdn){
         var count=0;

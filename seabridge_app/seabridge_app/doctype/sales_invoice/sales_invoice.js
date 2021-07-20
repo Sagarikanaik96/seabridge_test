@@ -59,12 +59,14 @@ frappe.ui.form.on('Sales Invoice', {
         })
 	if(flag==1){ frm.set_df_property("total_net_weight", "hidden", 0);
 	} else {  frm.set_df_property("total_net_weight", "hidden", 1);  }
-	frappe.db.get_value("Purchase Order",frm.doc.po_no, "attachment_checklist_template",(s)=>{
-		if(s.attachment_checklist_template){
-			frm.set_value('attachment_checklist_template',s.attachment_checklist_template)
-			cur_frm.refresh_field("attachment_checklist_template")
-		}
-	})
+	if (frm.doc.po_no != undefined) {
+		frappe.db.get_value("Purchase Order",frm.doc.po_no, "attachment_checklist_template",(s)=>{
+			if(s.attachment_checklist_template){
+				frm.set_value('attachment_checklist_template',s.attachment_checklist_template)
+				cur_frm.refresh_field("attachment_checklist_template")
+			}
+		})
+	}
 	$.each(frm.doc.attachment_checklist, function(idx, item){
 	    if (!item.options){
 		frappe.validated = false;
@@ -78,10 +80,12 @@ frappe.ui.form.on('Sales Invoice', {
             }
         })
 	if(!frm.doc.invoice_description){
-		frappe.db.get_value("Purchase Order",frm.doc.po_no, "invoice_description",(s)=>{
-			frm.set_value('invoice_description',s.invoice_description)
-			cur_frm.refresh_field("invoice_description")
-		})
+		if (frm.doc.po_no != undefined) {
+			frappe.db.get_value("Purchase Order",frm.doc.po_no, "invoice_description",(s)=>{
+				frm.set_value('invoice_description',s.invoice_description)
+				cur_frm.refresh_field("invoice_description")
+			})
+		}
 	}
     },
 	attachment_checklist_template:function(frm,cdt,cdn){

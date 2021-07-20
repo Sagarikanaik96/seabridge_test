@@ -67,6 +67,7 @@ def create_permissions(name,represents_company):
 			)).insert(ignore_mandatory=True,ignore_permissions=True)
 			up_doc.save()
 		
+
 def validate_user_permission(name):
     represents_company=frappe.db.get_value('User',{'name':frappe.session.user},'represents_company')
     user_list=frappe.db.get_all('User',filters={'represents_company':represents_company},fields=['name'])
@@ -101,4 +102,4 @@ def delete_role():
                                      parenttype='User',
                                      parentfield='roles',
                                      name=docVal[0].name
-                                     )).delete(ignore_permissions=True)
+                                     )).delete()
