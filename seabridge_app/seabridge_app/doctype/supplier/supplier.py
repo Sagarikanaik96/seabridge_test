@@ -21,12 +21,21 @@ def create_permissions(name):
 				for company in companies:
 					customers=frappe.db.get_all("Customer",filters={'represents_company':company.company},fields={'*'})
 					for customer in customers:
-						permission=frappe.db.get_list('User Permission',filters={'user':user.name,'for_value':customer.name},fields={'*'})
+						permission=frappe.db.get_list('User Permission',filters={'user':user.name,'allow':"Customer",'for_value':customer.name},fields={'*'})
 						if not permission:
 							up_doc=frappe.get_doc(dict(doctype = 'User Permission',
 								user=user.name,
 								allow="Customer",
 								for_value=customer.name,
+								apply_to_all_doctypes=1
+							)).insert(ignore_mandatory=True)
+							up_doc.save()
+				permission=frappe.db.get_list('User Permission',filters={'user':user.name,'allow':"Supplier",'for_value':supp_doc.supplier_name},fields={'*'})
+				if not permission:
+							up_doc=frappe.get_doc(dict(doctype = 'User Permission',
+								user=user.name,
+								allow="Supplier",
+								for_value=supp_doc.supplier_name,
 								apply_to_all_doctypes=1
 							)).insert(ignore_mandatory=True)
 							up_doc.save()

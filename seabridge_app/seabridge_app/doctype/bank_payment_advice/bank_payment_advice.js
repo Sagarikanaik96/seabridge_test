@@ -61,7 +61,7 @@ var select={}
  date_field: "transaction_date",
  get_query() {
  return {
- filters: {  docstatus: ['=', 1] ,workflow_state: ['=', "To Pay"] ,company:frm.doc.company}
+ filters: {  docstatus: ['=', 1] ,workflow_state: ['=', "To Pay"] ,company:frm.doc.company, on_hold: ['=', 0]}
  }
  },
  action(selections) {
