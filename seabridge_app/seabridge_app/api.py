@@ -605,7 +605,7 @@ def get_data_for_payment(name=None, supplier=None,company=None,
 				u.name = r.parent and r.role = 'Finance Manager'
 				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company)) as "user",
 				FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
-				T2.file_name as file_name,p.invoice_description
+				T2.file_name as file_name,p.invoice_description,p.on_hold
 				from 
 				`tabPurchase Order` po right join
 				`tabPurchase Invoice` p
@@ -855,4 +855,29 @@ def get_programs(status=None):
                 frappe.log_error(frappe.get_traceback())
         return response_data
 
+
+@frappe.whitelist()
+def fund_invoice(invoice_id):
+	headers = frappe.db.get_list("API Integration", fields={'*'})
+	if headers:
+		try:
+			headers_list = {
+			"Authorization": "Bearer " + headers[0].fund_request_authorization_key,
+			"content-type": "application/json"
+			}
+			conn = FrappeOAuth2Client(headers[0].fund_request_url, headers[0].fund_request_authorization_key)
+			document = '{"invoices": ["'+invoice_id+'"]}'
+			res = requests.post(headers[0].fund_request_url, document, headers=headers_list, verify=True)
+			response = res.json()
+			response_code=str(res)
+			if response_code=="<Response [200]>":
+				Date_req = date.today() + timedelta(days=365)
+				pi_doc=frappe.get_doc("Purchase Invoice",invoice_id) 
+				pi_doc.db_set('on_hold',1)
+				pi_doc.db_set('release_date',Date_req)
+				frappe.db.commit()
+				
+		except Exception:
+                        doc_posted = False
+               	        frappe.log_error(frappe.get_traceback())
 

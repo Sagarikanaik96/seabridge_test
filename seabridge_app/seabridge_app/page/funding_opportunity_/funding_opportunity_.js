@@ -13,7 +13,7 @@ frappe.pages['funding-opportunity-'].on_page_load = function (wrapper) {
 		fieldname: 'inv_status',
 		label: __('Status'),
 		fieldtype: 'Select',
-		options: ["", "IMPORTED", "SUBMITTED", "PROCESSED"],
+		options: ["", "ELIGIBLE FOR FUNDING", "SUBMITTED FOR FUNDING", "FUNDED"],
 		change: function () {
 			page.invoice_dashboard.start = 0;
 			page.invoice_dashboard.refresh();
@@ -38,6 +38,7 @@ var total_credit_limit;
 	var total_credit_available;
 	var total_invoices_available_for_funding;
 	var total_financing_amount_available_for_funding;
+	
 	frappe.call({
 		method: "seabridge_app.seabridge_app.api.post_fund_opportunities",
 		args: {

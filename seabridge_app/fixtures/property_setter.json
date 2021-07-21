@@ -525,5 +525,39 @@
   "property_type": "Check",
   "row_name": null,
   "value": "1"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Supplier",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "is_internal_supplier",
+  "modified": "2021-07-20 18:32:49.747543",
+  "name": "Supplier-is_internal_supplier-read_only",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "read_only",
+  "property_type": "Check",
+  "row_name": null,
+  "value": "1"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Customer",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "is_internal_customer",
+  "modified": "2021-07-20 18:33:11.786524",
+  "name": "Customer-is_internal_customer-read_only",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "read_only",
+  "property_type": "Check",
+  "row_name": null,
+  "value": "1"
  }
 ]
