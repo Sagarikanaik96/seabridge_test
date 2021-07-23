@@ -46,27 +46,6 @@ website_context = {
 
 
 fixtures = ["Server Script","Workflow State","Workflow Action Master",
-{
-    "dt":"DocType",
-    "filters":[
-        [
-        "name","in",[
-            "Item Group Detail",
-            "Registration",
-            "Document Specific Naming Series",
-	    "Service Completion Note",
-	    "Service Completion Note Item",
-	    "Agent",
-	    "API Integration",
-	    "Bank Payment Advice",
-	    "Bank Payment Advice Details",
-	    "Rejection Reason",
-	    "Attachment Checklist Template",
-	    "Attachment Checklist Detail"
-        ]
-    ]
-]
-},
 {"dt": "Custom Field",
 		"filters": [
          [
@@ -148,7 +127,9 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Order-source_po_number",
 		"Purchase Order-po_type",
 		"Purchase Order-remarks"
-		"Purchase Order Item-remarks"
+		"Purchase Order Item-remarks",
+		"Purchase Invoice-is_funded",
+		"Purchase Invoice-send_for_approval"
 		]
 	]
 ]
@@ -190,7 +171,9 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 				"Purchase Invoice Item-item_code-columns",
 				"Purchase Invoice Item-rate-columns",
 				"Purchase Invoice Item-amount-columns",
-				"Allowed To Transact With-company-ignore_user_permissions"	
+				"Allowed To Transact With-company-ignore_user_permissions",
+				"Supplier-is_internal_supplier-read_only",
+				"Customer-is_internal_customer-read_only"	
 						
 			]
 	]
@@ -274,8 +257,7 @@ doc_events = {
     },
 	"Purchase Order": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.auto_create_sales_order"],
-		"before_insert": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.before_insert"],
-		"on_insert": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.on_insert"]
+		"before_insert": ["seabridge_app.seabridge_app.doctype.purchase_order.purchase_order.before_insert"]
     },
 	"Bank Payment Advice": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.auto_create_payment_entry"],
