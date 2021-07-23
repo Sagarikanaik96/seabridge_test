@@ -325,9 +325,6 @@ def get_user_estate_roles():
 @frappe.whitelist()
 def approve_invoice(doc):
 	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
-	pi_doc.db_set('workflow_state','To Pay')
-	pi_doc.db_set('status','Unpaid')
-	frappe.db.commit()
 	doc_posted=False
 	headers=frappe.db.get_list("API Integration",fields={'*'})
 	has_sbtfx_contract=frappe.db.get_value('Supplier',{'supplier_name':pi_doc.supplier_name},'has_sbtfx_contract')
@@ -350,14 +347,19 @@ def approve_invoice(doc):
 				if response_code=="<Response [200]>":
 					doc_posted=True
 					pi_doc.add_comment('Comment','Sent the '+pi_doc.name+' to '+headers[0].url+' successfully.')
+					pi_doc.db_set('workflow_state','To Pay')
+					pi_doc.db_set('status','Unpaid')
+					frappe.db.commit()
 				else:
 					doc_posted=False
 					pi_doc.add_comment('Comment','Unable to send the '+pi_doc.name+' to '+headers[0].url)
 					frappe.log_error(frappe.get_traceback())
+					pi_doc.db_set("send_for_approval",True)
 			except Exception:
 				doc_posted=False
 				pi_doc.add_comment('Comment','Unable to send the '+pi_doc.name+' to '+headers[0].url) 
 				frappe.log_error(frappe.get_traceback())
+				pi_doc.db_set("send_for_approval",True)
 
 @frappe.whitelist()
 def reject_invoice(doc,remarks):
@@ -467,7 +469,7 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 				and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
 				END) as "user",
 				FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
-				T2.file_name as file_name,p.invoice_description
+				T2.file_name as file_name,p.invoice_description,p.send_for_approval
 				from 
 				`tabPurchase Order` po right join
 				`tabPurchase Invoice` p
@@ -511,7 +513,7 @@ def get_data(name=None, supplier=None, match=None,status=None,company=None,
 			and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
 			END) as "user",
 			FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
-			T2.file_name as file_name,p.invoice_description
+			T2.file_name as file_name,p.invoice_description,p.send_for_approval
 			from 
 			`tabPurchase Order` po right join
 			`tabPurchase Invoice` p
@@ -651,7 +653,7 @@ def create_payment(invoices,account,company):
 			po=''
 			purchase_amount=0
 		has_sbtfx=frappe.db.get_value('Supplier',{'name':inv['supplier_name']},'has_sbtfx_contract')
-		if has_sbtfx==1:
+		if has_sbtfx==1 and inv['is_funded']==1:
 			represents_company=frappe.db.get_value('Supplier',{'name':inv['supplier_name']},'represents_company')
 			parent_company=frappe.db.get_value('Company',{'name':represents_company},"parent_company")
 			bank_account=frappe.db.get_value("Company",{'name':parent_company},"bank_account")
@@ -781,7 +783,6 @@ def update_monthly_budget(doc):
 						pi_doc.db_set('month_budget',monthly_budget)
 
 
-
 @frappe.whitelist()
 def post_fund_opportunities(seller_name):
     doc_posted = False
@@ -881,3 +882,25 @@ def fund_invoice(invoice_id):
                         doc_posted = False
                	        frappe.log_error(frappe.get_traceback())
 
+@frappe.whitelist()
+def funding_response(filters = None):
+	print('Inside Fund response')
+	requestData=json.loads(frappe.request.data.decode('utf-8'))
+	if (requestData['transaction_type']=="AP"):
+		pi_doc=frappe.get_doc("Purchase Invoice",requestData['document_id']) 
+		pi_doc.db_set('is_funded',1)
+		pi_doc.db_set('on_hold',0)
+		frappe.db.commit()
+	
+@frappe.whitelist()
+def create_api_interacion_tracker(url,date_time,status,message):
+	date=date_time.strftime('%Y-%m-%d')
+	time=date_time.strftime('%H:%M:%S')
+	ait_doc = frappe.get_doc(dict(doctype='API Interaction Tracker',
+									endpoint_url=url,
+									date=date,
+									time=time,
+									status=status,
+									message=message
+									)).insert(ignore_permissions='true')	
+	ait_doc.save(ignore_permissions=True)

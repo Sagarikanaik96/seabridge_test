@@ -46,27 +46,6 @@ website_context = {
 
 
 fixtures = ["Server Script","Workflow State","Workflow Action Master",
-{
-    "dt":"DocType",
-    "filters":[
-        [
-        "name","in",[
-            "Item Group Detail",
-            "Registration",
-            "Document Specific Naming Series",
-	    "Service Completion Note",
-	    "Service Completion Note Item",
-	    "Agent",
-	    "API Integration",
-	    "Bank Payment Advice",
-	    "Bank Payment Advice Details",
-	    "Rejection Reason",
-	    "Attachment Checklist Template",
-	    "Attachment Checklist Detail"
-        ]
-    ]
-]
-},
 {"dt": "Custom Field",
 		"filters": [
          [
@@ -148,7 +127,9 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Order-source_po_number",
 		"Purchase Order-po_type",
 		"Purchase Order-remarks"
-		"Purchase Order Item-remarks"
+		"Purchase Order Item-remarks",
+		"Purchase Invoice-is_funded",
+		"Purchase Invoice-send_for_approval"
 		]
 	]
 ]
