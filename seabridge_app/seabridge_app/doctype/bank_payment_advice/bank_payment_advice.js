@@ -67,18 +67,20 @@ var select={}
  action(selections) {
 select=selections
  $.each(selections,function(idx){
+	var is_funded=0
  frappe.call({
             method: "frappe.client.get_list",
 		async:false,
             args: {
                 doctype: "Purchase Invoice",
-                fields: ["name","due_date","supplier_name","status","grand_total","outstanding_amount"],
+                fields: ["name","due_date","supplier_name","status","grand_total","outstanding_amount","is_funded"],
                 filters:{
                     "name":select[idx]
                 },
             },
             callback: function(r) {
                 for(var i=0;i<r.message.length;i++){
+			is_funded=r.message[i].is_funded
                     var count=0
                     $.each(frm.doc.bank_payment_advice_details, function(idx, detail){
                         if(detail.invoice_document==r.message[i].name){
@@ -133,7 +135,7 @@ select=selections
 	frappe.db.get_value("Supplier",child.supplier_name,"has_sbtfx_contract",(s)=>{
 		child.has_sbtfx_contract=s.has_sbtfx_contract;
 		cur_frm.refresh_field("bank_payment_advice_details")
-		if(s.has_sbtfx_contract==1){
+		if((s.has_sbtfx_contract==1) && (is_funded==1)){
 			frappe.db.get_value("Supplier",child.supplier_name,"represents_company",(c)=>{
 				frappe.db.get_value("Company",c.represents_company,"parent_company",(p)=>{
 					frappe.db.get_value("Company",p.parent_company,"bank_account",(b)=>{
@@ -147,7 +149,6 @@ select=selections
 			})
 		}
 		else{
-
 
 		frappe.db.get_value("Supplier",child.supplier_name,"bank_account",(b)=>{
 			child.bank_account=b.bank_account
