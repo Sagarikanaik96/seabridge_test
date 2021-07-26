@@ -80,9 +80,10 @@ def post_invoice(name):
                      res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
                      print("RESPONSE",res)
                      response_code=str(res)
-                     res = conn.post_process(res)
                      responsedata=res.json()
-                     message=frappe.log_error(responsedata['Data'][0]['Message'])
+                     message=responsedata['Data'][0]['Message']
+                     res = conn.post_process(res)
+                     
                      if response_code=="<Response [200]>":
                          doc_posted=True
                          doc.add_comment('Comment','Sent the '+doc.name+' to SBTFX successfully.')
@@ -103,8 +104,8 @@ def post_invoice(name):
                      make(subject = 'Transaction Unsuccessful',recipients = headers[0].email,communication_medium = "Email",content = msg.error,send_email = True)
                      doc.db_set('workflow_state','Pending')
                      frappe.db.commit()
-                     frappe.throw("Response Failed")
-       
+        if doc_posted==False:             
+            frappe.throw("Response Failed")
         print(doc_posted)
 
         

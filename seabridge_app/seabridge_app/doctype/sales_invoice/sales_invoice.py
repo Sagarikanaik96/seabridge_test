@@ -13,7 +13,7 @@ from seabridge_app.seabridge_app.api import update_monthly_budget
 import json
 import requests
 from seabridge_app.seabridge_app.api import create_api_interacion_tracker
-from datetime import datetime
+#from datetime import datetime
 from frappe.core.doctype.communication.email import make
 
 class SalesInvoice(Document):
@@ -134,7 +134,7 @@ def auto_create_purchase_invoice(doc,method):
 		doc_posted=False
 		headers=frappe.db.get_all("API Integration",fields={'*'})
 		if headers:
-			date_time=datetime.now()
+			date_time=datetime.datetime.now()
 			try:
 				headers_list = {
 					"Authorization": "Bearer " + headers[0].authorization_key,
@@ -147,27 +147,29 @@ def auto_create_purchase_invoice(doc,method):
 				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.grand_total)+'", "currency_name": "SGD", "source": "seaprop","credit_days": '+str(credit_days[0][0])+', "document_category": "AR", "orig_transaction_ref":"'+frappe.db.get_value("Sales Order",{"po_no":doc.po_no},"name")+'"}]}'
 				print(document)
 				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
+				message=""
+				responsedata=res.json()
+				message=responsedata['Data'][0]['Message']
 				response_code=str(res)
 				res = conn.post_process(res)
-				responsedata=res.json()
-				message=frappe.log_error(responsedata['Data'][0]['Message'])
 				if response_code=="<Response [200]>":
 					doc_posted=True
 					doc.add_comment('Comment','Sent the '+doc.name+' to SBTFX successfully.')
 					create_api_interacion_tracker(headers[0].url,date_time,'Success',message)
 				else:
 					doc_posted=False
-					message="The post of Sales Invoice Document : "+doc.name+" is unsuccessful."
 					doc.add_comment('Comment','Unable to send the '+doc.name+' to SBTFX') 
 					create_api_interacion_tracker(headers[0].url,date_time,'Failure',message)
 					make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
 			except Exception:
 				print(Exception)
 				doc_posted=False
-				message="The post of Sales Invoice Document : "+doc.name+" is unsuccessful."
 				doc.add_comment('Comment','Unable to send the '+doc.name+' to SBTFX')  
 				create_api_interacion_tracker(headers[0].url,date_time,'Failure',message)
 				make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
+				frappe.log_error(frappe.get_traceback())
+		if doc_posted==False:
+			frappe.throw('Response failed')
 		print(doc_posted)
 
 def delete_purchase_invoice(doc,method):
