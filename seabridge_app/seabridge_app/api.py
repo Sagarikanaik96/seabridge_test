@@ -651,7 +651,7 @@ def create_payment(invoices,account,company):
 			po=''
 			purchase_amount=0
 		has_sbtfx=frappe.db.get_value('Supplier',{'name':inv['supplier_name']},'has_sbtfx_contract')
-		if has_sbtfx==1:
+		if has_sbtfx==1 and inv['is_funded']==1:
 			represents_company=frappe.db.get_value('Supplier',{'name':inv['supplier_name']},'represents_company')
 			parent_company=frappe.db.get_value('Company',{'name':represents_company},"parent_company")
 			bank_account=frappe.db.get_value("Company",{'name':parent_company},"bank_account")
@@ -675,7 +675,8 @@ def create_payment(invoices,account,company):
 						    'purchase_order_amount':purchase_amount,
 						    'has_sbtfx_contract':has_sbtfx,
 						    'bank_account':bank_account,
-						    'bank_name':bank_name
+						    'bank_name':bank_name,
+						    'is_funded':inv['is_funded']
 						})
 	bpa_doc.save()
 	frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name+"'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
@@ -779,7 +780,6 @@ def update_monthly_budget(doc):
 					else:
 						monthly_budget=budget_account[0]['budget_amount']/12
 						pi_doc.db_set('month_budget',monthly_budget)
-
 
 
 @frappe.whitelist()

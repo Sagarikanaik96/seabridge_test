@@ -67,18 +67,20 @@ var select={}
  action(selections) {
 select=selections
  $.each(selections,function(idx){
+	var is_funded=0
  frappe.call({
             method: "frappe.client.get_list",
 		async:false,
             args: {
                 doctype: "Purchase Invoice",
-                fields: ["name","due_date","supplier_name","status","grand_total","outstanding_amount"],
+                fields: ["name","due_date","supplier_name","status","grand_total","outstanding_amount","is_funded"],
                 filters:{
                     "name":select[idx]
                 },
             },
             callback: function(r) {
                 for(var i=0;i<r.message.length;i++){
+			is_funded=r.message[i].is_funded
                     var count=0
                     $.each(frm.doc.bank_payment_advice_details, function(idx, detail){
                         if(detail.invoice_document==r.message[i].name){
@@ -95,7 +97,8 @@ select=selections
 			        child.invoice_amount = r.message[i].grand_total;
 			        child.outstanding_amount=r.message[i].outstanding_amount;
 			        child.payment_transaction_amount=r.message[i].outstanding_amount;
-				child.overdue_days=frappe.datetime.get_day_diff(frappe.datetime.nowdate(),child.due_date)
+				child.overdue_days=frappe.datetime.get_day_diff(frappe.datetime.nowdate(),child.due_date);
+				child.is_funded=r.message[i].is_funded;
 				
 			         frappe.call({
             method: "frappe.client.get_list",
@@ -129,7 +132,6 @@ select=selections
 				
 			})
 			
-
 	frappe.db.get_value("Supplier",child.supplier_name,"has_sbtfx_contract",(s)=>{
 		child.has_sbtfx_contract=s.has_sbtfx_contract;
 		cur_frm.refresh_field("bank_payment_advice_details")
@@ -147,8 +149,6 @@ select=selections
 			})
 		}
 		else{
-
-
 		frappe.db.get_value("Supplier",child.supplier_name,"bank_account",(b)=>{
 			child.bank_account=b.bank_account
 		})
