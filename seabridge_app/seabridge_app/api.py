@@ -677,7 +677,8 @@ def create_payment(invoices,account,company):
 						    'purchase_order_amount':purchase_amount,
 						    'has_sbtfx_contract':has_sbtfx,
 						    'bank_account':bank_account,
-						    'bank_name':bank_name
+						    'bank_name':bank_name,
+						    'is_funded':inv['is_funded']
 						})
 	bpa_doc.save()
 	frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name+"'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
@@ -882,16 +883,6 @@ def fund_invoice(invoice_id):
                         doc_posted = False
                	        frappe.log_error(frappe.get_traceback())
 
-@frappe.whitelist()
-def funding_response(filters = None):
-	print('Inside Fund response')
-	requestData=json.loads(frappe.request.data.decode('utf-8'))
-	if (requestData['transaction_type']=="AP"):
-		pi_doc=frappe.get_doc("Purchase Invoice",requestData['document_id']) 
-		pi_doc.db_set('is_funded',1)
-		pi_doc.db_set('on_hold',0)
-		frappe.db.commit()
-	
 @frappe.whitelist()
 def create_api_interacion_tracker(url,date_time,status,message):
 	date=date_time.strftime('%Y-%m-%d')
