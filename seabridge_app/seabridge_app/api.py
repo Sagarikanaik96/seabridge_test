@@ -380,249 +380,264 @@ def get_user_accounts_payable():
 
 
 @frappe.whitelist()
-def get_data(name=None, supplier=None, match=None,status=None,company=None,
-	start=0, sort_by='invoice_date', sort_order='desc'):
-	'''Return data to render the item dashboard'''
-	filters = []
-	conditions=""
-	if name:
-		conditions+=str('And p.name="'+name+'"')
-	if supplier:
-		conditions+=str('And p.supplier="'+supplier+'"')
-	if match:
-		if match=='Y':
-			conditions+=str('And p.workflow_state not in ("Draft","Cancelled")')
-		if match=='N':
-			conditions+=str('And p.workflow_state="Draft"')
-	if status:
-		conditions+=str('And p.workflow_state="'+status+'"')
-	if company:
-		conditions+=str('And p.company="'+company+'"')
-	estate_user=frappe.db.sql("""select u.name 
-			from `tabUser` u,`tabHas Role` r where u.name=%s and
-			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
-	accounts_user=frappe.db.sql("""select u.name 
-			from `tabUser` u,`tabHas Role` r where u.name=%s and
-			u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""",frappe.session.user)
-	count=0
-	for i in estate_user:
-			for user in i:
-				if(user==frappe.session.user):
-					count+=1
-	for i in accounts_user:
-			for user in i:
-				if(user==frappe.session.user):
-					count+=2
-	
-	company_names=''
-	if(frappe.session.user!="Administrator"):
-		company_list=frappe.db.sql("""select c.company_name from `tabUser Permission` u left join `tabCompany` c ON c.company_name=u.for_value where allow="Company" and u.user=%s""",(frappe.session.user))
-		for i in company_list:
-				for q in i:
-					if(q):
-						company_names=' and p.company in ('	
-						for idx,i in enumerate(company_list):
-								if(idx!=0):
-									company_names+=','
-								for j in i:
-									company_names+='"'+j+'"'
-						company_names+=')'
-	
-	sort=" Order by p.due_date "+sort_order+" ,p.name "+sort_order
-	if sort_by:
-		if(sort_by=="name"):
-			sort=" Order by p.name "+sort_order
-		elif(sort_by=="invoice_date"):
-			sort=" Order by p.due_date "+sort_order+" ,p.name "+sort_order
-		elif(sort_by=="po_date"):
-			sort=" Order by po.transaction_date "+sort_order+" ,p.name "+sort_order
-		elif(sort_by=="status"):
-			sort=" Order by p.workflow_state "+sort_order+" ,p.name "+sort_order
-	limit=' Limit 20 offset '+start
-	if count==1:
-		records=frappe.db.sql("""select 
-				count(p.name) as "count"
-				from 
-				`tabPurchase Order` po right join
-				`tabPurchase Invoice` p
-				ON p.purchase_order=po.name
-				and p.purchase_order=po.name
-				where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names)
-		items=frappe.db.sql("""select p.name as "name",
-				p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
-		 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
-				(CASE
-				when p.workflow_state="Draft" Then (select u.full_name 
-				from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
-				c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
-				when p.workflow_state="Pending" Then (select group_concat(u.full_name)
-				from tabUser u,`tabHas Role` r where 
-				u.name = r.parent and r.role = 'Accounts Payable'
-				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
-				when p.workflow_state="To Pay" Then (select group_concat(u.full_name)
-				from tabUser u,`tabHas Role` r where 
-				u.name = r.parent and r.role = 'Finance Manager'
-				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
-				when p.workflow_state="Rejected" Then (select distinct (u.full_name)
-				from tabUser u,`tabHas Role` r where 
-				u.name = r.parent
-				and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
-				END) as "user",
-				FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
-				T2.file_name as file_name,p.invoice_description,p.send_for_approval
-				from 
-				`tabPurchase Order` po right join
-				`tabPurchase Invoice` p
-				ON p.purchase_order=po.name
-				lEFT JOIN(
-				select count(f.file_name) as file_name,
-				f.attached_to_name as attached_to_name from
-				`tabFile` f 
-				where attached_to_doctype="Purchase Invoice" group by f.attached_to_name
-				)T2 
-				ON T2.attached_to_name=p.name
-				where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names+sort+limit)
-		return items
-	elif count==2:
-		records=frappe.db.sql("""select 
-			count(p.name) as "count"
-			from 
-			`tabPurchase Order` po right join
-			`tabPurchase Invoice` p
-			ON p.purchase_order=po.name
-			and p.purchase_order=po.name
-			where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names)
-		items=frappe.db.sql("""select p.name as "name",
-			p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
-	 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
-			(CASE
-			when p.workflow_state="Draft" Then (select u.full_name 
-			from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
-			c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
-			when p.workflow_state="Pending" Then (select group_concat(u.full_name)
-			from tabUser u,`tabHas Role` r where 
-			u.name = r.parent and r.role = 'Accounts Payable'
-			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
-			when p.workflow_state="To Pay" Then (select group_concat(u.full_name)
-			from tabUser u,`tabHas Role` r where 
-			u.name = r.parent and r.role = 'Finance Manager'
-			and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company))
-			when p.workflow_state="Rejected" Then (select distinct (u.full_name)
-			from tabUser u,`tabHas Role` r where 
-			u.name = r.parent
-			and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
-			END) as "user",
-			FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
-			T2.file_name as file_name,p.invoice_description,p.send_for_approval
-			from 
-			`tabPurchase Order` po right join
-			`tabPurchase Invoice` p
-			ON p.purchase_order=po.name
-			lEFT JOIN(
-			select count(f.file_name) as file_name,
-			f.attached_to_name as attached_to_name from
-			`tabFile` f 
-			where attached_to_doctype="Purchase Invoice" group by f.attached_to_name
-			)T2 
-			ON T2.attached_to_name=p.name
-			where p.workflow_state not in ("Cancelled","Paid","Draft") and p.is_return=0 """+conditions+company_names+sort+limit)
-		return items
+def get_data(name=None, supplier=None, match=None, status=None, company=None,
+             start=0, sort_by='invoice_date', sort_order='desc'):
+    '''Return data to render the item dashboard'''
+    filters = []
+    conditions = ""
+    if name:
+        conditions += str('And p.name="'+name+'"')
+    if supplier:
+        conditions += str('And p.supplier="'+supplier+'"')
+    if match:
+        if match == 'Y':
+            conditions += str('And p.workflow_state not in ("Draft","Cancelled")')
+        if match == 'N':
+            conditions += str('And p.workflow_state="Draft"')
+    if status:
+        conditions += str('And p.workflow_state="'+status+'"')
+    if company:
+        conditions += str('And p.company="'+company+'"')
+    estate_user = frappe.db.sql("""select u.name 
+            from `tabUser` u,`tabHas Role` r where u.name=%s and
+            u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""", frappe.session.user)
+    accounts_user = frappe.db.sql("""select u.name 
+            from `tabUser` u,`tabHas Role` r where u.name=%s and
+            u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""", frappe.session.user)
+    count = 0
+    for i in estate_user:
+        for user in i:
+            if(user == frappe.session.user):
+                count += 1
+    for i in accounts_user:
+        for user in i:
+            if(user == frappe.session.user):
+                count += 2
+
+    company_names = ''
+    if(frappe.session.user != "Administrator"):
+        company_list = frappe.db.sql(
+            """select c.company_name from `tabUser Permission` u left join `tabCompany` c ON c.company_name=u.for_value where allow="Company" and u.user=%s""", (frappe.session.user))
+        for i in company_list:
+            for q in i:
+                if(q):
+                    company_names = ' and p.company in ('
+                    for idx, i in enumerate(company_list):
+                        if(idx != 0):
+                            company_names += ','
+                        for j in i:
+                            company_names += '"'+j+'"'
+                    company_names += ')'
+
+    sort = " Order by p.due_date "+sort_order+" ,p.name "+sort_order
+    if sort_by:
+        if(sort_by == "name"):
+            sort = " Order by p.name "+sort_order
+        elif(sort_by == "invoice_date"):
+            sort = " Order by p.due_date "+sort_order+" ,p.name "+sort_order
+        elif(sort_by == "po_date"):
+            sort = " Order by po.transaction_date "+sort_order+" ,p.name "+sort_order
+        elif(sort_by == "status"):
+            sort = " Order by p.workflow_state "+sort_order+" ,p.name "+sort_order
+    limit = ' Limit 20 offset '+start
+    if count == 1:
+        records = frappe.db.sql("""select 
+                count(p.name) as "count"
+                from 
+                `tabPurchase Order` po right join
+                `tabPurchase Invoice` p
+                ON p.purchase_order=po.name
+                and p.purchase_order=po.name
+                where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names)
+        items = frappe.db.sql("""select p.name as "name",
+                p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
+                p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
+                (CASE
+                when p.workflow_state="Draft" Then (select u.full_name 
+                from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
+                c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
+                when p.workflow_state="Pending" Then (select group_concat(u.full_name)
+                from tabUser u,`tabHas Role` r where 
+                u.name = r.parent and r.role = 'Accounts Payable'
+                and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where               c.company_name=p.company) and u.name in (select user_id from `tabEmployee` where name in(select e.reports_to from `tabCompany`c Right join `tabEmployee` e 
+    on c.associate_agent=e.user_id  
+    where c.company_name=p.company)))
+                when p.workflow_state="To Pay" Then (select group_concat(u.full_name)
+                from tabUser u,`tabHas Role` r where 
+                u.name = r.parent and r.role = 'Finance Manager'
+                and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where               c.company_name=p.company) and u.name in (select user_id from `tabEmployee` where name in((select reports_to from `tabEmployee` WHERE 
+ name in (select e.reports_to from `tabCompany`c Right join `tabEmployee` e 
+    on c.associate_agent=e.user_id  
+    where c.company_name=p.company)))))
+                when p.workflow_state="Rejected" Then (select distinct (u.full_name)
+                from tabUser u,`tabHas Role` r where 
+                u.name = r.parent
+                and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
+                END) as "user",
+                FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
+                T2.file_name as file_name,p.invoice_description,p.send_for_approval
+                from 
+                `tabPurchase Order` po right join
+                `tabPurchase Invoice` p
+                ON p.purchase_order=po.name
+                lEFT JOIN(
+                select count(f.file_name) as file_name,
+                f.attached_to_name as attached_to_name from
+                `tabFile` f 
+                where attached_to_doctype="Purchase Invoice" group by f.attached_to_name
+                )T2 
+                ON T2.attached_to_name=p.name
+                where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names+sort+limit)
+        return items
+    elif count == 2:
+        records = frappe.db.sql("""select 
+            count(p.name) as "count"
+            from 
+            `tabPurchase Order` po right join
+            `tabPurchase Invoice` p
+            ON p.purchase_order=po.name
+            and p.purchase_order=po.name
+            where p.workflow_state not in ("Cancelled","Paid") and p.is_return=0 """+conditions+company_names)
+        items = frappe.db.sql("""select p.name as "name",
+            p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
+            p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
+            (CASE
+            when p.workflow_state="Draft" Then (select u.full_name 
+            from `tabCompany` c, `tabUser` u,`tabHas Role` r where c.company_name=p.company and  
+            c.associate_agent=u.name and u.name=r.parent and u.enabled = 1 and r.role = "Estate Manager") 
+            when p.workflow_state="Pending" Then (select group_concat(u.full_name)
+            from tabUser u,`tabHas Role` r where 
+            u.name = r.parent and r.role = 'Accounts Payable'
+            and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where               c.company_name=p.company)and u.name in (select user_id from `tabEmployee` where name in(select e.reports_to from `tabCompany`c Right join `tabEmployee` e 
+    on c.associate_agent=e.user_id  
+    where c.company_name=p.company)))
+            when p.workflow_state="To Pay" Then (select group_concat(u.full_name)
+            from tabUser u,`tabHas Role` r where 
+            u.name = r.parent and r.role = 'Finance Manager'
+            and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where               c.company_name=p.company)and u.name in (select user_id from `tabEmployee` where name in((select reports_to from `tabEmployee` WHERE 
+ name in (select e.reports_to from `tabCompany`c Right join `tabEmployee` e 
+    on c.associate_agent=e.user_id  
+    where c.company_name=p.company)))))
+            when p.workflow_state="Rejected" Then (select distinct (u.full_name)
+            from tabUser u,`tabHas Role` r where 
+            u.name = r.parent
+            and u.enabled = 1 and u.name in (select c.associate_agent from `tabCompany` c where c.company_name=p.company) limit 1)
+            END) as "user",
+            FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
+            T2.file_name as file_name,p.invoice_description,p.send_for_approval
+            from 
+            `tabPurchase Order` po right join
+            `tabPurchase Invoice` p
+            ON p.purchase_order=po.name
+            lEFT JOIN(
+            select count(f.file_name) as file_name,
+            f.attached_to_name as attached_to_name from
+            `tabFile` f 
+            where attached_to_doctype="Purchase Invoice" group by f.attached_to_name
+            )T2 
+            ON T2.attached_to_name=p.name
+            where p.workflow_state not in ("Cancelled","Paid","Draft") and p.is_return=0 """+conditions+company_names+sort+limit)
+        return items
+
 
 @frappe.whitelist()
-def get_data_for_payment(name=None, supplier=None,company=None,
-	start=0, sort_by='name', sort_order='desc'):
-	'''Return data to render the item dashboard'''
-	filters = []
-	conditions=""
-	if name:
-		conditions+=str('And p.name="'+name+'"')
-	if supplier:
-		conditions+=str('And p.supplier="'+supplier+'"')
-	if company:
-		conditions+=str('And p.company="'+company+'"')
-	
-	estate_user=frappe.db.sql("""select u.name 
-			from `tabUser` u,`tabHas Role` r where u.name=%s and
-			u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",frappe.session.user)
-	accounts_user=frappe.db.sql("""select u.name 
-			from `tabUser` u,`tabHas Role` r where u.name=%s and
-			u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""",frappe.session.user)
-	count=0
-	for i in estate_user:
-			for user in i:
-				if(user==frappe.session.user):
-					count+=1
-	for i in accounts_user:
-			for user in i:
-				if(user==frappe.session.user):
-					count+=2
-	
-	company_names=''
-	if(frappe.session.user!="Administrator"):
-		company_list=frappe.db.sql("""select c.company_name from `tabUser Permission` u left join `tabCompany` c ON c.company_name=u.for_value where allow="Company" and c.company_type="Customer" and u.user=%s""",(frappe.session.user))
-		company_names=''
-		for i in company_list:
-				for q in i:
-					if(q):
-						company_names=' and p.company in ('	
-						for idx,i in enumerate(company_list):
-								if(idx!=0):
-									company_names+=','
-								for j in i:
-									company_names+='"'+j+'"'
-						company_names+=')'
-		
-	
-	
-	sort=" Order by p.due_date "+sort_order+" ,p.name "+sort_order
-	if sort_by:
-		if(sort_by=="name"):
-			sort=" Order by p.name "+sort_order
-		elif(sort_by=="invoice_date"):
-			sort=" Order by p.due_date "+sort_order+" ,p.name "+sort_order
-		elif(sort_by=="po_date"):
-			sort=" Order by po.transaction_date "+sort_order+" ,p.name "+sort_order
-		elif(sort_by=="status"):
-			sort=" Order by p.workflow_state "+sort_order+" ,p.name "+sort_order
-	
-	limit=' Limit 20 offset '+start
-	finance_user=frappe.db.sql("""select u.name 
-			from `tabUser` u,`tabHas Role` r where u.name=%s and
-			u.name=r.parent and u.enabled = 1 and r.role = 'Finance manager'""",frappe.session.user)
-	
-	if finance_user:
-		records=frappe.db.sql("""select 
-			count(p.name) as "count"
-			from 
-			`tabPurchase Order` po right join
-			`tabPurchase Invoice` p
-			ON p.purchase_order=po.name
-			and p.purchase_order=po.name
-			where p.workflow_state="To Pay" and p.is_return=0 """+conditions+company_names)
-		items=frappe.db.sql("""select p.name as "name",
-				p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
-		 		p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
-				(select group_concat(u.full_name)
-				from tabUser u,`tabHas Role` r where 
-				u.name = r.parent and r.role = 'Finance Manager'
-				and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where 				c.company_name=p.company)) as "user",
-				FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
-				T2.file_name as file_name,p.invoice_description,p.on_hold
-				from 
-				`tabPurchase Order` po right join
-				`tabPurchase Invoice` p
-				ON p.purchase_order=po.name
-				lEFT JOIN(
-				select count(f.file_name) as file_name,
-				f.attached_to_name as attached_to_name from
-				`tabFile` f 
-				where attached_to_doctype="Purchase Invoice" group by f.attached_to_name
-				)T2 
-				ON T2.attached_to_name=p.name
-				where p.workflow_state="To Pay" and p.is_return=0 """+conditions+company_names+sort+limit)
-	else:
-		items=''
-	return items
+def get_data_for_payment(name=None, supplier=None, company=None,
+                         start=0, sort_by='name', sort_order='desc'):
+    '''Return data to render the item dashboard'''
+    filters = []
+    conditions = ""
+    if name:
+        conditions += str('And p.name="'+name+'"')
+    if supplier:
+        conditions += str('And p.supplier="'+supplier+'"')
+    if company:
+        conditions += str('And p.company="'+company+'"')
+
+    estate_user = frappe.db.sql("""select u.name 
+            from `tabUser` u,`tabHas Role` r where u.name=%s and
+            u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""", frappe.session.user)
+    accounts_user = frappe.db.sql("""select u.name 
+            from `tabUser` u,`tabHas Role` r where u.name=%s and
+            u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""", frappe.session.user)
+    count = 0
+    for i in estate_user:
+        for user in i:
+            if(user == frappe.session.user):
+                count += 1
+    for i in accounts_user:
+        for user in i:
+            if(user == frappe.session.user):
+                count += 2
+
+    company_names = ''
+    if(frappe.session.user != "Administrator"):
+        company_list = frappe.db.sql(
+            """select c.company_name from `tabUser Permission` u left join `tabCompany` c ON c.company_name=u.for_value where allow="Company" and c.company_type="Customer" and u.user=%s""", (frappe.session.user))
+        company_names = ''
+        for i in company_list:
+            for q in i:
+                if(q):
+                    company_names = ' and p.company in ('
+                    for idx, i in enumerate(company_list):
+                        if(idx != 0):
+                            company_names += ','
+                        for j in i:
+                            company_names += '"'+j+'"'
+                    company_names += ')'
+
+    sort = " Order by p.due_date "+sort_order+" ,p.name "+sort_order
+    if sort_by:
+        if(sort_by == "name"):
+            sort = " Order by p.name "+sort_order
+        elif(sort_by == "invoice_date"):
+            sort = " Order by p.due_date "+sort_order+" ,p.name "+sort_order
+        elif(sort_by == "po_date"):
+            sort = " Order by po.transaction_date "+sort_order+" ,p.name "+sort_order
+        elif(sort_by == "status"):
+            sort = " Order by p.workflow_state "+sort_order+" ,p.name "+sort_order
+
+    limit = ' Limit 20 offset '+start
+    finance_user = frappe.db.sql("""select u.name 
+            from `tabUser` u,`tabHas Role` r where u.name=%s and
+            u.name=r.parent and u.enabled = 1 and r.role = 'Finance manager'""", frappe.session.user)
+
+    if finance_user:
+        records = frappe.db.sql("""select 
+            count(p.name) as "count"
+            from 
+            `tabPurchase Order` po right join
+            `tabPurchase Invoice` p
+            ON p.purchase_order=po.name
+            and p.purchase_order=po.name
+            where p.workflow_state="To Pay" and p.is_return=0 """+conditions+company_names)
+        items = frappe.db.sql("""select p.name as "name",
+                p.supplier as "supplier",FORMAT(p.grand_total,2),DATE_FORMAT(p.due_date,"%d-%m-%Y"),
+                p.workflow_state,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),p.docstatus,
+                (select group_concat(u.full_name)
+                from tabUser u,`tabHas Role` r where 
+                u.name = r.parent and r.role = 'Finance Manager'
+                and u.enabled = 1 and u.represents_company in (select c.associate_agent_company from `tabCompany` c where               c.company_name=p.company) and u.name in(select user_id from `tabEmployee` where name in((select reports_to from `tabEmployee` WHERE 
+ name in (select e.reports_to from `tabCompany`c Right join `tabEmployee` e 
+    on c.associate_agent=e.user_id  
+    where c.company_name=p.company))))) as "user",
+                FORMAT(p.month_budget,2) as "budget","""+str(count)+""" as "role","""+str(records[0][0])+""" as "count",
+                T2.file_name as file_name,p.invoice_description,p.on_hold
+                from 
+                `tabPurchase Order` po right join
+                `tabPurchase Invoice` p
+                ON p.purchase_order=po.name
+                lEFT JOIN(
+                select count(f.file_name) as file_name,
+                f.attached_to_name as attached_to_name from
+                `tabFile` f 
+                where attached_to_doctype="Purchase Invoice" group by f.attached_to_name
+                )T2 
+                ON T2.attached_to_name=p.name
+                where p.workflow_state="To Pay" and p.is_return=0 """+conditions+company_names+sort+limit)
+    else:
+        items = ''
+    return items
+
 
 @frappe.whitelist()
 def create_payment(invoices,account,company):

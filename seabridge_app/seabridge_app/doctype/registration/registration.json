@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "naming_series:",
- "creation": "2021-04-29 20:31:05.799067",
+ "creation": "2021-06-22 02:07:25.286838",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -46,7 +46,8 @@
   "last_name",
   "column_break_22",
   "first_name",
-  "send_welcome_email"
+  "send_welcome_email",
+  "amended_from"
  ],
  "fields": [
   {
@@ -121,7 +122,7 @@
    "fieldname": "supplier_name",
    "fieldtype": "Data",
    "label": "Supplier Name",
-   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\")"
+   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\") || (doc.has_sbtfx_contract==1 && (doc.company_type==\"Agent\"))"
   },
   {
    "allow_on_submit": 1,
@@ -148,14 +149,14 @@
    "fieldname": "supplier_group",
    "fieldtype": "Link",
    "label": "Supplier Group",
-   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\")",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\") || (doc.has_sbtfx_contract==1 && (doc.company_type==\"Agent\"))",
    "options": "Supplier Group"
   },
   {
    "fieldname": "supplier_type",
    "fieldtype": "Select",
    "label": "Supplier Type",
-   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\")",
+   "mandatory_depends_on": "eval:(doc.company_type==\"Vendor\") || (doc.has_sbtfx_contract==1 && (doc.company_type==\"Agent\"))",
    "options": "\nCompany\nIndividual"
   },
   {
@@ -290,26 +291,35 @@
    "fieldname": "bank_name",
    "fieldtype": "Data",
    "label": "Bank Name",
-   "mandatory_depends_on": "eval:(doc.has_sbtfx_contract!=1 && doc.company_type==\"Vendor\")"
+   "mandatory_depends_on": "eval:(doc.has_sbtfx_contract!=1 && ((doc.company_type==\"Vendor\")||(doc.company_type==\"Agent\")&&(doc.supplier_name)))"
   },
   {
    "depends_on": "eval:(doc.has_sbtfx_contract!=1)",
    "fieldname": "bank_account",
    "fieldtype": "Data",
    "label": "Bank Account",
-   "mandatory_depends_on": "eval:(doc.has_sbtfx_contract!=1 && doc.company_type==\"Vendor\")"
+   "mandatory_depends_on": "eval:(doc.has_sbtfx_contract!=1 && ((doc.company_type==\"Vendor\")||(doc.company_type==\"Agent\")&&(doc.supplier_name)))"
   },
   {
    "default": "0",
-   "depends_on": "eval:(doc.company_type==\"Vendor\")",
+   "depends_on": "eval:(doc.company_type==\"Vendor\" || doc.company_type==\"Agent\")",
    "fieldname": "has_sbtfx_contract",
    "fieldtype": "Check",
    "label": "Has SBTFX Contract"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Registration",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2021-05-04 18:51:17.889820",
+ "modified": "2021-07-30 21:03:24.418420",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Registration",

@@ -108,5 +108,21 @@ def post_invoice(name):
             frappe.throw("Response Failed")
         print(doc_posted)
 
-        
+       
+@frappe.whitelist()
+def get_approver(company,workflow_state):
+    agent_user = frappe.db.get_value(
+        'Company', {'name': company}, 'associate_agent')
+    if agent_user:
+        reports_to = frappe.db.get_value(
+            'Employee', {'user_id': agent_user}, 'reports_to')
+        if reports_to:
+            name = frappe.db.get_value(
+                'Employee', {'name': reports_to}, 'user_id')
+            if name:
+                #if workflow_state=="Pending":
+                return frappe.db.sql("""select u.name from tabUser u,`tabHas Role` r where 
+            u.name = r.parent and u.name=%s and r.role = 'Accounts Payable'
+                and u.enabled = 1 """, (name), as_dict=True)
+
 
