@@ -83,6 +83,7 @@ frm.add_custom_button(__("Service Completion Note"), function() {
             frappe.new_doc("Service Completion Note");
         }, __("Create"));
 }
+	
 
 },
 
@@ -124,6 +125,12 @@ frm.add_custom_button(__("Service Completion Note"), function() {
 		}
             }
         })
+	if(frm.doc.receipt_required==0){
+		frm.doc.per_received=100
+	}
+	else{
+		frm.doc.per_received=0
+	}
     },
     before_cancel:function(frm,cdt,cdn){
         var po_no;
@@ -160,7 +167,14 @@ frm.add_custom_button(__("Service Completion Note"), function() {
 		    })
 		})
 	}
-    }
+    },
+	onload: function(frm) {
+		if(frm.doc.receipt_required!=1){
+			setTimeout(() => {
+				frm.remove_custom_button("Purchase Receipt", 'Create'); 
+			}, 10);
+		} 
+	}
 });
 
 function sendEmail(name,email,template){
