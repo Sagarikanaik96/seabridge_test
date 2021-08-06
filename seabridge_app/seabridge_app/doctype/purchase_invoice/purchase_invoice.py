@@ -80,9 +80,10 @@ def post_invoice(name):
                      res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
                      print("RESPONSE",res)
                      response_code=str(res)
-                     res = conn.post_process(res)
                      responsedata=res.json()
-                     message=frappe.log_error(responsedata['Data'][0]['Message'])
+                     message=responsedata['Data'][0]['Message']
+                     res = conn.post_process(res)
+                     
                      if response_code=="<Response [200]>":
                          doc_posted=True
                          doc.add_comment('Comment','Sent the '+doc.name+' to SBTFX successfully.')
@@ -103,9 +104,25 @@ def post_invoice(name):
                      make(subject = 'Transaction Unsuccessful',recipients = headers[0].email,communication_medium = "Email",content = msg.error,send_email = True)
                      doc.db_set('workflow_state','Pending')
                      frappe.db.commit()
-                     frappe.throw("Response Failed")
-       
+        if doc_posted==False:             
+            frappe.throw("Response Failed")
         print(doc_posted)
 
-        
+       
+@frappe.whitelist()
+def get_approver(company,workflow_state):
+    agent_user = frappe.db.get_value(
+        'Company', {'name': company}, 'associate_agent')
+    if agent_user:
+        reports_to = frappe.db.get_value(
+            'Employee', {'user_id': agent_user}, 'reports_to')
+        if reports_to:
+            name = frappe.db.get_value(
+                'Employee', {'name': reports_to}, 'user_id')
+            if name:
+                #if workflow_state=="Pending":
+                return frappe.db.sql("""select u.name from tabUser u,`tabHas Role` r where 
+            u.name = r.parent and u.name=%s and r.role = 'Accounts Payable'
+                and u.enabled = 1 """, (name), as_dict=True)
+
 

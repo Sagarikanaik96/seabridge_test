@@ -67,6 +67,8 @@ def on_registration_submit(doc,method):
                         apply_to_all_doctypes=1
                         )).insert(ignore_mandatory=True,ignore_permissions=True)
                         up_doc.save()
+                        co_doc.db_set('supplier_exists',1)
+                        frappe.db.commit()
         if doc.company_type=="Customer":
                     cu_doc=frappe.get_doc(dict(doctype = 'Customer',
                     customer_name=doc.customer_name,
