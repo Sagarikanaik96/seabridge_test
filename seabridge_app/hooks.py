@@ -135,7 +135,11 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Invoice-notes",
 		"Purchase Invoice-approver",
 		"Employee-is_head",
-		"Company-supplier_exists"
+		"Company-supplier_exists",
+		"Purchase Order-receipt_required",
+		"Sales Order-receipt_required",
+		"Sales Invoice-receipt_required",
+		"Purchase Invoice-receipt_required"
 		]
 	]
 ]
