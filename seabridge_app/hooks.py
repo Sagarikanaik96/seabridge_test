@@ -129,7 +129,13 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Order-remarks"
 		"Purchase Order Item-remarks",
 		"Purchase Invoice-is_funded",
-		"Purchase Invoice-send_for_approval"
+		"Purchase Invoice-send_for_approval",
+		"Purchase Invoice-source",
+		"Purchase Invoice-update_date",
+		"Purchase Invoice-notes",
+		"Purchase Invoice-approver",
+		"Employee-is_head",
+		"Company-supplier_exists"
 		]
 	]
 ]
@@ -173,7 +179,10 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 				"Purchase Invoice Item-amount-columns",
 				"Allowed To Transact With-company-ignore_user_permissions",
 				"Supplier-is_internal_supplier-read_only",
-				"Customer-is_internal_customer-read_only"	
+				"Customer-is_internal_customer-read_only",
+				"Budget-company-ignore_user_permissions",
+				"Employee-reports_to-mandatory_depends_on"
+	
 						
 			]
 	]

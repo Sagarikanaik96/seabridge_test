@@ -62,3 +62,33 @@ def create_permissions(reports_to,user_id,saved_doc,name):
 						perm_doc=frappe.get_doc("User Permission",same_permission[0].name)
 						perm_doc.delete()
 						frappe.db.commit()
+
+@frappe.whitelist()
+def get_reports_to_filter(user,company):
+    employee_list=[]
+    estate_user=frappe.db.sql("""select u.name 
+            from `tabUser` u,`tabHas Role` r where u.name=%s and
+            u.name=r.parent and u.enabled = 1 and r.role = 'Estate Manager'""",(user), as_list=True)
+    if estate_user:
+        user_list=frappe.db.sql("""select u.name 
+            from tabUser u,`tabHas Role` r where 
+            u.name = r.parent and r.role = 'Accounts Payable'
+            and u.enabled = 1 and u.represents_company =%s""",(company),as_dict=True)
+        for row in user_list:
+            employee=frappe.db.get_value('Employee',{'user_id':row['name']},'name')
+            if employee:
+                employee_list.append(employee)
+    else:
+        account_payable=frappe.db.sql("""select u.name 
+            from `tabUser` u,`tabHas Role` r where u.name=%s and
+            u.name=r.parent and u.enabled = 1 and r.role = 'Accounts Payable'""",(user), as_list=True)
+        if account_payable:
+                user_list=frappe.db.sql("""select u.name
+                    from tabUser u,`tabHas Role` r where 
+                    u.name = r.parent and r.role = 'Finance Manager'
+                    and u.enabled = 1 and u.represents_company =%s""",(company),as_dict=True)
+                for row in user_list:
+                    employee=frappe.db.get_value('Employee',{'user_id':row['name']},'name')
+                    if employee:
+                        employee_list.append(employee)
+    return employee_list

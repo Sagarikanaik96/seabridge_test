@@ -97,7 +97,8 @@ select=selections
 			        child.invoice_amount = r.message[i].grand_total;
 			        child.outstanding_amount=r.message[i].outstanding_amount;
 			        child.payment_transaction_amount=r.message[i].outstanding_amount;
-				child.overdue_days=frappe.datetime.get_day_diff(frappe.datetime.nowdate(),child.due_date)
+				child.overdue_days=frappe.datetime.get_day_diff(frappe.datetime.nowdate(),child.due_date);
+				child.is_funded=r.message[i].is_funded;
 				
 			         frappe.call({
             method: "frappe.client.get_list",
@@ -131,11 +132,10 @@ select=selections
 				
 			})
 			
-
 	frappe.db.get_value("Supplier",child.supplier_name,"has_sbtfx_contract",(s)=>{
 		child.has_sbtfx_contract=s.has_sbtfx_contract;
 		cur_frm.refresh_field("bank_payment_advice_details")
-		if((s.has_sbtfx_contract==1) && (is_funded==1)){
+		if(s.has_sbtfx_contract==1){
 			frappe.db.get_value("Supplier",child.supplier_name,"represents_company",(c)=>{
 				frappe.db.get_value("Company",c.represents_company,"parent_company",(p)=>{
 					frappe.db.get_value("Company",p.parent_company,"bank_account",(b)=>{
@@ -149,7 +149,6 @@ select=selections
 			})
 		}
 		else{
-
 		frappe.db.get_value("Supplier",child.supplier_name,"bank_account",(b)=>{
 			child.bank_account=b.bank_account
 		})
