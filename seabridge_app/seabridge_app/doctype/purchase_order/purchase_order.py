@@ -47,8 +47,7 @@ def auto_create_sales_order(doc,method):
 						    tc_name=doc.tc_name,
 						    terms=doc.terms,
 						    attachment_checklist_template=doc.attachment_checklist_template,
-						    invoice_description=doc.invoice_description,
-						    receipt_required=doc.receipt_required
+						    invoice_description=doc.invoice_description
 						)).insert(ignore_mandatory=True,ignore_permissions=True)
 					if agent:
 						contact=frappe.db.get_value('Contact',{'user':agent},'name')
