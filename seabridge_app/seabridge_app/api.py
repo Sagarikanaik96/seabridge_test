@@ -324,10 +324,10 @@ def get_user_estate_roles():
  
 @frappe.whitelist()
 def approve_invoice(doc):
-	pi_doc=frappe.get_doc("Purchase Invoice",doc) 
+	pi_doc=frappe.get_doc("Purchase Invoice",doc)
 	pi_doc.db_set('workflow_state','To Pay')
 	pi_doc.db_set('status','Unpaid')
-	frappe.db.commit()
+	frappe.db.commit() 
 	doc_posted=False
 	headers=frappe.db.get_list("API Integration",fields={'*'})
 	has_sbtfx_contract=frappe.db.get_value('Supplier',{'supplier_name':pi_doc.supplier_name},'has_sbtfx_contract')
@@ -745,7 +745,7 @@ def get_estate_company_detail():
 def get_invoice_details(invoice_name):
 	invoice='"'+invoice_name+'"'
 	invoice_data=frappe.db.sql("""select p.company,p.supplier,DATE_FORMAT(p.due_date,"%d-%m-%Y"),FORMAT(p.grand_total,2),
-	po.name,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),FORMAT(p.month_budget,2),p.invoice_description,pi.item_name,pi.qty,FORMAT(pi.rate,2),FORMAT(pi.amount,2),FORMAT(p.net_total,2),FORMAT(p.total_taxes_and_charges,2)
+	po.name,FORMAT(po.grand_total,2),DATE_FORMAT(po.transaction_date,"%d-%m-%Y"),FORMAT(p.month_budget,2),p.invoice_description,pi.item_name,pi.qty,FORMAT(pi.rate,2),FORMAT(pi.amount,2),FORMAT(p.net_total,2),FORMAT(p.total_taxes_and_charges,2),po.receipt_required,p.total_qty,po.total_qty
 	from `tabPurchase Invoice Item` pi right join `tabPurchase Invoice` p ON p.name=pi.parent left join `tabPurchase Order` po
 	ON p.purchase_order=po.name
 	where p.name="""+invoice)
