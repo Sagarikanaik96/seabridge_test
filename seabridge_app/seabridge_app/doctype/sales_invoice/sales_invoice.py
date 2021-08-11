@@ -61,6 +61,10 @@ def auto_create_purchase_invoice(doc,method):
 								invoice_description=doc.invoice_description
 							)).insert(ignore_mandatory=True,ignore_permissions=True)
 					for val in doc.items:
+							po_item_name=''
+							item_exists=frappe.db.get_list('Purchase Order Item',filters={'parent':doc.po_no,'parenttype':'Purchase Order'},fields={'*'})
+							if item_exists:
+								po_item_name=item_exists[0].name
 							pi_doc.append('items', {
 								'item_code':val.item_code,
 								'qty':val.qty,
@@ -71,7 +75,9 @@ def auto_create_purchase_invoice(doc,method):
 								'base_rate':val.base_rate,
 								'base_amount':val.base_amount,
 								'description':val.description,
-								'conversion_factor':val.conversion_factor
+								'conversion_factor':val.conversion_factor,
+								'purchase_order':doc.po_no,
+								'po_detail':po_item_name
 							})
 					for tax in tax_list:
 							pi_doc.append('taxes',{
