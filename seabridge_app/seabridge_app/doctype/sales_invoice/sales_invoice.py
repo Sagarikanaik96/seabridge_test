@@ -58,8 +58,7 @@ def auto_create_purchase_invoice(doc,method):
 								base_rounded_total=doc.base_rounded_total,
 								purchase_order=doc.po_no,
 								attachment_checklist_template=doc.attachment_checklist_template,
-								invoice_description=doc.invoice_description,
-								receipt_required=doc.receipt_required
+								invoice_description=doc.invoice_description
 							)).insert(ignore_mandatory=True,ignore_permissions=True)
 					for val in doc.items:
 							po_item_name=''

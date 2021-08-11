@@ -171,7 +171,8 @@ frm.add_custom_button(__("Service Completion Note"), function() {
 	onload: function(frm) {
 		if(frm.doc.receipt_required!=1){
 			setTimeout(() => {
-				frm.remove_custom_button("Purchase Receipt", 'Create'); 
+				frm.remove_custom_button("Purchase Receipt", 'Create');
+				frm.remove_custom_button("Service Completion Note", 'Create');  
 			}, 10);
 		} 
 	}
