@@ -1,8 +1,8 @@
 // Copyright (c) 2020, seabridge_app and contributors
 // For license information, please see license.txt
 
+var invoices_list=[];
 frappe.ui.form.on('Bank Payment Advice', {
-
 company:function(frm,cdt,cdn){
 	frappe.db.get_value("Bank Account",frm.doc.bank_account,"company",(c)=>{
 		if(c.company!=frm.doc.company){
@@ -255,13 +255,8 @@ cur_frm.save();
 					}
 				})
 			}
-
 		})
-		
-
-	},
-	
-
+},
 	before_submit:function(frm,cdt,cdn){
 		$.each(frm.doc.bank_payment_advice_details, function(idx, item){
 			item.cheque_date=frappe.datetime.nowdate()
@@ -269,7 +264,30 @@ cur_frm.save();
 		})
 
 		
-    }
+    },
+after_save(frm,cdt,cdn){
+if(invoices_list!=undefined){
+	frappe.call({
+		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.update_rejected_invoice",
+		        args:{
+				invoices:invoices_list,
+				company:frm.doc.company	
+			},
+		        async:false,
+		        callback: function(r){
+			 refresh_field("rejected_invoice_details");
+			}
+			});	
+       frm.refresh();
+}
+},
+after_workflow_action: (frm) => {
+	if (frm.doc.workflow_state == "Pending") {
+		var current_approves=frm.doc.current_approves+1
+		frm.set_value('current_approves',current_approves)
+		cur_frm.refresh_field("current_approves")
+	}
+}
 })
 
 frappe.ui.form.on("Bank Payment Advice Details", "invoice_document",function(frm, doctype, name) {
@@ -296,6 +314,15 @@ frappe.ui.form.on("Bank Payment Advice Details", "payment_transaction_amount",fu
 	
     }
     })
+frappe.ui.form.on("Bank Payment Advice Details", {
+before_bank_payment_advice_details_remove:function(frm,cdt,cdn) {
+		var row=frappe.get_doc(cdt,cdn);
+		 if(!invoices_list.includes(row)){
+		 	invoices_list.push(row);
+			}
+}
+    })
+
 
 const can_export = frm => {
 	const doctype = frm.doc.doctype;

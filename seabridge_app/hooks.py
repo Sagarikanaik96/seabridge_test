@@ -136,7 +136,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Invoice-approver",
 		"Employee-is_head",
 		"Company-supplier_exists",
-		"Purchase Order-receipt_required"
+		"Purchase Order-receipt_required",
+		"Purchase Invoice-is_bpa_exists"
 		]
 	]
 ]
@@ -196,7 +197,7 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 {"dt": "Role", 
 		"filters":[
         [
-        "name","in",["Agent", "Accounts Payable","Finance Manager"]
+        "name","in",["Agent", "Accounts Payable","Finance Manager","MCST Member"]
 	]
 	]
 },

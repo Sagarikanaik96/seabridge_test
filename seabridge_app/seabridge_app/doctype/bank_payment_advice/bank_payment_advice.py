@@ -7,6 +7,8 @@ import frappe
 from frappe.model.document import Document
 from datetime import date
 from itertools import groupby
+import json
+from frappe.core.doctype.communication.email import make
 
 class BankPaymentAdvice(Document):
 	pass
@@ -77,3 +79,41 @@ def sort_details(doc):
 	bpad=frappe.db.get_list("Bank Payment Advice Details",filters={'parent':doc,'parenttype':'Bank Payment Advice'},fields={'*'})
 	sorted_users = sorted(bpad, key=lambda x: (x['overdue_days']))
 	return sorted_users
+
+@frappe.whitelist()
+def update_rejected_invoice(invoices,company):
+	invoices_list=json.loads(invoices)
+	for doc in invoices_list:
+		bpa_doc=frappe.get_doc("Bank Payment Advice",doc['parent'])
+		bpa_doc.append('rejected_invoice_details', {
+								'invoice_document':doc['invoice_document'],
+								'overdue_days':doc['overdue_days'],
+								'debit_note':doc['debit_note'],
+								'debit_note_amount':doc['debit_note_amount'],
+								'supplier_name':doc['supplier_name'],
+								'invoice_amount':doc['invoice_amount'],
+								'due_date':doc['due_date'],
+								'outstanding_amount':doc['outstanding_amount'],
+								'payment_transaction_amount':doc['outstanding_amount'],
+								'cheque_no':doc['cheque_no'],
+								'cheque_date':doc['cheque_date'],
+								'purchase_order':doc['purchase_order'],
+								'purchase_order_amount':doc['purchase_order_amount'],
+								'has_sbtfx_contract':doc['has_sbtfx_contract'],
+								'bank_account':doc['bank_account'],
+								'bank_name':doc['bank_name'],
+								'is_funded':doc['is_funded']
+							})
+		bpa_doc.save()
+		estate_manager=frappe.db.get_value("Company",{'name':company},'associate_agent')  
+		make(subject = "Invoice ", content='Invoice "'+doc['invoice_document']+'" is rejected from Bank Payment Advice "'+doc['parent']+'".', recipients=estate_manager,send_email=True)
+
+		pi_doc=frappe.get_doc("Purchase Invoice",doc['invoice_document'])
+		pi_doc.db_set('is_bpa_exists',0)  
+
+@frappe.whitelist()
+def update_current_approves(doc,current_approves):
+	bpa_doc=frappe.get_doc("Bank Payment Advice",doc)
+	approves=int(current_approves)+1
+	bpa_doc.db_set("current_approves",approves)
+	frappe.db.commit()
