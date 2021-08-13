@@ -698,10 +698,10 @@ def create_payment(invoices, account, company, mode_of_payment):
     purchase_invoices = frappe.db.get_list("Purchase Invoice", filters={
                                            'name': ['in', invoice_list]}, fields={'*'})
     for inv in purchase_invoices:
-        if not inv['supplier_name'] in supplier_list:
-            supplier_list[inv['supplier_name']] = inv['grand_total']
-    	else:
-        	supplier_list[inv['supplier_name']] += inv['grand_total']
+            if not inv['supplier_name'] in supplier_list:
+                supplier_list[inv['supplier_name']] = inv['grand_total']
+            else:
+                supplier_list[inv['supplier_name']] += inv['grand_total']
     Keymax = max(supplier_list, key=lambda x: supplier_list[x])
     total_approvals = frappe.db.sql(
         """SELECT total_approvals_required FROM `tabApproval Amount Limit Details` WHERE %s BETWEEN minimum_limit AND maximum_limit and parent=%s """, (supplier_list[Keymax], company), as_dict=True)
@@ -714,7 +714,7 @@ def create_payment(invoices, account, company, mode_of_payment):
                                       total_approvals_required=approvals['total_approvals_required'],
                                       is_bpa_exists=True
                                       )).insert(ignore_mandatory=True)
-    bpa_doc.save()
+        bpa_doc.save()
     user_list = frappe.db.get_list(
         'User', filters={'represents_company': company}, fields={'email'})
     for row in user_list:
