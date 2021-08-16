@@ -205,7 +205,7 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 {"dt": "Workflow", 
 		"filters":[
         [
-        "name","in",["PI Approval WF"]
+        "name","in",["PI Approval WF","BPA Approval Workflow"]
 	]
 	]
 },
