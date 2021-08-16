@@ -282,10 +282,28 @@ if(invoices_list!=undefined){
 }
 },
 after_workflow_action: (frm) => {
-	if (frm.doc.workflow_state == "Pending") {
-		var current_approves=frm.doc.current_approves+1
-		frm.set_value('current_approves',current_approves)
-		cur_frm.refresh_field("current_approves")
+	if(frm.doc.workflow_state=="Pending" || frm.doc.workflow_state=="Submitted"){
+		frappe.call({
+		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.update_current_approves",
+		        args:{
+				doc:frm.doc.name,
+				current_approves:frm.doc.current_approves,
+				approvers:frm.doc.approvers	
+			},
+		        async:false,
+		        callback: function(r){
+			 cur_frm.refresh_field("current_approves")
+			}
+			});
+	}	
+},
+before_workflow_action:(frm) => {
+	if(frm.doc.workflow_state=="Pending"){
+		var str=frm.doc.approvers.substring(1);
+		var approvers=str.split(',')
+		if(approvers.includes(frappe.session.user)){
+			frappe.throw("You don't have permission to approve the document as you already approved this document once.");
+		}
 	}
 }
 })

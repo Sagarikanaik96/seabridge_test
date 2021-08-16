@@ -712,6 +712,7 @@ def create_payment(invoices, account, company, mode_of_payment):
                                       bank_account=bank_account,
                                       mode_of_payment=mode_of_payment,
                                       total_approvals_required=approvals['total_approvals_required'],
+                                      total_approves=(approvals['total_approvals_required']-1),
                                       is_bpa_exists=True
                                       )).insert(ignore_mandatory=True)
         bpa_doc.save()

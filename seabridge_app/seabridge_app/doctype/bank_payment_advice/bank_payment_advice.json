@@ -9,11 +9,13 @@
   "naming_series",
   "company",
   "total_approvals_required",
+  "total_approves",
   "current_approves",
   "column_break_3",
   "date",
   "bank_account",
   "mode_of_payment",
+  "approvers",
   "section_break_6",
   "bank_payment_advice_details",
   "filter_list",
@@ -116,11 +118,25 @@
    "fieldtype": "Int",
    "label": "Current Approves",
    "read_only": 1
+  },
+  {
+   "fieldname": "total_approves",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Total Approves",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approvers",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Approvers",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2021-08-13 13:19:40.153806",
+ "modified": "2021-08-16 16:22:13.170423",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Bank Payment Advice",

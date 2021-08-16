@@ -112,8 +112,15 @@ def update_rejected_invoice(invoices,company):
 		pi_doc.db_set('is_bpa_exists',0)  
 
 @frappe.whitelist()
-def update_current_approves(doc,current_approves):
+def update_current_approves(doc,current_approves,approvers=None):
+	approvers_list=[]
 	bpa_doc=frappe.get_doc("Bank Payment Advice",doc)
 	approves=int(current_approves)+1
 	bpa_doc.db_set("current_approves",approves)
+	if approvers is not None:
+		approvers_list.append(approvers)
+	if frappe.session.user not in approvers_list:
+		approvers_list.append(frappe.session.user)
+	approvers_name = ','.join(approvers_list)
+	bpa_doc.db_set("approvers",approvers_name)
 	frappe.db.commit()
