@@ -1061,7 +1061,7 @@ def get_bpa_data(name=None,status=None, company=None,
                 DATE_FORMAT(bpa.date,"%d-%m-%Y"),"20000",bpa.total_approvals_required,
                 bpa.workflow_state,"""+str(records[0][0])+""",bpa.current_approves
                 from 
-                `tabBank Payment Advice` bpa  where bpa.workflow_state!="Submitted" 
+                `tabBank Payment Advice` bpa  where bpa.workflow_state="Pending" 
                 """+conditions+sort+limit)
     else:
         items=""
