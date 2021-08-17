@@ -757,27 +757,28 @@ def create_payment(invoices, account, company, mode_of_payment):
                 "Supplier", {'name': inv['supplier_name']}, "bank_account")
             bank_name = frappe.db.get_value(
                 "Supplier", {'name': inv['supplier_name']}, "bank_name")
-        bpa_doc.append('bank_payment_advice_details', {
-            'invoice_document': inv['name'],
-            'overdue_days': days_val,
-            'debit_note': return_inv,
-            'debit_note_amount': return_total,
-            'supplier_name': inv['supplier_name'],
-            'invoice_amount': inv['grand_total'],
-            'due_date': inv['due_date'],
-            'outstanding_amount': inv['outstanding_amount'],
-            'payment_transaction_amount': inv['outstanding_amount'],
-            'cheque_no': "1234",
-            'cheque_date': datetime.date(datetime.now()),
-            'purchase_order': po,
-            'purchase_order_amount': purchase_amount,
-            'has_sbtfx_contract': has_sbtfx,
-            'bank_account': bank_account,
-            'bank_name': bank_name,
-            'is_funded': inv['is_funded']
-        })
-    bpa_doc.save()
-    frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
+        if total_approvals!=[]:
+            bpa_doc.append('bank_payment_advice_details', {
+                'invoice_document': inv['name'],
+                'overdue_days': days_val,
+                'debit_note': return_inv,
+                'debit_note_amount': return_total,
+                'supplier_name': inv['supplier_name'],
+                'invoice_amount': inv['grand_total'],
+                'due_date': inv['due_date'],
+                'outstanding_amount': inv['outstanding_amount'],
+                'payment_transaction_amount': inv['outstanding_amount'],
+                'cheque_no': "1234",
+                'cheque_date': datetime.date(datetime.now()),
+                'purchase_order': po,
+                'purchase_order_amount': purchase_amount,
+                'has_sbtfx_contract': has_sbtfx,
+                'bank_account': bank_account,
+                'bank_name': bank_name,
+                'is_funded': inv['is_funded']
+            })
+            bpa_doc.save()
+            frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
                     "'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
 
 
@@ -1007,3 +1008,84 @@ def create_api_interacion_tracker(url, date_time, status, message):
                                   message=message
                                   )).insert(ignore_permissions='true')
     ait_doc.save(ignore_permissions=True)
+
+
+@frappe.whitelist()
+def get_mcst_member():
+	mcst_user=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""",frappe.session.user)
+
+	for user_list in estate_user:
+			for user in user_list:
+				if(user==frappe.session.user):
+					role_count+=1
+	return role_count
+
+@frappe.whitelist()
+def get_mcst_company():
+	return frappe.db.get_value('User', {'name':frappe.session.user},'represents_company')
+
+
+@frappe.whitelist()
+def get_bpa_data(name=None,status=None, company=None,
+                         start=0, sort_by='name', sort_order='desc'):
+    '''Return data to render the item dashboard'''
+    mcst_user=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""",frappe.session.user)
+    if mcst_user:
+        filters = []
+        conditions = ""
+        if name:
+            conditions += str('And bpa.name="'+name+'"')
+        if status:
+            conditions += str('And bpa.workflow_state="'+status+'"')
+        if company:
+            conditions += str('And bpa.company="'+company+'"')
+        sort = " Order by bpa.name "+sort_order
+        if sort_by:
+            if(sort_by == "name"):
+                sort = " Order by bpa.name "+sort_order
+            elif(sort_by == "date"):
+                sort = " Order by bpa.date "+sort_order+" ,bpa.name "+sort_order
+
+        limit = ' Limit 20 offset '+start
+
+        records = frappe.db.sql("""select 
+            count(bpa.name) as "count"
+            from 
+            `tabBank Payment Advice` bpa where bpa.workflow_state!="Submitted" 
+            """+conditions)
+        items = frappe.db.sql("""select bpa.name as "name",
+                DATE_FORMAT(bpa.date,"%d-%m-%Y"),"20000",bpa.total_approvals_required,
+                bpa.workflow_state,"""+str(records[0][0])+""",bpa.current_approves
+                from 
+                `tabBank Payment Advice` bpa  where bpa.workflow_state!="Submitted" 
+                """+conditions+sort+limit)
+    else:
+        items=""
+    return items
+
+@frappe.whitelist()
+def approve_bpa(doc):
+	bpa_doc = frappe.get_doc("Bank Payment Advice", doc)
+	bpa_approvers=bpa_doc.approvers.split(',')
+	if frappe.session.user in bpa_approvers:
+		frappe.throw('You dont have permission to approve the document '+bpa_doc.name+' as you have already approved this document once.')
+	if bpa_doc.current_approves!=(bpa_doc.total_approvals_required-1):
+		approvers_list=[]
+		if bpa_doc.approvers is not None:
+			approvers_list.append(bpa_doc.approvers)
+		if frappe.session.user not in approvers_list:
+			approvers_list.append(frappe.session.user)
+		approvers_name = ','.join(approvers_list)
+		bpa_doc.db_set("approvers",approvers_name)
+		bpa_doc.db_set('workflow_state', 'Pending')
+		bpa_doc.db_set('current_approves', bpa_doc.current_approves+1)
+		frappe.db.commit()
+	else:
+		bpa_doc.submit()
+		bpa_doc.db_set('workflow_state', 'Submitted')
+		bpa_doc.db_set('current_approves', bpa_doc.current_approves+1)
+		frappe.db.commit()

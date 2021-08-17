@@ -66,6 +66,7 @@ refresh:function(frm,cdt,cdn){
         
     },
 after_save:function(frm,cdt,cdn){
+	if(frm.doc.company_type=="Vendor"){
 	frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "has_sbtfx_contract",(s)=>{
 		if(s.has_sbtfx_contract!=frm.doc.has_sbtfx_contract){
 				frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "name",(r)=>{
@@ -114,6 +115,7 @@ after_save:function(frm,cdt,cdn){
 			})
 		}
 	})
+	}
 },
 associate_agent_company:function(frm,cdt,cdn){
     if(frm.doc.associate_agent!==undefined){

@@ -44,7 +44,7 @@ def auto_create_payment_entry(doc,method):
 		payment_type="Pay",
 		posting_date=doc.date,
 		company=doc.company,
-		mode_of_payment="Wire Transfer",
+		mode_of_payment=doc.mode_of_payment,
 		paid_from=frappe.db.get_value('Bank Account',{'name':doc.bank_account},'account'),
 		party_type="Supplier",
 		paid_amount="0",
