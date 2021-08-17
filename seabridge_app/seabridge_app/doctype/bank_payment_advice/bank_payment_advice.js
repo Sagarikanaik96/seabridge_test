@@ -2,6 +2,7 @@
 // For license information, please see license.txt
 
 var invoices_list=[];
+var previous_workflow_state;
 frappe.ui.form.on('Bank Payment Advice', {
 company:function(frm,cdt,cdn){
 	frappe.db.get_value("Bank Account",frm.doc.bank_account,"company",(c)=>{
@@ -282,7 +283,7 @@ if(invoices_list!=undefined){
 }
 },
 after_workflow_action: (frm) => {
-	if(frm.doc.workflow_state=="Pending" || frm.doc.workflow_state=="Submitted"){
+	if((frm.doc.workflow_state=="Pending" || frm.doc.workflow_state=="Submitted")&&(previous_workflow_state!="Draft")){
 		frappe.call({
 		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.update_current_approves",
 		        args:{
@@ -296,10 +297,22 @@ after_workflow_action: (frm) => {
 			}
 			});
 	}	
+	if(previous_workflow_state=="Draft" && frm.doc.workflow_state=="Pending"){
+		frappe.call({
+		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.send_email",
+		        args:{
+				doc:frm.doc.name	
+			},
+		        async:false,
+		        callback: function(r){
+			}
+			});
+	}
 },
 before_workflow_action:(frm) => {
-	if(frm.doc.workflow_state=="Pending"){
-		var str=frm.doc.approvers.substring(1);
+	previous_workflow_state=frm.doc.workflow_state		
+	if(frm.doc.workflow_state=="Pending"&&frm.doc.approvers!=undefined){
+		var str=frm.doc.approvers;
 		var approvers=str.split(',')
 		if(approvers.includes(frappe.session.user)){
 			frappe.throw("You don't have permission to approve the document as you already approved this document once.");

@@ -124,3 +124,11 @@ def update_current_approves(doc,current_approves,approvers=None):
 	approvers_name = ','.join(approvers_list)
 	bpa_doc.db_set("approvers",approvers_name)
 	frappe.db.commit()
+
+@frappe.whitelist()
+def send_email(doc):
+	mcst_member=frappe.db.sql("""select u.name as email
+            from `tabUser` u,`tabHas Role` r where
+            u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""", as_dict=True)
+	for row in mcst_member:
+		make(subject = "Bank Payment Advice is Created", content='Bank Payment Advice"'+doc+'" is Created".', recipients=row.email,send_email=True)

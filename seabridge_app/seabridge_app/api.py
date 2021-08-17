@@ -17,6 +17,7 @@ from itertools import groupby
 from frappe.frappeclient import FrappeOAuth2Client, OAuth2Session
 import requests
 from datetime import timedelta, date
+from frappe import _
 
 #from flask import Flask, render_template
 #app = Flask(__name__)
@@ -705,59 +706,60 @@ def create_payment(invoices, account, company, mode_of_payment):
     Keymax = max(supplier_list, key=lambda x: supplier_list[x])
     total_approvals = frappe.db.sql(
         """SELECT total_approvals_required FROM `tabApproval Amount Limit Details` WHERE %s BETWEEN minimum_limit AND maximum_limit and parent=%s """, (supplier_list[Keymax], company), as_dict=True)
-    for approvals in total_approvals:
-        bpa_doc = frappe.get_doc(dict(doctype='Bank Payment Advice',
-                                      company=company,
-                                      date=datetime.date(datetime.now()),
-                                      bank_account=bank_account,
-                                      mode_of_payment=mode_of_payment,
-                                      total_approvals_required=approvals['total_approvals_required'],
-                                      total_approves=(approvals['total_approvals_required']-1),
-                                      is_bpa_exists=True
-                                      )).insert(ignore_mandatory=True)
-        bpa_doc.save()
-    user_list = frappe.db.get_list(
-        'User', filters={'represents_company': company}, fields={'email'})
-    for row in user_list:
-        make(subject='Pending for Aprroval', recipients=row.email,
-             communication_medium="Email", content='Pending for Approval', send_email=True)
-    for inv in purchase_invoices:
-        number = (datetime.date(datetime.now())-inv['due_date'])
-        days_val = number.days
-        return_invoices = frappe.db.get_list("Purchase Invoice", filters={
-                                             'return_against': inv['name']}, fields={'*'})
-        if return_invoices:
-            return_inv = return_invoices[0]['name']
-            return_total = return_invoices[0]['grand_total']
-        else:
-            return_inv = ''
-            return_total = 0
-        purchase_order = frappe.db.get_value(
-            'Purchase Invoice', {'name': inv['name']}, 'purchase_order')
-        if purchase_order:
-            po = purchase_order
-            purchase_amount = frappe.db.get_value(
-                'Purchase Order', {'name': po}, 'grand_total')
-        else:
-            po = ''
-            purchase_amount = 0
-        has_sbtfx = frappe.db.get_value(
-            'Supplier', {'name': inv['supplier_name']}, 'has_sbtfx_contract')
-        if has_sbtfx == 1 and inv['is_funded'] == 1:
-            represents_company = frappe.db.get_value(
-                'Supplier', {'name': inv['supplier_name']}, 'represents_company')
-            parent_company = frappe.db.get_value(
-                'Company', {'name': represents_company}, "parent_company")
-            bank_account = frappe.db.get_value(
-                "Company", {'name': parent_company}, "bank_account")
-            bank_name = frappe.db.get_value(
-                "Company", {'name': parent_company}, "bank_name")
-        else:
-            bank_account = frappe.db.get_value(
-                "Supplier", {'name': inv['supplier_name']}, "bank_account")
-            bank_name = frappe.db.get_value(
-                "Supplier", {'name': inv['supplier_name']}, "bank_name")
-        if total_approvals!=[]:
+    if total_approvals:
+        for approvals in total_approvals:
+            bpa_doc = frappe.get_doc(dict(doctype='Bank Payment Advice',
+                                        company=company,
+                                        date=datetime.date(datetime.now()),
+                                        bank_account=bank_account,
+                                        mode_of_payment=mode_of_payment,
+                                        total_approvals_required=approvals['total_approvals_required'],
+                                        total_approves=(approvals['total_approvals_required']-1)
+                                        )).insert(ignore_mandatory=True)
+            bpa_doc.save()
+        user_list = frappe.db.get_list(
+            'User', filters={'represents_company': company}, fields={'email'})
+        for row in user_list:
+            make(subject='Pending for Aprroval', recipients=row.email,
+                communication_medium="Email", content='Pending for Approval', send_email=True)
+        for inv in purchase_invoices:
+            doc=frappe.get_doc("Purchase Invoice",inv['name'])
+            doc.db_set('is_bpa_exists',1)
+            number = (datetime.date(datetime.now())-inv['due_date'])
+            days_val = number.days
+            return_invoices = frappe.db.get_list("Purchase Invoice", filters={
+                                                'return_against': inv['name']}, fields={'*'})
+            if return_invoices:
+                return_inv = return_invoices[0]['name']
+                return_total = return_invoices[0]['grand_total']
+            else:
+                return_inv = ''
+                return_total = 0
+            purchase_order = frappe.db.get_value(
+                'Purchase Invoice', {'name': inv['name']}, 'purchase_order')
+            if purchase_order:
+                po = purchase_order
+                purchase_amount = frappe.db.get_value(
+                    'Purchase Order', {'name': po}, 'grand_total')
+            else:
+                po = ''
+                purchase_amount = 0
+            has_sbtfx = frappe.db.get_value(
+                'Supplier', {'name': inv['supplier_name']}, 'has_sbtfx_contract')
+            if has_sbtfx == 1 and inv['is_funded'] == 1:
+                represents_company = frappe.db.get_value(
+                    'Supplier', {'name': inv['supplier_name']}, 'represents_company')
+                parent_company = frappe.db.get_value(
+                    'Company', {'name': represents_company}, "parent_company")
+                bank_account = frappe.db.get_value(
+                    "Company", {'name': parent_company}, "bank_account")
+                bank_name = frappe.db.get_value(
+                    "Company", {'name': parent_company}, "bank_name")
+            else:
+                bank_account = frappe.db.get_value(
+                    "Supplier", {'name': inv['supplier_name']}, "bank_account")
+                bank_name = frappe.db.get_value(
+                    "Supplier", {'name': inv['supplier_name']}, "bank_name")
             bpa_doc.append('bank_payment_advice_details', {
                 'invoice_document': inv['name'],
                 'overdue_days': days_val,
@@ -768,7 +770,7 @@ def create_payment(invoices, account, company, mode_of_payment):
                 'due_date': inv['due_date'],
                 'outstanding_amount': inv['outstanding_amount'],
                 'payment_transaction_amount': inv['outstanding_amount'],
-                'cheque_no': "1234",
+                'cheque_no': bpa_doc.name,
                 'cheque_date': datetime.date(datetime.now()),
                 'purchase_order': po,
                 'purchase_order_amount': purchase_amount,
@@ -777,10 +779,11 @@ def create_payment(invoices, account, company, mode_of_payment):
                 'bank_name': bank_name,
                 'is_funded': inv['is_funded']
             })
-            bpa_doc.save()
-            frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
-                    "'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
-
+        bpa_doc.save()
+        frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
+                        "'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
+    else:
+        frappe.throw(_("Please maintain total approvals required for maximum amount '{0}' at company '{1}'.").format(supplier_list[Keymax], company))
 
 @frappe.whitelist()
 def get_user_roles_dashboard():
@@ -1009,19 +1012,6 @@ def create_api_interacion_tracker(url, date_time, status, message):
                                   )).insert(ignore_permissions='true')
     ait_doc.save(ignore_permissions=True)
 
-
-@frappe.whitelist()
-def get_mcst_member():
-	mcst_user=frappe.db.sql("""select u.name 
-			from `tabUser` u,`tabHas Role` r where u.name=%s and
-			u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""",frappe.session.user)
-
-	for user_list in estate_user:
-			for user in user_list:
-				if(user==frappe.session.user):
-					role_count+=1
-	return role_count
-
 @frappe.whitelist()
 def get_mcst_company():
 	return frappe.db.get_value('User', {'name':frappe.session.user},'represents_company')
@@ -1069,23 +1059,25 @@ def get_bpa_data(name=None,status=None, company=None,
 
 @frappe.whitelist()
 def approve_bpa(doc):
-	bpa_doc = frappe.get_doc("Bank Payment Advice", doc)
-	bpa_approvers=bpa_doc.approvers.split(',')
-	if frappe.session.user in bpa_approvers:
-		frappe.throw('You dont have permission to approve the document '+bpa_doc.name+' as you have already approved this document once.')
-	if bpa_doc.current_approves!=(bpa_doc.total_approvals_required-1):
-		approvers_list=[]
-		if bpa_doc.approvers is not None:
-			approvers_list.append(bpa_doc.approvers)
-		if frappe.session.user not in approvers_list:
-			approvers_list.append(frappe.session.user)
-		approvers_name = ','.join(approvers_list)
-		bpa_doc.db_set("approvers",approvers_name)
-		bpa_doc.db_set('workflow_state', 'Pending')
-		bpa_doc.db_set('current_approves', bpa_doc.current_approves+1)
-		frappe.db.commit()
-	else:
-		bpa_doc.submit()
-		bpa_doc.db_set('workflow_state', 'Submitted')
-		bpa_doc.db_set('current_approves', bpa_doc.current_approves+1)
-		frappe.db.commit()
+    bpa_doc = frappe.get_doc("Bank Payment Advice", doc)
+    bpa_approvers=bpa_doc.approvers.split(',')
+    if frappe.session.user in bpa_approvers:
+        return False
+    else:
+        if bpa_doc.current_approves!=(bpa_doc.total_approvals_required-1):
+            approvers_list=[]
+            if bpa_doc.approvers is not None:
+                approvers_list.append(bpa_doc.approvers)
+            if frappe.session.user not in approvers_list:
+                approvers_list.append(frappe.session.user)
+            approvers_name = ','.join(approvers_list)
+            bpa_doc.db_set("approvers",approvers_name)
+            bpa_doc.db_set('workflow_state', 'Pending')
+            bpa_doc.db_set('current_approves', bpa_doc.current_approves+1)
+            frappe.db.commit()
+        else:
+            bpa_doc.submit()
+            bpa_doc.db_set('workflow_state', 'Submitted')
+            bpa_doc.db_set('current_approves', bpa_doc.current_approves+1)
+            frappe.db.commit()
+        return True
