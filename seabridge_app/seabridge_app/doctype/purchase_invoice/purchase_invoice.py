@@ -86,11 +86,11 @@ def post_invoice(name):
                      
                      if response_code=="<Response [200]>":
                          doc_posted=True
-                         doc.add_comment('Comment','Sent the '+doc.name+' to SBTFX successfully.')
+                         doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.')
                          #create_api_interacion_tracker(headers[0].url,date_time,'Success',message)
                      else:
                          doc_posted=False
-                         doc.add_comment('Comment','Unable to send the '+doc.name+' to SBTFX')
+                         doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url)
                          #create_api_interacion_tracker(headers[0].url,date_time,'Failure',message)
                          #make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
                          #doc.db_set('workflow_state','Pending')
@@ -98,7 +98,7 @@ def post_invoice(name):
                 except Exception:
                      print(Exception)
                      doc_posted=False
-                     doc.add_comment('Comment','Unable to send the '+doc.name+' to SBTFX') 
+                     doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url) 
                      #msg=frappe.log_error(frappe.get_traceback())
                      #create_api_interacion_tracker(headers[0].url,date_time,'Failure',msg.error)
                      #make(subject = 'Transaction Unsuccessful',recipients = headers[0].email,communication_medium = "Email",content = msg.error,send_email = True)

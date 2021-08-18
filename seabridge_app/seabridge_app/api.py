@@ -364,6 +364,9 @@ def get_user_estate_roles():
 @frappe.whitelist()
 def approve_invoice(doc):
     pi_doc = frappe.get_doc("Purchase Invoice", doc)
+    pi_doc.db_set('workflow_state', 'To Pay')
+    pi_doc.db_set('status', 'Unpaid')
+    frappe.db.commit()
     doc_posted = False
     headers = frappe.db.get_list("API Integration", fields={'*'})
     has_sbtfx_contract = frappe.db.get_value(
@@ -388,23 +391,18 @@ def approve_invoice(doc):
                     headers[0].url, document, headers=headers_list, verify=True)
                 response_code = str(res)
                 res = conn.post_process(res)
-                #if response_code == "<Response [200]>":
-                doc_posted = True
-                pi_doc.add_comment(
-                    'Comment', 'Sent the '+pi_doc.name+' to '+headers[0].url+' successfully.')
-                pi_doc.db_set('workflow_state', 'To Pay')
-                pi_doc.db_set('status', 'Unpaid')
-                frappe.db.commit()
-                #else:
-                    #doc_posted = False
-                    #pi_doc.add_comment(
-                        #'Comment', 'Unable to send the '+pi_doc.name+' to '+headers[0].url)
+                if response_code == "<Response [200]>":
+                    doc_posted = True
+                    pi_doc.add_comment('Comment', 'Sent the '+pi_doc.name+' to '+headers[0].url+' successfully.')
+                    
+                else:
+                    doc_posted = False
+                    pi_doc.add_comment('Comment', 'Unable to send the '+pi_doc.name+' to '+headers[0].url)
                     #frappe.log_error(frappe.get_traceback())
-                    #pi_doc.db_set("send_for_approval", True)
+                    pi_doc.db_set("send_for_approval", True)
             except Exception:
                 doc_posted = False
-                pi_doc.add_comment(
-                    'Comment', 'Unable to send the '+pi_doc.name+' to '+headers[0].url)
+                pi_doc.add_comment('Comment', 'Unable to send the '+pi_doc.name+' to '+headers[0].url)
                 frappe.log_error(frappe.get_traceback())
                 pi_doc.db_set("send_for_approval", True)
 
@@ -720,7 +718,7 @@ def create_payment(invoices, account, company, mode_of_payment):
                                         )).insert(ignore_mandatory=True)
             bpa_doc.save()
         
-        send_email(bpa_doc.name)
+        send_email(bpa_doc.name,bpa_doc.company)
 
         for inv in purchase_invoices:
             doc=frappe.get_doc("Purchase Invoice",inv['name'])
@@ -1040,19 +1038,25 @@ def get_bpa_data(name=None,status=None, company=None,
                 sort = " Order by bpa.name "+sort_order
             elif(sort_by == "date"):
                 sort = " Order by bpa.date "+sort_order+" ,bpa.name "+sort_order
+            elif(sort_by == "current_approvers"):
+                sort = " Order by bpa.total_current_approvers "+sort_order+" ,bpa.name "+sort_order
+            elif(sort_by == "approvals_required"):
+                sort = " Order by bpa.total_approvals_required "+sort_order+" ,bpa.name "+sort_order
+            elif(sort_by == "status"):
+                sort = " Order by bpa.workflow_state "+sort_order+" ,bpa.name "+sort_order
 
         limit = ' Limit 20 offset '+start
 
         records = frappe.db.sql("""select 
             count(bpa.name) as "count"
             from 
-            `tabBank Payment Advice` bpa where bpa.workflow_state!="Submitted" 
+            `tabBank Payment Advice` bpa where bpa.workflow_state in ("Pending","Submitted")
             """+conditions)
         items = frappe.db.sql("""select bpa.name as "name",
                 DATE_FORMAT(bpa.date,"%d-%m-%Y"),"20000",bpa.total_approvals_required,
                 bpa.workflow_state,"""+str(records[0][0])+""",bpa.total_current_approvers
                 from 
-                `tabBank Payment Advice` bpa  where bpa.workflow_state="Pending" 
+                `tabBank Payment Advice` bpa  where bpa.workflow_state in ("Pending","Submitted") 
                 """+conditions+sort+limit)
     else:
         items=""
@@ -1061,8 +1065,9 @@ def get_bpa_data(name=None,status=None, company=None,
 @frappe.whitelist()
 def approve_bpa(doc):
     bpa_doc = frappe.get_doc("Bank Payment Advice", doc)
-    bpa_approvers=bpa_doc.approvers.split(',')
-    if frappe.session.user in bpa_approvers:
+    if bpa_doc.approvers is not None:
+        bpa_approvers=bpa_doc.approvers.split(',')
+    if bpa_doc.approvers is not None and frappe.session.user in bpa_approvers:
         return False
     else:
         if bpa_doc.total_current_approvers!=(bpa_doc.total_approvals_required-1):
@@ -1082,3 +1087,14 @@ def approve_bpa(doc):
             bpa_doc.db_set('total_current_approvers', bpa_doc.total_current_approvers+1)
             frappe.db.commit()
         return True
+
+@frappe.whitelist()
+def is_mcst_member():
+	mcst_user=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""",frappe.session.user)
+	if mcst_user:
+		return True
+	else:
+		return False
+

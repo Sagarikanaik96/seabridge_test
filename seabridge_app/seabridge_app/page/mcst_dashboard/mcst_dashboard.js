@@ -25,7 +25,7 @@ page.start = 0;
 		get_query: () => {
 						return {
 							filters: {
-								"workflow_state_name": ["in", ["Draft","Pending"]]
+								"workflow_state_name": ["in", ["Submitted","Pending"]]
 							}
 						}
 					},
@@ -55,11 +55,14 @@ page.start = 0;
 	page.sort_selector = new frappe.ui.SortSelector({
 		parent: page.wrapper.find('.page-form'),
 		args: {
-			sort_by: 'name',
+			sort_by: 'date',
 			sort_order: 'desc',
 			options: [
+				{fieldname: 'date', label: __('BPA Date')},
 				{fieldname: 'name', label: __('Bank Payment Advice')},
-				{fieldname: 'date', label: __('BPA Date')}
+				{fieldname: 'status', label: __('Status')},
+				{fieldname: 'approvals_required', label: __('Total Approvals Required')},
+				{fieldname: 'current_approvers', label: __('Total Current Approvers')}
 			]
 		},
 		change: function(sort_by, sort_order) {
@@ -79,7 +82,6 @@ page.start = 0;
 			this.bpa = page.bpa_field.get_value();
 			this.company=page.company_detail_field.get_value();
 			this.status=page.status_field.get_value();
-			console.log('company-----------',this.company)
 			
 		}
 

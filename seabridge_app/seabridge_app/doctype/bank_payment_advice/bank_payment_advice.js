@@ -49,6 +49,16 @@ var hideTheButtonWrapper = $('*[data-fieldname="bank_payment_advice_details"]');
 hideTheButtonWrapper .find('.grid-add-row').hide();
 
 if(frm.doc.docstatus==0){
+	var mcst_member=false
+	frappe.call({
+                method:"seabridge_app.seabridge_app.api.is_mcst_member",
+                async:false,
+                callback: function(r){
+			if(r.message==true){mcst_member=true}
+			
+		}
+	})
+	if(mcst_member==false){
 	frm.add_custom_button(__('Get Invoices'), function(){
 var select={}
 	 let dialogObj= new frappe.ui.form.MultiSelectDialog({
@@ -217,6 +227,7 @@ cur_frm.save();
 		})
   });	
    }
+	}
 	
 	},
 	date:function(frm,cdt,cdn){
@@ -302,7 +313,8 @@ after_workflow_action: (frm) => {
 		frappe.call({
 		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.send_email",
 		        args:{
-				doc:frm.doc.name	
+				doc:frm.doc.name,
+				company:frm.doc.company	
 			},
 		        async:false,
 		        callback: function(r){

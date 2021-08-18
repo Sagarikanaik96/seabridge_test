@@ -126,9 +126,9 @@ def update_total_current_approvers(doc,total_current_approvers,approvers=None):
 	frappe.db.commit()
 
 @frappe.whitelist()
-def send_email(doc):
+def send_email(doc,company):
 	mcst_member=frappe.db.sql("""select u.name as email
             from `tabUser` u,`tabHas Role` r where
-            u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""", as_dict=True)
+            u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member' and u.represents_company=%s""", company,as_dict=True)
 	for row in mcst_member:
 		make(subject = "Pending For Approval", content='Bank Payment Advice"'+doc+'" is Created".', recipients=row.email,send_email=True)
