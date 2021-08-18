@@ -66,54 +66,56 @@ refresh:function(frm,cdt,cdn){
         
     },
 after_save:function(frm,cdt,cdn){
-	frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "has_sbtfx_contract",(s)=>{
-		if(s.has_sbtfx_contract!=frm.doc.has_sbtfx_contract){
-				frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "name",(r)=>{
-					frappe.call({
-		                                    async: false,
-		                                    "method": "frappe.client.set_value",
-		                                    "args": {
-		                                        "doctype": "Supplier",
-		                                        "name": r.name,
-		                                        "fieldname": "has_sbtfx_contract",
-		                                        "value":frm.doc.has_sbtfx_contract
-		                                    }
-		                                });
-			})
-		}
-	})
-	frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "bank_name",(s)=>{
-		if(s.bank_name!=frm.doc.bank_name){
-				frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "name",(r)=>{
-					frappe.call({
-		                                    async: false,
-		                                    "method": "frappe.client.set_value",
-		                                    "args": {
-		                                        "doctype": "Supplier",
-		                                        "name": r.name,
-		                                        "fieldname": "bank_name",
-		                                        "value":frm.doc.bank_name
-		                                    }
-		                                });
-			})
-		}
-	})
-	frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "bank_account",(s)=>{
-		if(s.bank_account!=frm.doc.bank_account){
-				frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "name",(r)=>{
-					frappe.call({
-		                                    async: false,
-		                                    "method": "frappe.client.set_value",
-		                                    "args": {
-		                                        "doctype": "Supplier",
-		                                        "name": r.name,
-		                                        "fieldname": "bank_account",
-		                                        "value":frm.doc.bank_account
-		                                    }
-		                                });
-			})
-		}
-	})
+	if(frm.doc.company_type=="Vendor" ||(frm.doc.company_type=="Agent" && frm.doc.supplier_exists==1) ){
+		frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "has_sbtfx_contract",(s)=>{
+			if(s.has_sbtfx_contract!=frm.doc.has_sbtfx_contract){
+					frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "name",(r)=>{
+						frappe.call({
+				                            async: false,
+				                            "method": "frappe.client.set_value",
+				                            "args": {
+				                                "doctype": "Supplier",
+				                                "name": r.name,
+				                                "fieldname": "has_sbtfx_contract",
+				                                "value":frm.doc.has_sbtfx_contract
+				                            }
+				                        });
+				})
+			}
+		})
+		frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "bank_name",(s)=>{
+			if(s.bank_name!=frm.doc.bank_name){
+					frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "name",(r)=>{
+						frappe.call({
+				                            async: false,
+				                            "method": "frappe.client.set_value",
+				                            "args": {
+				                                "doctype": "Supplier",
+				                                "name": r.name,
+				                                "fieldname": "bank_name",
+				                                "value":frm.doc.bank_name
+				                            }
+				                        });
+				})
+			}
+		})
+		frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "bank_account",(s)=>{
+			if(s.bank_account!=frm.doc.bank_account){
+					frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "name",(r)=>{
+						frappe.call({
+				                            async: false,
+				                            "method": "frappe.client.set_value",
+				                            "args": {
+				                                "doctype": "Supplier",
+				                                "name": r.name,
+				                                "fieldname": "bank_account",
+				                                "value":frm.doc.bank_account
+				                            }
+				                        });
+				})
+			}
+		})
+	}
 },
 associate_agent_company:function(frm,cdt,cdn){
     if(frm.doc.associate_agent!==undefined){
