@@ -10,7 +10,7 @@
   "company",
   "total_approvals_required",
   "total_approves",
-  "current_approves",
+  "total_current_approvers",
   "column_break_3",
   "date",
   "bank_account",
@@ -37,6 +37,7 @@
    "in_list_view": 1,
    "label": "Company",
    "options": "Company",
+   "read_only_depends_on": "eval:(doc.workflow_state!=\"Draft\" && !(frappe.user_roles.includes('MCST Member')))",
    "reqd": 1
   },
   {
@@ -48,6 +49,7 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Date",
+   "read_only_depends_on": "eval:(doc.workflow_state!=\"Draft\" && !(frappe.user_roles.includes('MCST Member')))",
    "reqd": 1
   },
   {
@@ -56,6 +58,7 @@
    "in_list_view": 1,
    "label": "Bank Account",
    "options": "Bank Account",
+   "read_only_depends_on": "eval:(doc.workflow_state!=\"Draft\" && !(frappe.user_roles.includes('MCST Member')))",
    "reqd": 1
   },
   {
@@ -66,7 +69,8 @@
    "fieldname": "bank_payment_advice_details",
    "fieldtype": "Table",
    "label": "Bank Payment Advice Details",
-   "options": "Bank Payment Advice Details"
+   "options": "Bank Payment Advice Details",
+   "read_only_depends_on": "eval:(doc.workflow_state!=\"Draft\" && !(frappe.user_roles.includes('MCST Member')))"
   },
   {
    "fieldname": "filter_list",
@@ -85,6 +89,7 @@
    "fieldtype": "Link",
    "label": "Mode of Payment",
    "options": "Mode of Payment",
+   "read_only_depends_on": "eval:(doc.workflow_state!=\"Draft\" && !(frappe.user_roles.includes('MCST Member')))",
    "reqd": 1
   },
   {
@@ -114,12 +119,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "current_approves",
-   "fieldtype": "Int",
-   "label": "Current Approves",
-   "read_only": 1
-  },
-  {
    "fieldname": "total_approves",
    "fieldtype": "Int",
    "hidden": 1,
@@ -132,11 +131,17 @@
    "hidden": 1,
    "label": "Approvers",
    "read_only": 1
+  },
+  {
+   "fieldname": "total_current_approvers",
+   "fieldtype": "Int",
+   "label": "Total Current Approvers",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2021-08-17 21:23:32.063804",
+ "modified": "2021-08-18 16:33:11.776337",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Bank Payment Advice",

@@ -12,8 +12,7 @@ from frappe.utils.error import make_error_snapshot
 from seabridge_app.seabridge_app.api import update_monthly_budget
 import json
 import requests
-from seabridge_app.seabridge_app.api import create_api_interacion_tracker
-#from datetime import datetime
+#from seabridge_app.seabridge_app.api import create_api_interacion_tracker
 from frappe.core.doctype.communication.email import make
 
 class SalesInvoice(Document):
@@ -162,23 +161,23 @@ def auto_create_purchase_invoice(doc,method):
 					if response_code=="<Response [200]>":
 						doc_posted=True
 						doc.add_comment('Comment','Sent the '+doc.name+' to SBTFX successfully.')
-						create_api_interacion_tracker(headers[0].url,date_time,'Success',message)
+						#create_api_interacion_tracker(headers[0].url,date_time,'Success',message)
 					else:
 						doc_posted=False
 						doc.add_comment('Comment','Unable to send the '+doc.name+' to SBTFX') 
-						create_api_interacion_tracker(headers[0].url,date_time,'Failure',message)
-						make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
+						#create_api_interacion_tracker(headers[0].url,date_time,'Failure',message)
+						#make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
 				except Exception:
 					print(Exception)
 					doc_posted=False
 					doc.add_comment('Comment','Unable to send the '+doc.name+' to SBTFX')  
-					create_api_interacion_tracker(headers[0].url,date_time,'Failure',message)
-					make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
+					#create_api_interacion_tracker(headers[0].url,date_time,'Failure',message)
+					#make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
 					frappe.log_error(frappe.get_traceback())
-			if doc_posted==False:
-				frappe.throw('Response failed')
+			#if doc_posted==False:
+				#frappe.throw('Response failed')
 
-			print(doc_posted)
+			#print(doc_posted)
 
 def delete_purchase_invoice(doc,method):
 	purchase_invoice=frappe.db.get_value('Purchase Invoice',{'bill_no':doc.name},'name')

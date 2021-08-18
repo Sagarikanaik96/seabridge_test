@@ -112,11 +112,11 @@ def update_rejected_invoice(invoices,company):
 		pi_doc.db_set('is_bpa_exists',0)  
 
 @frappe.whitelist()
-def update_current_approves(doc,current_approves,approvers=None):
+def update_total_current_approvers(doc,total_current_approvers,approvers=None):
 	approvers_list=[]
 	bpa_doc=frappe.get_doc("Bank Payment Advice",doc)
-	approves=int(current_approves)+1
-	bpa_doc.db_set("current_approves",approves)
+	approves=int(total_current_approvers)+1
+	bpa_doc.db_set("total_current_approvers",approves)
 	if approvers is not None:
 		approvers_list.append(approvers)
 	if frappe.session.user not in approvers_list:
@@ -131,4 +131,4 @@ def send_email(doc):
             from `tabUser` u,`tabHas Role` r where
             u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""", as_dict=True)
 	for row in mcst_member:
-		make(subject = "Bank Payment Advice is Created", content='Bank Payment Advice"'+doc+'" is Created".', recipients=row.email,send_email=True)
+		make(subject = "Pending For Approval", content='Bank Payment Advice"'+doc+'" is Created".', recipients=row.email,send_email=True)

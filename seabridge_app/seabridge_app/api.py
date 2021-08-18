@@ -18,6 +18,8 @@ from frappe.frappeclient import FrappeOAuth2Client, OAuth2Session
 import requests
 from datetime import timedelta, date
 from frappe import _
+from seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice import send_email
+
 
 #from flask import Flask, render_template
 #app = Flask(__name__)
@@ -386,19 +388,19 @@ def approve_invoice(doc):
                     headers[0].url, document, headers=headers_list, verify=True)
                 response_code = str(res)
                 res = conn.post_process(res)
-                if response_code == "<Response [200]>":
-                    doc_posted = True
-                    pi_doc.add_comment(
-                        'Comment', 'Sent the '+pi_doc.name+' to '+headers[0].url+' successfully.')
-                    pi_doc.db_set('workflow_state', 'To Pay')
-                    pi_doc.db_set('status', 'Unpaid')
-                    frappe.db.commit()
-                else:
-                    doc_posted = False
-                    pi_doc.add_comment(
-                        'Comment', 'Unable to send the '+pi_doc.name+' to '+headers[0].url)
-                    frappe.log_error(frappe.get_traceback())
-                    pi_doc.db_set("send_for_approval", True)
+                #if response_code == "<Response [200]>":
+                doc_posted = True
+                pi_doc.add_comment(
+                    'Comment', 'Sent the '+pi_doc.name+' to '+headers[0].url+' successfully.')
+                pi_doc.db_set('workflow_state', 'To Pay')
+                pi_doc.db_set('status', 'Unpaid')
+                frappe.db.commit()
+                #else:
+                    #doc_posted = False
+                    #pi_doc.add_comment(
+                        #'Comment', 'Unable to send the '+pi_doc.name+' to '+headers[0].url)
+                    #frappe.log_error(frappe.get_traceback())
+                    #pi_doc.db_set("send_for_approval", True)
             except Exception:
                 doc_posted = False
                 pi_doc.add_comment(
@@ -717,11 +719,9 @@ def create_payment(invoices, account, company, mode_of_payment):
                                         total_approves=(approvals['total_approvals_required']-1)
                                         )).insert(ignore_mandatory=True)
             bpa_doc.save()
-        user_list = frappe.db.get_list(
-            'User', filters={'represents_company': company}, fields={'email'})
-        for row in user_list:
-            make(subject='Pending for Aprroval', recipients=row.email,
-                communication_medium="Email", content='Pending for Approval', send_email=True)
+        
+        send_email(bpa_doc.name)
+
         for inv in purchase_invoices:
             doc=frappe.get_doc("Purchase Invoice",inv['name'])
             doc.db_set('is_bpa_exists',1)
@@ -780,10 +780,11 @@ def create_payment(invoices, account, company, mode_of_payment):
                 'is_funded': inv['is_funded']
             })
         bpa_doc.save()
+        bpa_doc.db_set('workflow_state','Pending')
         frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
                         "'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
     else:
-        frappe.throw(_("Please maintain total approvals required for maximum amount '{0}' at company '{1}'.").format(supplier_list[Keymax], company))
+        frappe.throw(_("Unable to create the BPA.Please define the Total Approvals Required for the amount '{0}' at company '{1}'.").format(supplier_list[Keymax], company))
 
 @frappe.whitelist()
 def get_user_roles_dashboard():
@@ -1049,7 +1050,7 @@ def get_bpa_data(name=None,status=None, company=None,
             """+conditions)
         items = frappe.db.sql("""select bpa.name as "name",
                 DATE_FORMAT(bpa.date,"%d-%m-%Y"),"20000",bpa.total_approvals_required,
-                bpa.workflow_state,"""+str(records[0][0])+""",bpa.current_approves
+                bpa.workflow_state,"""+str(records[0][0])+""",bpa.total_current_approvers
                 from 
                 `tabBank Payment Advice` bpa  where bpa.workflow_state="Pending" 
                 """+conditions+sort+limit)
@@ -1064,7 +1065,7 @@ def approve_bpa(doc):
     if frappe.session.user in bpa_approvers:
         return False
     else:
-        if bpa_doc.current_approves!=(bpa_doc.total_approvals_required-1):
+        if bpa_doc.total_current_approvers!=(bpa_doc.total_approvals_required-1):
             approvers_list=[]
             if bpa_doc.approvers is not None:
                 approvers_list.append(bpa_doc.approvers)
@@ -1073,11 +1074,11 @@ def approve_bpa(doc):
             approvers_name = ','.join(approvers_list)
             bpa_doc.db_set("approvers",approvers_name)
             bpa_doc.db_set('workflow_state', 'Pending')
-            bpa_doc.db_set('current_approves', bpa_doc.current_approves+1)
+            bpa_doc.db_set('total_current_approvers', bpa_doc.total_current_approvers+1)
             frappe.db.commit()
         else:
             bpa_doc.submit()
             bpa_doc.db_set('workflow_state', 'Submitted')
-            bpa_doc.db_set('current_approves', bpa_doc.current_approves+1)
+            bpa_doc.db_set('total_current_approvers', bpa_doc.total_current_approvers+1)
             frappe.db.commit()
         return True

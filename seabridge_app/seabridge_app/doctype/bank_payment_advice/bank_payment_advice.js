@@ -279,23 +279,24 @@ if(invoices_list!=undefined){
 			 refresh_field("rejected_invoice_details");
 			}
 			});	
-       frm.refresh();
+       frm.reload_doc();
 }
 },
 after_workflow_action: (frm) => {
-	if((frm.doc.workflow_state=="Pending" || frm.doc.workflow_state=="Submitted")&&(previous_workflow_state!="Draft")){
+	if((frm.doc.workflow_state=="Pending" || frm.doc.workflow_state=="Approved")&&(previous_workflow_state!="Draft")){
 		frappe.call({
-		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.update_current_approves",
+		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.update_total_current_approvers",
 		        args:{
 				doc:frm.doc.name,
-				current_approves:frm.doc.current_approves,
+				total_current_approvers:frm.doc.total_current_approvers,
 				approvers:frm.doc.approvers	
 			},
 		        async:false,
 		        callback: function(r){
-			 cur_frm.refresh_field("current_approves")
+			 cur_frm.refresh_field("total_current_approvers")
 			}
 			});
+	frm.reload_doc();
 	}	
 	if(previous_workflow_state=="Draft" && frm.doc.workflow_state=="Pending"){
 		frappe.call({
@@ -315,7 +316,7 @@ before_workflow_action:(frm) => {
 		var str=frm.doc.approvers;
 		var approvers=str.split(',')
 		if(approvers.includes(frappe.session.user)){
-			frappe.throw("You don't have permission to approve the document as you already approved this document once.");
+			frappe.throw("You don't have permission to approve the documents  "+frm.doc.name+" as you have already approved the documents once.");
 		}
 	}
 }
