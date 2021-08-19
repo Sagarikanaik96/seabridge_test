@@ -1083,7 +1083,7 @@ def approve_bpa(doc):
             frappe.db.commit()
         else:
             bpa_doc.submit()
-            bpa_doc.db_set('workflow_state', 'Submitted')
+            bpa_doc.db_set('workflow_state', 'Approved')
             bpa_doc.db_set('total_current_approvers', bpa_doc.total_current_approvers+1)
             frappe.db.commit()
         return True
