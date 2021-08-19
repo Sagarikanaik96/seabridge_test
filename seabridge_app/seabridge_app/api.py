@@ -696,7 +696,7 @@ def create_payment(invoices, account, company, mode_of_payment):
     bank_account = account.strip()
     invoice_list = json.loads(invoices)
     supplier_list = {}
-    purchase_invoices = frappe.db.get_list("Purchase Invoice", filters={
+    purchase_invoices = frappe.db.get_all("Purchase Invoice", filters={
                                            'name': ['in', invoice_list]}, fields={'*'})
     for inv in purchase_invoices:
             if not inv['supplier_name'] in supplier_list:
