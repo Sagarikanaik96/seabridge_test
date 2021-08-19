@@ -1050,13 +1050,13 @@ def get_bpa_data(name=None,status=None, company=None,
         records = frappe.db.sql("""select 
             count(bpa.name) as "count"
             from 
-            `tabBank Payment Advice` bpa where bpa.workflow_state in ("Pending","Submitted")
+            `tabBank Payment Advice` bpa where bpa.workflow_state in ("Pending","Approved")
             """+conditions)
         items = frappe.db.sql("""select bpa.name as "name",
                 DATE_FORMAT(bpa.date,"%d-%m-%Y"),"20000",bpa.total_approvals_required,
                 bpa.workflow_state,"""+str(records[0][0])+""",bpa.total_current_approvers
                 from 
-                `tabBank Payment Advice` bpa  where bpa.workflow_state in ("Pending","Submitted") 
+                `tabBank Payment Advice` bpa  where bpa.workflow_state in ("Pending","Approved") 
                 """+conditions+sort+limit)
     else:
         items=""

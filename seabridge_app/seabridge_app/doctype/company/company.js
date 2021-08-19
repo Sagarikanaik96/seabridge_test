@@ -80,7 +80,7 @@ before_save:function(frm,cdt,cdn){
 		}
 		if (item.total_approvals_required<1){
 			frappe.validated = false;
-			msgprint('Total Approvals Required cannot be greater than 0','Alert')		
+			msgprint('Total Approvals Required cannot be equal to 0','Alert')		
 		}
 		$.each(frm.doc.approval_amount_limit_details, function(inner_idx, inner_item){
 			if(item.minimum_limit==inner_item.minimum_limit && item.maximum_limit==inner_item.maximum_limit && inner_idx!=idx){
