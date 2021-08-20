@@ -73,7 +73,7 @@ frappe.ui.form.on('Purchase Order', {
     },
 
     refresh:function(frm,cdt,cdn){
-if(frm.doc.docstatus==1){
+if(frm.doc.docstatus==1 && frm.doc.receipt_required==1  ){
 frm.add_custom_button(__("Service Completion Note"), function() {
             frappe.route_options = {
             "reference_no": frm.doc.name,
@@ -206,9 +206,7 @@ function sendEmail(name,email,template){
 frappe.ui.form.on("Purchase Order Item", "item_code",function(frm, doctype, name) {
       var row = locals[doctype][name];
         frappe.db.get_value("Item",row.item_code, "item_group",(s)=>{
-         // console.log(s) 
-          frappe.db.get_value("Item Group",s.item_group,"parent_item_group",(a)=>{
-             // console.log(a) 
+          frappe.db.get_value("Item Group",s.item_group,"parent_item_group",(a)=>{ 
 		if(s.item_group=="Services"){
 		row.parent_item_group="Services";
 		}else

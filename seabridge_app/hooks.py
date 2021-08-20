@@ -136,7 +136,12 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Invoice-approver",
 		"Employee-is_head",
 		"Company-supplier_exists",
-		"Purchase Order-receipt_required"
+		"Purchase Order-receipt_required",
+		"Purchase Invoice-is_bpa_exists",
+		"Purchase Invoice-month_budget",
+		"Company-approval_details",
+		"Company-approval_amount_limit_details",
+		"Bank Payment Advice-workflow_state"
 		]
 	]
 ]
@@ -183,8 +188,12 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 				"Customer-is_internal_customer-read_only",
 				"Budget-company-ignore_user_permissions",
 				"Employee-reports_to-mandatory_depends_on",
-				"Purchase Receipt-represents_company-ignore_user_permissions"
-	
+				"Purchase Order-represents_company-ignore_user_permissions",
+				"Sales Order-represents_company-ignore_user_permissions",
+				"Purchase Invoice-represents_company-ignore_user_permissions",
+				"Sales Invoice-represents_company-ignore_user_permissions",
+				"Purchase Receipt-represents_company-ignore_user_permissions",
+				"Purchase Invoice-naming_series-options"
 						
 			]
 	]
@@ -197,7 +206,7 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 {"dt": "Role", 
 		"filters":[
         [
-        "name","in",["Agent", "Accounts Payable","Finance Manager"]
+        "name","in",["Agent", "Accounts Payable","Finance Manager","MCST Member","Estate Manager"]
 	]
 	]
 },
@@ -205,7 +214,7 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 {"dt": "Workflow", 
 		"filters":[
         [
-        "name","in",["PI Approval WF"]
+        "name","in",["PI Approval WF","BPA Approval Workflow"]
 	]
 	]
 },
