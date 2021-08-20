@@ -1054,10 +1054,10 @@ def get_bpa_data(name=None,status=None, company=None,
             """+conditions)
         items = frappe.db.sql("""select bpa.name as "name",
                 DATE_FORMAT(bpa.date,"%d-%m-%Y"),"20000",bpa.total_approvals_required,
-                bpa.workflow_state,"""+str(records[0][0])+""",bpa.total_current_approvers
+                bpa.workflow_state,"""+str(records[0][0])+""",bpa.total_current_approvers,bpa.mode_of_payment,count(bpad.name)
                 from 
-                `tabBank Payment Advice` bpa  where bpa.workflow_state in ("Pending","Approved") 
-                """+conditions+sort+limit)
+                `tabBank Payment Advice` bpa left join `tabBank Payment Advice Details` bpad ON bpad.parent=bpa.name where bpa.workflow_state in ("Pending","Approved")
+                """+conditions+""" group by bpad.parent """+sort+limit)
     else:
         items=""
     return items
@@ -1081,11 +1081,13 @@ def approve_bpa(doc):
             bpa_doc.db_set('workflow_state', 'Pending')
             bpa_doc.db_set('total_current_approvers', bpa_doc.total_current_approvers+1)
             frappe.db.commit()
+            bpa_doc.add_comment('Comment','  Approved by '+frappe.session.user)
         else:
             bpa_doc.submit()
             bpa_doc.db_set('workflow_state', 'Approved')
             bpa_doc.db_set('total_current_approvers', bpa_doc.total_current_approvers+1)
             frappe.db.commit()
+            bpa_doc.add_comment('Comment','  Approved by '+frappe.session.user)
         return True
 
 @frappe.whitelist()

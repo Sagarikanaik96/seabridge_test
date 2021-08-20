@@ -124,6 +124,7 @@ def update_total_current_approvers(doc,total_current_approvers,approvers=None):
 	approvers_name = ','.join(approvers_list)
 	bpa_doc.db_set("approvers",approvers_name)
 	frappe.db.commit()
+	bpa_doc.add_comment('Comment','  Approved by '+frappe.session.user)
 
 @frappe.whitelist()
 def send_email(doc,company):

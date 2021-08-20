@@ -123,6 +123,7 @@
    "fieldtype": "Int",
    "hidden": 1,
    "label": "Total Approves",
+   "print_hide": 1,
    "read_only": 1
   },
   {
@@ -130,6 +131,7 @@
    "fieldtype": "Small Text",
    "hidden": 1,
    "label": "Approvers",
+   "print_hide": 1,
    "read_only": 1
   },
   {
@@ -141,7 +143,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2021-08-18 16:33:11.776337",
+ "modified": "2021-08-20 18:43:52.674566",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Bank Payment Advice",

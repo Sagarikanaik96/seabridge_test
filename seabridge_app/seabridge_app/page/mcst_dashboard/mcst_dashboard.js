@@ -25,7 +25,7 @@ page.start = 0;
 		get_query: () => {
 						return {
 							filters: {
-								"workflow_state_name": ["in", ["Submitted","Pending"]]
+								"workflow_state_name": ["in", ["Approved","Pending"]]
 							}
 						}
 					},

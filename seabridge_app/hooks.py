@@ -140,7 +140,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Invoice-is_bpa_exists",
 		"Purchase Invoice-month_budget",
 		"Company-approval_details",
-		"Company-approval_amount_limit_details"
+		"Company-approval_amount_limit_details",
+		"Bank Payment Advice-workflow_state"
 		]
 	]
 ]
