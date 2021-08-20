@@ -105,8 +105,12 @@ def update_rejected_invoice(invoices,company):
 								'is_funded':doc['is_funded']
 							})
 		bpa_doc.save()
-		estate_manager=frappe.db.get_value("Company",{'name':company},'associate_agent')  
-		make(subject = "Invoice ", content='Invoice "'+doc['invoice_document']+'" is rejected from Bank Payment Advice "'+doc['parent']+'".', recipients=estate_manager,send_email=True)
+		estate_manager=frappe.db.get_value("Company",{'name':company},'associate_agent')
+		full_name=frappe.db.get_value("User",{'name':estate_manager},'full_name') 
+		logged_in_user=frappe.db.get_value("User",{'name':frappe.session.user},'full_name')
+		template='<h3> Hi '+full_name+',</h3><br><h4>This is to inform you that some of the available invoice in the BPA: '+doc['invoice_document']+' is rejected and is available in the rejected invoice list. Please access the document'+doc['invoice_document']+' to view the details.</h4><br><br><h3>Thanks and Regards,</h3><h3></h3>'+logged_in_user+'</h3><h3>'+company+'</h3>'
+		make(subject = "Invoice ", content=template, recipients=estate_manager,send_email=True)
+
 
 		pi_doc=frappe.get_doc("Purchase Invoice",doc['invoice_document'])
 		pi_doc.db_set('is_bpa_exists',0)  
@@ -129,8 +133,9 @@ def update_total_current_approvers(doc,total_current_approvers,approvers=None):
 
 @frappe.whitelist()
 def send_email(doc,company):
-	mcst_member=frappe.db.sql("""select u.name as email
+	mcst_member=frappe.db.sql("""select u.name as email,u.full_name
             from `tabUser` u,`tabHas Role` r where
             u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member' and u.represents_company=%s""", company,as_dict=True)
 	for row in mcst_member:
-		make(subject = "Pending For Approval", content='Bank Payment Advice"'+doc+'" is Created".', recipients=row.email,send_email=True)
+		template='<h3> Dear '+row.full_name+',</h3><br><h4>The BPA: '+doc+' is successfully available with the outstanding invoices for your approval. Please approve the  '+doc+' from your end.</h4><br><br><h3>Thanks and Regards,</h3><h3>'+company+'</h3>'
+		make(subject = "Pending For Approval", content=template, recipients=row.email,send_email=True)
