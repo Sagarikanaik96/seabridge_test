@@ -1081,13 +1081,15 @@ def approve_bpa(doc):
             bpa_doc.db_set('workflow_state', 'Pending')
             bpa_doc.db_set('total_current_approvers', bpa_doc.total_current_approvers+1)
             frappe.db.commit()
-            bpa_doc.add_comment('Comment','  Approved by '+frappe.session.user)
+            user_name=frappe.db.get_value("User",{'email':frappe.session.user},'full_name')
+            bpa_doc.add_comment('Comment','  Approved by '+user_name)
         else:
             bpa_doc.submit()
             bpa_doc.db_set('workflow_state', 'Approved')
             bpa_doc.db_set('total_current_approvers', bpa_doc.total_current_approvers+1)
             frappe.db.commit()
-            bpa_doc.add_comment('Comment','  Approved by '+frappe.session.user)
+            user_name=frappe.db.get_value("User",{'email':frappe.session.user},'full_name')
+            bpa_doc.add_comment('Comment','  Approved by '+user_name)
         return True
 
 @frappe.whitelist()
