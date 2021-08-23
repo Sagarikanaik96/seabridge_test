@@ -1096,7 +1096,7 @@ def approve_bpa(doc):
 def is_mcst_member():
 	mcst_user=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
-			u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""",frappe.session.user)
+			u.name=r.parent and u.enabled = 1 and r.role in ('MCST Member','Finance Manager')""",frappe.session.user)
 	if mcst_user:
 		return True
 	else:
