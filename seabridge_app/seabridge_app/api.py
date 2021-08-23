@@ -796,7 +796,9 @@ def get_user_roles_dashboard():
 				from tabUser u,`tabHas Role` r where 
 				u.name = r.parent and r.role = 'Finance Manager'
 				and u.enabled = 1 and u.name=%s""", frappe.session.user)
-
+    mcst_member=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""",frappe.session.user)
     role_count = 0
     for user_list in estate_user:
         for user in user_list:
@@ -810,6 +812,10 @@ def get_user_roles_dashboard():
         for user in user_list:
             if(user == frappe.session.user):
                 role_count += 3
+    for user_list in mcst_member:
+        for user in user_list:
+            if(user==frappe.session.user):
+                role_count+=4
     return role_count
 
 
