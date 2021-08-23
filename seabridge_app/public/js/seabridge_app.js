@@ -17,6 +17,9 @@ $(document).on("startup", function () {
 			else if(role==3){
 				frappe.set_route("#finance-action-list");		
 			}
+			else if(role==4){
+				frappe.set_route("#mcst-dashboard");		
+			}
 		}
 	}
 });
