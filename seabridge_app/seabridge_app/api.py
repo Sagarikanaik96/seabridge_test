@@ -373,6 +373,7 @@ def approve_invoice(doc):
         'Supplier', {'supplier_name': pi_doc.supplier_name}, 'has_sbtfx_contract')
     if has_sbtfx_contract == 1:
         if headers:
+            date_time = datetime.now()
             try:
                 headers_list = {
                     "Authorization": "Bearer " + headers[0].authorization_key,
@@ -390,22 +391,40 @@ def approve_invoice(doc):
                 res = requests.post(
                     headers[0].url, document, headers=headers_list, verify=True)
                 response_code = str(res)
-                res = conn.post_process(res)
+                responsedata = res.json()
+                message = responsedata['Data'][0]['Message']
                 if response_code == "<Response [200]>":
                     doc_posted = True
-                    pi_doc.add_comment('Comment', 'Sent the '+pi_doc.name+' to '+headers[0].url+' successfully.')
-                    
+                    pi_doc.add_comment(
+                        'Comment', 'Sent the '+pi_doc.name+' to SBTFX  successfully.')
+                    pi_doc.db_set('workflow_state', 'To Pay')
+                    pi_doc.db_set('status', 'Unpaid')
+                    frappe.db.commit()
+                    create_api_interacion_tracker(
+                        headers[0].url, date_time, 'Success', message)
                 else:
                     doc_posted = False
-                    pi_doc.add_comment('Comment', 'Unable to send the '+pi_doc.name+' to '+headers[0].url)
-                    #frappe.log_error(frappe.get_traceback())
+                    pi_doc.add_comment(
+                        'Comment', 'Unable to send the '+pi_doc.name+' to SBTFX')
+                    frappe.log_error(frappe.get_traceback())
                     pi_doc.db_set("send_for_approval", True)
+                    create_api_interacion_tracker(
+                        headers[0].url, date_time, 'Failure', message)
+                    make(subject='Transaction Unsuccessful',
+                         recipients=headers[0].email, communication_medium="Email", content=message, send_email=True)
+                    pi_doc.db_set('workflow_state', 'Pending')
             except Exception:
                 doc_posted = False
-                pi_doc.add_comment('Comment', 'Unable to send the '+pi_doc.name+' to '+headers[0].url)
-                frappe.log_error(frappe.get_traceback())
-                pi_doc.db_set("send_for_approval", True)
-
+                pi_doc.add_comment(
+                    'Comment', 'Unable to send the '+pi_doc.name+' to SBTFX')
+                msg = frappe.log_error(frappe.get_traceback())
+                create_api_interacion_tracker(
+                    headers[0].url, date_time, 'Failure', msg.error)
+                make(subject='Transaction Unsuccessful',
+                     recipients=headers[0].email, communication_medium="Email", content=msg.error, send_email=True)
+                pi_doc.db_set('workflow_state', 'Pending')
+                frappe.db.commit()
+                frappe.throw("Response Failed")
 
 @frappe.whitelist()
 def reject_invoice(doc, remarks):
