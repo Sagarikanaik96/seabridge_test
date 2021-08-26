@@ -27,7 +27,6 @@ after_save:function(frm,cdt,cdn){
 
 
 },
-
 before_save:function(frm,cdt,cdn){
 	var count=0;
 
@@ -106,7 +105,25 @@ before_save:function(frm,cdt,cdn){
 			})
 		}
 	},
-
+before_workflow_action: (frm) => {
+if(frm.doc.workflow_state=="Pending"){
+	frappe.call({
+		        method:"seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.post_invoice",
+		        args:{
+				name:frm.doc.name	
+			},
+		        async:false,
+		        callback: function(r){
+		           if(r.message==false){
+				frappe.validated = false;
+				msgprint("Response Failed",'Alert')
+				frm.relod_doc()
+			}
+				
+		        }
+		    });
+	}
+},
 after_workflow_action: (frm) => {
 var email_id;
 	if (frm.doc.workflow_state == "Pending") {
@@ -151,19 +168,6 @@ if(frm.doc.workflow_state=="Submitted"){
         	});
 }
 
-	if(frm.doc.workflow_state=="To Pay"){
-	frappe.call({
-		        method:"seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.post_invoice",
-		        args:{
-				name:frm.doc.name	
-			},
-		        async:false,
-		        callback: function(r){
-		            
-				
-		        }
-		    });
-	}
 	if(frm.doc.workflow_state=="Return"){
 		frappe.call({
                 method:"seabridge_app.seabridge_app.api.update_status_after_return",

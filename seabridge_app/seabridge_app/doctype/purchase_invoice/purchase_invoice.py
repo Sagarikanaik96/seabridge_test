@@ -75,7 +75,7 @@ def post_invoice(name):
                      credit_days=frappe.db.sql("""select sum(credit_days) as credit_days from `tabPayment Terms Template Detail` where parent=%s""",(doc.payment_terms_template), as_list=True)
                      if credit_days[0][0]==None:
                          credit_days[0][0]=0
-                     document='{"documents":[{"buyer_name":"'+ doc.company+'", "buyer_permid": "", "seller_name": "'+doc.supplier_name+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+str(doc.posting_date)+'", "document_due_date":"'+str(doc.due_date)+'", "amount_total": "'+str(doc.outstanding_amount)+'", "currency_name": "SGD", "source": "seaprops","credit_days": '+str(credit_days[0][0])+', "document_category": "AP", "orig_transaction_ref":"'+doc.bill_no+'"}]}'
+                     document='{"documents":[{"buyer_name":"'+ doc.company+'", "buyer_permid": "", "seller_name": "'+doc.supplier_name+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+str(doc.posting_date)+'", "document_due_date":"'+str(doc.due_date)+'", "amount_total": "'+str(doc.outstanding_amount)+'", "currency_name": "SGD", "source": "seaprop","credit_days": '+str(credit_days[0][0])+', "document_category": "AP", "orig_transaction_ref":"'+doc.bill_no+'"}]}'
                      print(document)
                      res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
                      print("RESPONSE",res)
@@ -86,28 +86,22 @@ def post_invoice(name):
                      
                      if response_code=="<Response [200]>":
                          doc_posted=True
-                         doc.add_comment('Comment','Sent the '+doc.name+' to '+headers[0].url+' successfully.')
+                         doc.add_comment('Comment','Sent the '+doc.name+'to SBTFX successfully.')
                          create_api_interacion_tracker(headers[0].url,date_time,'Success',message)
                      else:
                          doc_posted=False
-                         doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url)
+                         doc.add_comment('Comment','Unable to send the '+doc.name+' to SBTFX.')
                          create_api_interacion_tracker(headers[0].url,date_time,'Failure',message)
                          make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
-                         doc.db_set('workflow_state','Pending')
-                         frappe.db.commit()
                 except Exception:
                      print(Exception)
                      doc_posted=False
-                     doc.add_comment('Comment','Unable to send the '+doc.name+' to '+headers[0].url) 
+                     doc.add_comment('Comment','Unable to send the '+doc.name+' to SBTFX.') 
                      msg=frappe.log_error(frappe.get_traceback())
                      create_api_interacion_tracker(headers[0].url,date_time,'Failure',msg.error)
                      make(subject = 'Transaction Unsuccessful',recipients = headers[0].email,communication_medium = "Email",content = msg.error,send_email = True)
-                     doc.db_set('workflow_state','Pending')
-                     frappe.db.commit()
-        if doc_posted==False:             
-            frappe.throw("Response Failed")
-        print(doc_posted)
-
+                    
+        return doc_posted
        
 @frappe.whitelist()
 def get_approver(company,workflow_state):
