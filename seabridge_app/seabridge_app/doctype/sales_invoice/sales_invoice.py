@@ -199,7 +199,7 @@ def before_submit(name):
 				credit_days=frappe.db.sql("""select sum(credit_days) as credit_days from `tabPayment Terms Template Detail` where parent=%s""",(doc.payment_terms_template), as_list=True)
 				if credit_days[0][0]==None:
 					credit_days[0][0]=0
-				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+doc.posting_date+'", "document_due_date":"'+doc.due_date+'", "amount_total": "'+str(doc.grand_total)+'", "currency_name": "SGD", "source": "seaprop","credit_days": '+str(credit_days[0][0])+', "document_category": "AR", "orig_transaction_ref":"'+frappe.db.get_value("Sales Order",{"po_no":doc.po_no},"name")+'"}]}'
+				document='{"documents":[{"buyer_name":"'+ doc.customer_name+'", "buyer_permid": "", "seller_name": "'+doc.company+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+str(doc.posting_date)+'", "document_due_date":"'+str(doc.due_date)+'", "amount_total": "'+str(doc.grand_total)+'", "currency_name": "SGD", "source": "seaprop","credit_days": '+str(credit_days[0][0])+', "document_category": "AR", "orig_transaction_ref":"'+frappe.db.get_value("Sales Order",{"po_no":doc.po_no},"name")+'"}]}'
 				print(document)
 				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
 				message=""
