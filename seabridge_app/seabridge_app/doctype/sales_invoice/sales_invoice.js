@@ -45,7 +45,7 @@ frappe.ui.form.on('Sales Invoice', {
                     callback: function(r){
 			if(r.message==false){
 				frappe.validated = false;
-				msgprint("Response Failed",'Alert')
+				msgprint("Unable to process the request. Please check the API Interaction list.",'Alert')
 			}
                     }
                 });
