@@ -984,7 +984,7 @@ def get_programs(status=None):
                 response_code=str(res)
                 if response_code=="<Response [200]>":
                     doc_posted=True
-                    create_api_interacion_tracker(headers[0].url,date_time,'Success',message)
+                    create_api_interacion_tracker(headers[0].enquiry_url,date_time,'Success',message)
                     program_list = response['Data']['programs']
                     for val in program_list:
                         for row in val['invoices']:
@@ -996,13 +996,13 @@ def get_programs(status=None):
                 else:
                     doc_posted=False
                     msg=frappe.log_error(frappe.get_traceback())
-                    create_api_interacion_tracker(headers[0].url,date_time,'Failure',message)
+                    create_api_interacion_tracker(headers[0].enquiry_url,date_time,'Failure',message)
                     make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
                 
             except Exception:
                 doc_posted = False
                 message=frappe.log_error(frappe.get_traceback())
-                create_api_interacion_tracker(headers[0].url,date_time,'Failure',message.error)
+                create_api_interacion_tracker(headers[0].enquiry_url,date_time,'Failure',message.error)
                 make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message.error,send_email = True)
         return response_data
 
@@ -1030,16 +1030,16 @@ def fund_invoice(invoice_id):
                 pi_doc.db_set('on_hold', 1)
                 pi_doc.db_set('release_date', Date_req)
                 frappe.db.commit()
-                create_api_interacion_tracker(headers[0].url,date_time,'Success',message)
+                create_api_interacion_tracker(headers[0].fund_request_url,date_time,'Success',message)
             else:
                 doc_posted=False
-                create_api_interacion_tracker(headers[0].url,date_time,'Failure',message)
+                create_api_interacion_tracker(headers[0].fund_request_url,date_time,'Failure',message)
                 make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
 
         except Exception:
             doc_posted = False
             msg=frappe.log_error(frappe.get_traceback())
-            create_api_interacion_tracker(headers[0].url,date_time,'Failure',msg.error)
+            create_api_interacion_tracker(headers[0].fund_request_url,date_time,'Failure',msg.error)
             make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = msg.error,send_email = True)
 
 
