@@ -1008,7 +1008,11 @@ def get_programs(status=None):
 
 
 @frappe.whitelist()
-def fund_invoice(invoice_id):
+def fund_invoice(invoice_id,sales_invoice):
+    si_company=""
+    if sales_invoice:
+        si_doc=frappe.get_doc("Sales Invoice",sales_invoice)        
+        si_company=si_doc.company
     headers = frappe.db.get_list("API Integration", fields={'*'})
     if headers:
         pi_doc = frappe.get_doc("Purchase Invoice", invoice_id)
@@ -1025,21 +1029,22 @@ def fund_invoice(invoice_id):
             response = res.json()
             response_code = str(res)
             message=response['Data'][0]['Message']
+            
             if response_code == "<Response [200]>":
                 Date_req = date.today() + timedelta(days=365)
                 pi_doc.db_set('on_hold', 1)
                 pi_doc.db_set('release_date', Date_req)
                 frappe.db.commit()
-                create_api_interacion_tracker(headers[0].fund_request_url,pi_doc.company,date_time,'Success',message)
+                create_api_interacion_tracker(headers[0].fund_request_url,si_company,date_time,'Success',message)
             else:
                 doc_posted=False
-                create_api_interacion_tracker(headers[0].fund_request_url,pi_doc.company,date_time,'Failure',message)
+                create_api_interacion_tracker(headers[0].fund_request_url,si_company,date_time,'Failure',message)
                 make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
 
         except Exception:
             doc_posted = False
             msg=frappe.log_error(frappe.get_traceback())
-            create_api_interacion_tracker(headers[0].fund_request_url,pi_doc.company,date_time,'Failure',msg.error)
+            create_api_interacion_tracker(headers[0].fund_request_url,si_company,date_time,'Failure',msg.error)
             make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = msg.error,send_email = True)
 
 
