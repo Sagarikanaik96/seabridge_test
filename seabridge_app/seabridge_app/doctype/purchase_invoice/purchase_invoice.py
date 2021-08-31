@@ -91,7 +91,7 @@ def post_invoice(name):
                      else:
                          doc_posted=False
                          doc.add_comment('Comment','Unable to send the '+doc.name+' to SBTFX.')
-                         create_api_interacion_tracker(headers[0].url,date_time,doc.company,'Failure',message)
+                         create_api_interacion_tracker(headers[0].url,doc.company,date_time,'Failure',message)
                          make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
                 except Exception:
                      print(Exception)

@@ -401,7 +401,7 @@ def approve_invoice(doc):
                     pi_doc.db_set('status', 'Unpaid')
                     frappe.db.commit()
                     create_api_interacion_tracker(
-                        headers[0].url, date_time, 'Success', message)
+                        headers[0].url, pi_doc.company, date_time, 'Success', message)
                 else:
                     doc_posted=False
                     pi_doc.add_comment(
@@ -409,7 +409,7 @@ def approve_invoice(doc):
                     frappe.log_error(frappe.get_traceback())
                     pi_doc.db_set("send_for_approval", True)
                     create_api_interacion_tracker(
-                        headers[0].url, date_time, 'Failure', message)
+                        headers[0].url, pi_doc.company, date_time, 'Failure', message)
                     make(subject='Transaction Unsuccessful',
                          recipients=headers[0].email, communication_medium="Email", content=message, send_email=True)
                     pi_doc.db_set('workflow_state', 'Pending')
@@ -419,7 +419,7 @@ def approve_invoice(doc):
                     'Comment', 'Unable to send the '+pi_doc.name+' to SBTFX')
                 msg = frappe.log_error(frappe.get_traceback())
                 create_api_interacion_tracker(
-                    headers[0].url, date_time, 'Failure', msg.error)
+                    headers[0].url, pi_doc.company, date_time, 'Failure', msg.error)
                 make(subject='Transaction Unsuccessful',
                      recipients=headers[0].email, communication_medium="Email", content=msg.error, send_email=True)
                 pi_doc.db_set('workflow_state', 'Pending')
