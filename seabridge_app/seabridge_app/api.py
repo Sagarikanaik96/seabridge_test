@@ -28,7 +28,7 @@ import datetime
 # def index():
 #  return render_template('web_pi_row.html.html')
 
-
+date_time=datetime.datetime.now()
 @frappe.whitelist()
 def get_email(doctype, is_internal_customer, customer_name):
     company = frappe.db.get_value(doctype, {
@@ -980,18 +980,30 @@ def get_programs(status=None):
                 res = requests.post(
                     headers[0].enquiry_url, document, headers=headers_list, verify=True)
                 response = res.json()
-                program_list = response['Data']['programs']
-                for val in program_list:
-                    for row in val['invoices']:
-                        if status == '':
-                            row['status'] = "NaN"
-                        else:
-                            row['status'] = status
-                    response_data.append(val)
-
+                message=response['Message']
+                response_code=str(res)
+                if response_code=="<Response [200]>":
+                    doc_posted=True
+                    create_api_interacion_tracker(headers[0].url,date_time,'Success',message)
+                    program_list = response['Data']['programs']
+                    for val in program_list:
+                        for row in val['invoices']:
+                            if status == '':
+                                row['status'] = "NaN"
+                            else:
+                                row['status'] = status
+                        response_data.append(val)
+                else:
+                    doc_posted=False
+                    msg=frappe.log_error(frappe.get_traceback())
+                    create_api_interacion_tracker(headers[0].url,date_time,'Failure',message)
+                    make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
+                
             except Exception:
                 doc_posted = False
-                frappe.log_error(frappe.get_traceback())
+                message=frappe.log_error(frappe.get_traceback())
+                create_api_interacion_tracker(headers[0].url,date_time,'Failure',message.error)
+                make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message.error,send_email = True)
         return response_data
 
 
@@ -999,7 +1011,6 @@ def get_programs(status=None):
 def fund_invoice(invoice_id):
     headers = frappe.db.get_list("API Integration", fields={'*'})
     if headers:
-        date_time=datetime.datetime.now()
         try:
             headers_list = {
                 "Authorization": "Bearer " + headers[0].fund_request_authorization_key,
