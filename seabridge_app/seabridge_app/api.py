@@ -19,7 +19,7 @@ import requests
 from datetime import timedelta, date
 from frappe import _
 from seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice import send_email
-
+import datetime
 
 #from flask import Flask, render_template
 #app = Flask(__name__)
@@ -28,7 +28,7 @@ from seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice
 # def index():
 #  return render_template('web_pi_row.html.html')
 
-
+date_time=datetime.datetime.now()
 @frappe.whitelist()
 def get_email(doctype, is_internal_customer, customer_name):
     company = frappe.db.get_value(doctype, {
@@ -367,12 +367,13 @@ def approve_invoice(doc):
     pi_doc.db_set('workflow_state', 'To Pay')
     pi_doc.db_set('status', 'Unpaid')
     frappe.db.commit()
-    doc_posted = False
-    headers = frappe.db.get_list("API Integration", fields={'*'})
     has_sbtfx_contract = frappe.db.get_value(
         'Supplier', {'supplier_name': pi_doc.supplier_name}, 'has_sbtfx_contract')
     if has_sbtfx_contract == 1:
+        headers = frappe.db.get_list("API Integration", fields={'*'})
+        doc_posted=False
         if headers:
+            date_time = datetime.datetime.now()
             try:
                 headers_list = {
                     "Authorization": "Bearer " + headers[0].authorization_key,
@@ -390,22 +391,40 @@ def approve_invoice(doc):
                 res = requests.post(
                     headers[0].url, document, headers=headers_list, verify=True)
                 response_code = str(res)
-                res = conn.post_process(res)
+                responsedata = res.json()
+                message = responsedata['Data'][0]['Message']
                 if response_code == "<Response [200]>":
-                    doc_posted = True
-                    pi_doc.add_comment('Comment', 'Sent the '+pi_doc.name+' to '+headers[0].url+' successfully.')
-                    
+                    doc_posted=True
+                    pi_doc.add_comment(
+                        'Comment', 'Sent the '+pi_doc.name+' to SBTFX  successfully.')
+                    pi_doc.db_set('workflow_state', 'To Pay')
+                    pi_doc.db_set('status', 'Unpaid')
+                    frappe.db.commit()
+                    create_api_interacion_tracker(
+                        headers[0].url,pi_doc.name, pi_doc.company, date_time, 'Success', message)
                 else:
-                    doc_posted = False
-                    pi_doc.add_comment('Comment', 'Unable to send the '+pi_doc.name+' to '+headers[0].url)
-                    #frappe.log_error(frappe.get_traceback())
+                    doc_posted=False
+                    pi_doc.add_comment(
+                        'Comment', 'Unable to send the '+pi_doc.name+' to SBTFX')
+                    frappe.log_error(frappe.get_traceback())
                     pi_doc.db_set("send_for_approval", True)
+                    create_api_interacion_tracker(
+                        headers[0].url, pi_doc.name,pi_doc.company, date_time, 'Failure', message)
+                    make(subject='Transaction Unsuccessful',
+                         recipients=headers[0].email, communication_medium="Email", content=message, send_email=True)
+                    pi_doc.db_set('workflow_state', 'Pending')
             except Exception:
-                doc_posted = False
-                pi_doc.add_comment('Comment', 'Unable to send the '+pi_doc.name+' to '+headers[0].url)
-                frappe.log_error(frappe.get_traceback())
-                pi_doc.db_set("send_for_approval", True)
-
+                doc_posted=False
+                pi_doc.add_comment(
+                    'Comment', 'Unable to send the '+pi_doc.name+' to SBTFX')
+                msg = frappe.log_error(frappe.get_traceback())
+                create_api_interacion_tracker(
+                    headers[0].url, pi_doc.name,pi_doc.company, date_time, 'Failure', msg.error)
+                make(subject='Transaction Unsuccessful',
+                     recipients=headers[0].email, communication_medium="Email", content=msg.error, send_email=True)
+                pi_doc.db_set('workflow_state', 'Pending')
+                frappe.db.commit()
+                frappe.throw("Unable to process the request. Please check the API Interaction list.")
 
 @frappe.whitelist()
 def reject_invoice(doc, remarks):
@@ -961,25 +980,42 @@ def get_programs(status=None):
                 res = requests.post(
                     headers[0].enquiry_url, document, headers=headers_list, verify=True)
                 response = res.json()
-                program_list = response['Data']['programs']
-                for val in program_list:
-                    for row in val['invoices']:
-                        if status == '':
-                            row['status'] = "NaN"
-                        else:
-                            row['status'] = status
-                    response_data.append(val)
-
+                message=response['Message']
+                response_code=str(res)
+                if response_code=="<Response [200]>":
+                    doc_posted=True
+                    create_api_interacion_tracker(headers[0].enquiry_url,represents_company[0][0],represents_company[0][0],date_time,'Success',message)
+                    program_list = response['Data']['programs']
+                    for val in program_list:
+                        for row in val['invoices']:
+                            if status == '':
+                                row['status'] = "NaN"
+                            else:
+                                row['status'] = status
+                        response_data.append(val)
+                else:
+                    doc_posted=False
+                    msg=frappe.log_error(frappe.get_traceback())
+                    create_api_interacion_tracker(headers[0].enquiry_url,represents_company[0][0],represents_company[0][0],date_time,'Failure',message)
+                    make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
+                
             except Exception:
                 doc_posted = False
-                frappe.log_error(frappe.get_traceback())
+                message=frappe.log_error(frappe.get_traceback())
+                create_api_interacion_tracker(headers[0].enquiry_url,represents_company[0][0],represents_company[0][0],date_time,'Failure',message.error)
+                make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message.error,send_email = True)
         return response_data
 
 
 @frappe.whitelist()
-def fund_invoice(invoice_id):
+def fund_invoice(invoice_id,sales_invoice):
+    si_company=""
+    if sales_invoice:
+        si_doc=frappe.get_doc("Sales Invoice",sales_invoice)        
+        si_company=si_doc.company
     headers = frappe.db.get_list("API Integration", fields={'*'})
     if headers:
+        pi_doc = frappe.get_doc("Purchase Invoice", invoice_id)
         try:
             headers_list = {
                 "Authorization": "Bearer " + headers[0].fund_request_authorization_key,
@@ -992,24 +1028,33 @@ def fund_invoice(invoice_id):
                 headers[0].fund_request_url, document, headers=headers_list, verify=True)
             response = res.json()
             response_code = str(res)
+            message=response['Data'][0]['Message']
             if response_code == "<Response [200]>":
                 Date_req = date.today() + timedelta(days=365)
-                pi_doc = frappe.get_doc("Purchase Invoice", invoice_id)
                 pi_doc.db_set('on_hold', 1)
                 pi_doc.db_set('release_date', Date_req)
                 frappe.db.commit()
+                create_api_interacion_tracker(headers[0].fund_request_url,sales_invoice,si_company,date_time,'Success',message)
+            else:
+                doc_posted=False
+                create_api_interacion_tracker(headers[0].fund_request_url,sales_invoice,si_company,date_time,'Failure',message)
+                make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = message,send_email = True)
 
         except Exception:
             doc_posted = False
-            frappe.log_error(frappe.get_traceback())
+            msg=frappe.log_error(frappe.get_traceback())
+            create_api_interacion_tracker(headers[0].fund_request_url,sales_invoice,si_company,date_time,'Failure',msg.error)
+            make(subject = 'Transaction Unsuccessful',recipients =headers[0].email,communication_medium = "Email",content = msg.error,send_email = True)
 
 
 @frappe.whitelist()
-def create_api_interacion_tracker(url, date_time, status, message):
+def create_api_interacion_tracker(url,document,company, date_time, status, message):
     date = date_time.strftime('%Y-%m-%d')
     time = date_time.strftime('%H:%M:%S')
     ait_doc = frappe.get_doc(dict(doctype='API Interaction Tracker',
                                   endpoint_url=url,
+                                  document=document,
+                                  company=company,
                                   date=date,
                                   time=time,
                                   status=status,

@@ -35,6 +35,21 @@ frappe.ui.form.on('Sales Invoice', {
                     }
                 });
     },
+    before_submit:function(frm,cdt,cdn){
+	frappe.call({
+                    method:"seabridge_app.seabridge_app.doctype.sales_invoice.sales_invoice.before_submit",
+                    args:{
+                        name:frm.doc.name
+                    },
+                   async:false,
+                    callback: function(r){
+			if(r.message==false){
+				frappe.validated = false;
+				msgprint("Unable to process the request. Please check the API Interaction list.",'Alert')
+			}
+                    }
+                });
+},
     before_save:function(frm,cdt,cdn){
         var count=0;
         frappe.model.with_doc("Company", frm.doc.company, function() {
@@ -128,10 +143,8 @@ frappe.ui.form.on('Sales Invoice', {
 
 frappe.ui.form.on("Sales Invoice Item", "item_code",function(frm, doctype, name) {
       var row = locals[doctype][name];
-        frappe.db.get_value("Item",row.item_code, "item_group",(s)=>{
-         // console.log(s) 
+        frappe.db.get_value("Item",row.item_code, "item_group",(s)=>{ 
           frappe.db.get_value("Item Group",s.item_group,"parent_item_group",(a)=>{
-             // console.log(a) 
 		if(s.item_group=="Services"){
 		row.parent_item_group="Services";
 		}else
