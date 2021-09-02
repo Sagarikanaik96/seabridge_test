@@ -729,7 +729,7 @@ def create_payment(invoices, account, company, mode_of_payment):
         for approvals in total_approvals:
             bpa_doc = frappe.get_doc(dict(doctype='Bank Payment Advice',
                                         company=company,
-                                        date=datetime.date(datetime.now()),
+                                        date=date.today(),
                                         bank_account=bank_account,
                                         mode_of_payment=mode_of_payment,
                                         total_approvals_required=approvals['total_approvals_required'],
@@ -738,11 +738,11 @@ def create_payment(invoices, account, company, mode_of_payment):
             bpa_doc.save()
         
         send_email(bpa_doc.name,bpa_doc.company)
-
         for inv in purchase_invoices:
+            date_today=date.today()
             doc=frappe.get_doc("Purchase Invoice",inv['name'])
             doc.db_set('is_bpa_exists',1)
-            number = (datetime.date(datetime.now())-inv['due_date'])
+            number = date.today()-inv['due_date']
             days_val = number.days
             return_invoices = frappe.db.get_list("Purchase Invoice", filters={
                                                 'return_against': inv['name']}, fields={'*'})
@@ -788,7 +788,7 @@ def create_payment(invoices, account, company, mode_of_payment):
                 'outstanding_amount': inv['outstanding_amount'],
                 'payment_transaction_amount': inv['outstanding_amount'],
                 'cheque_no': bpa_doc.name,
-                'cheque_date': datetime.date(datetime.now()),
+                'cheque_date': date.today(),
                 'purchase_order': po,
                 'purchase_order_amount': purchase_amount,
                 'has_sbtfx_contract': has_sbtfx,
