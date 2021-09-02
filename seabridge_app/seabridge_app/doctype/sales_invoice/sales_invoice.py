@@ -204,7 +204,7 @@ def before_submit(name):
 				res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
 				message=""
 				responsedata=res.json()
-				message=responsedata['Data'][0]['Message']
+				message=str(responsedata['Data'][0]['Message'])
 				response_code=str(res)
 				res = conn.post_process(res)
 				if response_code=="<Response [200]>":
