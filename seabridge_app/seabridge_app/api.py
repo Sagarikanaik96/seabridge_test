@@ -389,7 +389,7 @@ def approve_invoice(doc):
                     pi_doc.due_date)+'", "amount_total": "'+str(pi_doc.outstanding_amount)+'", "currency_name": "SGD", "source": "seaprop","credit_days": '+str(credit_days[0][0])+', "document_category": "AP", "orig_transaction_ref":"'+pi_doc.bill_no+'"}]}'
                 print(document)
                 res = requests.post(
-                    headers[0].url, document, headers=headers_list, verify=True)
+                    headers[0].url, document, headers=headers_list, verify=False)
                 response_code = str(res)
                 responsedata = res.json()
                 message = responsedata['Data'][0]['Message']
@@ -939,7 +939,7 @@ def post_fund_opportunities(seller_name):
                 document = '{"seller_name": "'+supplier_list[0][0]+'"}'
                 print(document)
                 res = requests.post(
-                    headers[0].enquiry_url, document, headers=headers_list, verify=True)
+                    headers[0].enquiry_url, document, headers=headers_list, verify=False)
                 print("RESPONSE", res)
                 response = res.json()
                 response_data = {}
@@ -978,7 +978,7 @@ def get_programs(status=None):
                     headers[0].enquiry_url, headers[0].enquiry_authorization_key)
                 document = '{"seller_name": "'+supplier_list[0][0]+'"}'
                 res = requests.post(
-                    headers[0].enquiry_url, document, headers=headers_list, verify=True)
+                    headers[0].enquiry_url, document, headers=headers_list, verify=False)
                 response = res.json()
                 message=response['Message']
                 response_code=str(res)
@@ -1025,7 +1025,7 @@ def fund_invoice(invoice_id,sales_invoice):
                 headers[0].fund_request_url, headers[0].fund_request_authorization_key)
             document = '{"invoices": ["'+invoice_id+'"]}'
             res = requests.post(
-                headers[0].fund_request_url, document, headers=headers_list, verify=True)
+                headers[0].fund_request_url, document, headers=headers_list, verify=False)
             response = res.json()
             response_code = str(res)
             message=response['Data'][0]['Message']
