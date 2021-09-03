@@ -77,7 +77,7 @@ def post_invoice(name):
                          credit_days[0][0]=0
                      document='{"documents":[{"buyer_name":"'+ doc.company+'", "buyer_permid": "", "seller_name": "'+doc.supplier_name+'", "seller_permid": "", "document_id": "'+doc.name+'", "document_type": "I", "document_date": "'+str(doc.posting_date)+'", "document_due_date":"'+str(doc.due_date)+'", "amount_total": "'+str(doc.outstanding_amount)+'", "currency_name": "SGD", "source": "seaprop","credit_days": '+str(credit_days[0][0])+', "document_category": "AP", "orig_transaction_ref":"'+doc.bill_no+'"}]}'
                      print(document)
-                     res = requests.post(headers[0].url, document, headers=headers_list, verify=True)
+                     res = requests.post(headers[0].url, document, headers=headers_list, verify=False)
                      print("RESPONSE",res)
                      response_code=str(res)
                      responsedata=res.json()
