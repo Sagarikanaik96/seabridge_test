@@ -119,3 +119,4 @@ def before_insert(doc,method):
 			frappe.response['message']="Naming Series not passed in JSON and unavailable at the Company, default naming series used"
 	doc.naming_series=naming_series
 
+	

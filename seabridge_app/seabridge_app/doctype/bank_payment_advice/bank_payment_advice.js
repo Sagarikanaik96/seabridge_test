@@ -1,8 +1,9 @@
 // Copyright (c) 2020, seabridge_app and contributors
 // For license information, please see license.txt
 
+var invoices_list=[];
+var previous_workflow_state;
 frappe.ui.form.on('Bank Payment Advice', {
-
 company:function(frm,cdt,cdn){
 	frappe.db.get_value("Bank Account",frm.doc.bank_account,"company",(c)=>{
 		if(c.company!=frm.doc.company){
@@ -48,6 +49,16 @@ var hideTheButtonWrapper = $('*[data-fieldname="bank_payment_advice_details"]');
 hideTheButtonWrapper .find('.grid-add-row').hide();
 
 if(frm.doc.docstatus==0){
+	var mcst_member=false
+	frappe.call({
+                method:"seabridge_app.seabridge_app.api.is_mcst_member",
+                async:false,
+                callback: function(r){
+			if(r.message==true){mcst_member=true}
+			
+		}
+	})
+	if(mcst_member==false){
 	frm.add_custom_button(__('Get Invoices'), function(){
 var select={}
 	 let dialogObj= new frappe.ui.form.MultiSelectDialog({
@@ -67,18 +78,20 @@ var select={}
  action(selections) {
 select=selections
  $.each(selections,function(idx){
+	var is_funded=0
  frappe.call({
             method: "frappe.client.get_list",
 		async:false,
             args: {
                 doctype: "Purchase Invoice",
-                fields: ["name","due_date","supplier_name","status","grand_total","outstanding_amount"],
+                fields: ["name","due_date","supplier_name","status","grand_total","outstanding_amount","is_funded"],
                 filters:{
                     "name":select[idx]
                 },
             },
             callback: function(r) {
                 for(var i=0;i<r.message.length;i++){
+			is_funded=r.message[i].is_funded
                     var count=0
                     $.each(frm.doc.bank_payment_advice_details, function(idx, detail){
                         if(detail.invoice_document==r.message[i].name){
@@ -95,7 +108,8 @@ select=selections
 			        child.invoice_amount = r.message[i].grand_total;
 			        child.outstanding_amount=r.message[i].outstanding_amount;
 			        child.payment_transaction_amount=r.message[i].outstanding_amount;
-				child.overdue_days=frappe.datetime.get_day_diff(frappe.datetime.nowdate(),child.due_date)
+				child.overdue_days=frappe.datetime.get_day_diff(frappe.datetime.nowdate(),child.due_date);
+				child.is_funded=r.message[i].is_funded;
 				
 			         frappe.call({
             method: "frappe.client.get_list",
@@ -129,7 +143,6 @@ select=selections
 				
 			})
 			
-
 	frappe.db.get_value("Supplier",child.supplier_name,"has_sbtfx_contract",(s)=>{
 		child.has_sbtfx_contract=s.has_sbtfx_contract;
 		cur_frm.refresh_field("bank_payment_advice_details")
@@ -147,8 +160,6 @@ select=selections
 			})
 		}
 		else{
-
-
 		frappe.db.get_value("Supplier",child.supplier_name,"bank_account",(b)=>{
 			child.bank_account=b.bank_account
 		})
@@ -216,6 +227,7 @@ cur_frm.save();
 		})
   });	
    }
+	}
 	
 	},
 	date:function(frm,cdt,cdn){
@@ -255,13 +267,8 @@ cur_frm.save();
 					}
 				})
 			}
-
 		})
-		
-
-	},
-	
-
+},
 	before_submit:function(frm,cdt,cdn){
 		$.each(frm.doc.bank_payment_advice_details, function(idx, item){
 			item.cheque_date=frappe.datetime.nowdate()
@@ -269,7 +276,62 @@ cur_frm.save();
 		})
 
 		
-    }
+    },
+after_save(frm,cdt,cdn){
+if(invoices_list!=undefined){
+	frappe.call({
+		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.update_rejected_invoice",
+		        args:{
+				invoices:invoices_list,
+				company:frm.doc.company	
+			},
+		        async:false,
+		        callback: function(r){
+			 refresh_field("rejected_invoice_details");
+			}
+			});	
+       frm.reload_doc();
+}
+},
+after_workflow_action: (frm) => {
+	if((frm.doc.workflow_state=="Pending" || frm.doc.workflow_state=="Approved")&&(previous_workflow_state!="Draft")){
+		frappe.call({
+		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.update_total_current_approvers",
+		        args:{
+				doc:frm.doc.name,
+				total_current_approvers:frm.doc.total_current_approvers,
+				approvers:frm.doc.approvers	
+			},
+		        async:false,
+		        callback: function(r){
+			 cur_frm.refresh_field("total_current_approvers")
+			}
+			});
+	frm.reload_doc();
+	}	
+	if(previous_workflow_state=="Draft" && frm.doc.workflow_state=="Pending"){
+		frappe.call({
+		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.send_email",
+		        args:{
+				doc:frm.doc.name,
+				company:frm.doc.company	
+			},
+		        async:false,
+		        callback: function(r){
+			}
+			});
+	}
+},
+before_workflow_action:(frm) => {
+	previous_workflow_state=frm.doc.workflow_state		
+	if(frm.doc.workflow_state=="Pending"&&frm.doc.approvers!=undefined){
+		var str=frm.doc.approvers;
+		var approvers=str.split(',')
+		if(approvers.includes(frappe.session.user)){
+			frappe.throw("You don't have permission to approve the documents  "+frm.doc.name+" as you have already approved the documents once.");
+		}
+	}
+}
 })
 
 frappe.ui.form.on("Bank Payment Advice Details", "invoice_document",function(frm, doctype, name) {
@@ -296,6 +358,15 @@ frappe.ui.form.on("Bank Payment Advice Details", "payment_transaction_amount",fu
 	
     }
     })
+frappe.ui.form.on("Bank Payment Advice Details", {
+before_bank_payment_advice_details_remove:function(frm,cdt,cdn) {
+		var row=frappe.get_doc(cdt,cdn);
+		 if(!invoices_list.includes(row)){
+		 	invoices_list.push(row);
+			}
+}
+    })
+
 
 const can_export = frm => {
 	const doctype = frm.doc.doctype;

@@ -7,6 +7,8 @@ import frappe
 from frappe.model.document import Document
 from datetime import date
 from itertools import groupby
+import json
+from frappe.core.doctype.communication.email import make
 
 class BankPaymentAdvice(Document):
 	pass
@@ -42,7 +44,7 @@ def auto_create_payment_entry(doc,method):
 		payment_type="Pay",
 		posting_date=doc.date,
 		company=doc.company,
-		mode_of_payment="Wire Transfer",
+		mode_of_payment=doc.mode_of_payment,
 		paid_from=frappe.db.get_value('Bank Account',{'name':doc.bank_account},'account'),
 		party_type="Supplier",
 		paid_amount="0",
@@ -77,3 +79,63 @@ def sort_details(doc):
 	bpad=frappe.db.get_list("Bank Payment Advice Details",filters={'parent':doc,'parenttype':'Bank Payment Advice'},fields={'*'})
 	sorted_users = sorted(bpad, key=lambda x: (x['overdue_days']))
 	return sorted_users
+
+@frappe.whitelist()
+def update_rejected_invoice(invoices,company):
+	invoices_list=json.loads(invoices)
+	for doc in invoices_list:
+		bpa_doc=frappe.get_doc("Bank Payment Advice",doc['parent'])
+		bpa_doc.append('rejected_invoice_details', {
+								'invoice_document':doc['invoice_document'],
+								'overdue_days':doc['overdue_days'],
+								'debit_note':doc['debit_note'],
+								'debit_note_amount':doc['debit_note_amount'],
+								'supplier_name':doc['supplier_name'],
+								'invoice_amount':doc['invoice_amount'],
+								'due_date':doc['due_date'],
+								'outstanding_amount':doc['outstanding_amount'],
+								'payment_transaction_amount':doc['outstanding_amount'],
+								'cheque_no':doc['cheque_no'],
+								'cheque_date':doc['cheque_date'],
+								'purchase_order':doc['purchase_order'],
+								'purchase_order_amount':doc['purchase_order_amount'],
+								'has_sbtfx_contract':doc['has_sbtfx_contract'],
+								'bank_account':doc['bank_account'],
+								'bank_name':doc['bank_name'],
+								'is_funded':doc['is_funded']
+							})
+		bpa_doc.save()
+		estate_manager=frappe.db.get_value("Company",{'name':company},'associate_agent')
+		full_name=frappe.db.get_value("User",{'name':estate_manager},'full_name') 
+		logged_in_user=frappe.db.get_value("User",{'name':frappe.session.user},'full_name')
+		template='<h3> Hi '+full_name+',</h3><br><h4>This is to inform you that some of the available invoice in the BPA: '+doc['invoice_document']+' is rejected and is available in the rejected invoice list. Please access the document'+doc['invoice_document']+' to view the details.</h4><br><br><h3>Thanks and Regards,</h3><h3></h3>'+logged_in_user+'</h3><h3>'+company+'</h3>'
+		make(subject = "Invoice ", content=template, recipients=estate_manager,send_email=True)
+
+
+		pi_doc=frappe.get_doc("Purchase Invoice",doc['invoice_document'])
+		pi_doc.db_set('is_bpa_exists',0)  
+
+@frappe.whitelist()
+def update_total_current_approvers(doc,total_current_approvers,approvers=None):
+	approvers_list=[]
+	bpa_doc=frappe.get_doc("Bank Payment Advice",doc)
+	approves=int(total_current_approvers)+1
+	bpa_doc.db_set("total_current_approvers",approves)
+	if approvers is not None:
+		approvers_list.append(approvers)
+	if frappe.session.user not in approvers_list:
+		approvers_list.append(frappe.session.user)
+	approvers_name = ','.join(approvers_list)
+	bpa_doc.db_set("approvers",approvers_name)
+	frappe.db.commit()
+	user_name=frappe.db.get_value("User",{'email':frappe.session.user},'full_name')
+	bpa_doc.add_comment('Comment','  Approved by '+user_name)
+
+@frappe.whitelist()
+def send_email(doc,company):
+	mcst_member=frappe.db.sql("""select u.name as email,u.full_name
+            from `tabUser` u,`tabHas Role` r where
+            u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member' and u.represents_company=%s""", company,as_dict=True)
+	for row in mcst_member:
+		template='<h3> Dear '+row.full_name+',</h3><br><h4>The BPA: '+doc+' is successfully available with the outstanding invoices for your approval. Please approve the  '+doc+' from your end.</h4><br><br><h3>Thanks and Regards,</h3><h3>'+company+'</h3>'
+		make(subject = "Pending For Approval", content=template, recipients=row.email,send_email=True)

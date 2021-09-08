@@ -59,6 +59,16 @@ def on_registration_submit(doc,method):
                         bank_account=doc.bank_account
                         )).insert(ignore_mandatory=True)
                         su_doc.save()
+
+                        up_doc=frappe.get_doc(dict(doctype = 'User Permission',
+                        user=us_doc.name,
+                        allow="Supplier",
+                        for_value=doc.supplier_name,
+                        apply_to_all_doctypes=1
+                        )).insert(ignore_mandatory=True,ignore_permissions=True)
+                        up_doc.save()
+                        co_doc.db_set('supplier_exists',1)
+                        frappe.db.commit()
         if doc.company_type=="Customer":
                     cu_doc=frappe.get_doc(dict(doctype = 'Customer',
                     customer_name=doc.customer_name,
@@ -68,6 +78,14 @@ def on_registration_submit(doc,method):
                     represents_company=doc.company
                     )).insert(ignore_mandatory=True)
                     cu_doc.save()
+
+                    up_doc=frappe.get_doc(dict(doctype = 'User Permission',
+                    user=us_doc.name,
+                    allow="Customer",
+                    for_value=doc.customer_name,
+                    apply_to_all_doctypes=1
+                    )).insert(ignore_mandatory=True,ignore_permissions=True)
+                    up_doc.save()
 
         if doc.company_type=="Agent":
                     ag_doc=frappe.get_doc(dict(doctype = 'Agent',

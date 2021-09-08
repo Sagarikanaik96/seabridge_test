@@ -46,27 +46,6 @@ website_context = {
 
 
 fixtures = ["Server Script","Workflow State","Workflow Action Master",
-{
-    "dt":"DocType",
-    "filters":[
-        [
-        "name","in",[
-            "Item Group Detail",
-            "Registration",
-            "Document Specific Naming Series",
-	    "Service Completion Note",
-	    "Service Completion Note Item",
-	    "Agent",
-	    "API Integration",
-	    "Bank Payment Advice",
-	    "Bank Payment Advice Details",
-	    "Rejection Reason",
-	    "Attachment Checklist Template",
-	    "Attachment Checklist Detail"
-        ]
-    ]
-]
-},
 {"dt": "Custom Field",
 		"filters": [
          [
@@ -148,7 +127,21 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Order-source_po_number",
 		"Purchase Order-po_type",
 		"Purchase Order-remarks"
-		"Purchase Order Item-remarks"
+		"Purchase Order Item-remarks",
+		"Purchase Invoice-is_funded",
+		"Purchase Invoice-send_for_approval",
+		"Purchase Invoice-source",
+		"Purchase Invoice-update_date",
+		"Purchase Invoice-notes",
+		"Purchase Invoice-approver",
+		"Employee-is_head",
+		"Company-supplier_exists",
+		"Purchase Order-receipt_required",
+		"Purchase Invoice-is_bpa_exists",
+		"Purchase Invoice-month_budget",
+		"Company-approval_details",
+		"Company-approval_amount_limit_details",
+		"Bank Payment Advice-workflow_state"
 		]
 	]
 ]
@@ -192,7 +185,15 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 				"Purchase Invoice Item-amount-columns",
 				"Allowed To Transact With-company-ignore_user_permissions",
 				"Supplier-is_internal_supplier-read_only",
-				"Customer-is_internal_customer-read_only"	
+				"Customer-is_internal_customer-read_only",
+				"Budget-company-ignore_user_permissions",
+				"Employee-reports_to-mandatory_depends_on",
+				"Purchase Order-represents_company-ignore_user_permissions",
+				"Sales Order-represents_company-ignore_user_permissions",
+				"Purchase Invoice-represents_company-ignore_user_permissions",
+				"Sales Invoice-represents_company-ignore_user_permissions",
+				"Purchase Receipt-represents_company-ignore_user_permissions",
+				"Purchase Invoice-naming_series-options"
 						
 			]
 	]
@@ -205,7 +206,7 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 {"dt": "Role", 
 		"filters":[
         [
-        "name","in",["Agent", "Accounts Payable","Finance Manager"]
+        "name","in",["Agent", "Accounts Payable","Finance Manager","MCST Member","Estate Manager"]
 	]
 	]
 },
@@ -213,7 +214,7 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 {"dt": "Workflow", 
 		"filters":[
         [
-        "name","in",["PI Approval WF"]
+        "name","in",["PI Approval WF","BPA Approval Workflow"]
 	]
 	]
 },

@@ -65,7 +65,37 @@ refresh:function(frm,cdt,cdn){
         })
         
     },
+
+before_save:function(frm,cdt,cdn){
+	var count=0
+	$.each(frm.doc.approval_amount_limit_details, function(idx, item){
+		if (item.minimum_limit > item.maximum_limit){
+			frappe.validated = false;
+			msgprint('The Minimum Limit cannot be greater than the Maximum Limit','Alert')
+		}
+		else if(item.minimum_limit == item.maximum_limit){
+			frappe.validated = false;
+			msgprint('The Maximum and Minimum Limit cannot be same','Alert')
+			
+		}
+		if (item.total_approvals_required<1){
+			frappe.validated = false;
+			msgprint('Total Approvals Required cannot be equal to 0','Alert')		
+		}
+		$.each(frm.doc.approval_amount_limit_details, function(inner_idx, inner_item){
+			if(item.minimum_limit==inner_item.minimum_limit && item.maximum_limit==inner_item.maximum_limit && inner_idx!=idx){
+				count++
+			}
+		})
+	})	
+	if(count>0){
+		frappe.validated = false;
+		msgprint('Approval Details cannot have duplicate records','Alert')
+	}
+},
+
 after_save:function(frm,cdt,cdn){
+	if(frm.doc.company_type=="Vendor" ||(frm.doc.company_type=="Agent" && frm.doc.supplier_exists==1) ){
 	frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "has_sbtfx_contract",(s)=>{
 		if(s.has_sbtfx_contract!=frm.doc.has_sbtfx_contract){
 				frappe.db.get_value("Supplier",{"represents_company":frm.doc.company_name}, "name",(r)=>{
@@ -114,6 +144,7 @@ after_save:function(frm,cdt,cdn){
 			})
 		}
 	})
+	}
 },
 associate_agent_company:function(frm,cdt,cdn){
     if(frm.doc.associate_agent!==undefined){
