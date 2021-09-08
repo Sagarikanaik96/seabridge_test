@@ -101,6 +101,17 @@ page.start = 0;
 			page.invoice_dashboard.refresh();
 		}
 	});
+	page.mode_of_payment = page.add_field({
+		fieldname: 'mode_of_payment',
+		label: __('Mode of Payment'),
+		fieldtype:'Link',
+		options:'Mode of Payment',
+		reqd:1,
+		change: function() {
+			page.invoice_dashboard.start = 0;
+			page.invoice_dashboard.refresh();
+		}
+	});
 
 	page.sort_selector = new frappe.ui.SortSelector({
 		parent: page.wrapper.find('.page-form'),
@@ -132,6 +143,7 @@ page.start = 0;
 			this.account=page.account_field.get_value();}
 			this.supplier = page.supplier_field.get_value();
 			this.purchase_invoice = page.invoice_field.get_value();
+			this.mode_of_payment=page.mode_of_payment.get_value();
 		}
 
 		page.invoice_dashboard.refresh();

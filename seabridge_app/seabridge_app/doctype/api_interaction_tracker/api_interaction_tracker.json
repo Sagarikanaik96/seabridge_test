@@ -7,6 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "endpoint_url",
+  "document",
+  "company",
   "date",
   "time",
   "status",
@@ -17,34 +19,53 @@
    "fieldname": "endpoint_url",
    "fieldtype": "Data",
    "label": "Endpoint URL",
+   "read_only_depends_on": "eval:doc.status==\"Success\" || doc.status==\"Failure\"",
    "reqd": 1
   },
   {
    "fieldname": "date",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "read_only_depends_on": "eval:doc.status==\"Success\" || doc.status==\"Failure\""
   },
   {
    "fieldname": "time",
    "fieldtype": "Time",
-   "label": "Time"
+   "label": "Time",
+   "read_only_depends_on": "eval:doc.status==\"Success\" || doc.status==\"Failure\""
   },
   {
    "fieldname": "status",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Status",
+   "read_only_depends_on": "eval:doc.status==\"Success\" || doc.status==\"Failure\"",
    "reqd": 1
   },
   {
    "fieldname": "message",
    "fieldtype": "Small Text",
-   "label": "Message"
+   "label": "Message",
+   "read_only_depends_on": "eval:doc.status==\"Success\" || doc.status==\"Failure\""
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only_depends_on": "eval:doc.status==\"Success\" || doc.status==\"Failure\""
+  },
+  {
+   "fieldname": "document",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Document",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-07-23 15:02:43.649844",
+ "modified": "2021-09-01 18:35:28.412646",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "API Interaction Tracker",
