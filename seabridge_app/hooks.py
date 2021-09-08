@@ -141,7 +141,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Invoice-month_budget",
 		"Company-approval_details",
 		"Company-approval_amount_limit_details",
-		"Bank Payment Advice-workflow_state"
+		"Bank Payment Advice-workflow_state",
+		"Sales Invoice-sales_order"
 		]
 	]
 ]
