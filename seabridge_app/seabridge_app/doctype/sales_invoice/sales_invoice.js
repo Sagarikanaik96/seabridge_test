@@ -102,6 +102,32 @@ frappe.ui.form.on('Sales Invoice', {
 			})
 		}
 	}
+var due_date=""
+	if(frm.doc.sales_order){
+		if(frm.doc.payment_terms_template){
+			if(frm.doc.__islocal){
+					frappe.model.with_doc("Sales Order", frm.doc.sales_order, function() {
+					    var tabletransfer= frappe.model.get_doc("Sales Order", frm.doc.sales_order)
+					    $.each(tabletransfer.payment_schedule, function(index, row){
+							due_date=row.due_date
+						})
+					})
+					if(due_date){
+						frm.set_value('due_date',due_date)
+					}
+			}
+			else{
+				$.each(frm.doc.payment_schedule, function(idx, item){
+					due_date=item.due_date
+				})
+				if(due_date){
+					if(frm.doc.due_date!=due_date){
+						frm.set_value('due_date',due_date)
+					}
+				}
+			}
+		}
+	}	
     },
 	attachment_checklist_template:function(frm,cdt,cdn){
 		if(frm.doc.attachment_checklist_template){
