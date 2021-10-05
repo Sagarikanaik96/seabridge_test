@@ -1,0 +1,71 @@
+{
+ "actions": [],
+ "creation": "2021-07-23 16:41:21.687901",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_group",
+  "lft",
+  "rgt",
+  "is_group",
+  "old_parent",
+  "parent_item_group_detail"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Group",
+   "options": "Item Group"
+  },
+  {
+   "fieldname": "lft",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Left",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "rgt",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Right",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "label": "Is Group"
+  },
+  {
+   "fieldname": "old_parent",
+   "fieldtype": "Link",
+   "label": "Old Parent",
+   "options": "Item Group Detail"
+  },
+  {
+   "fieldname": "parent_item_group_detail",
+   "fieldtype": "Link",
+   "label": "Parent Item Group Detail",
+   "options": "Item Group Detail"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2021-08-16 13:55:09.273503",
+ "modified_by": "Administrator",
+ "module": "seabridge_app",
+ "name": "Item Group Detail",
+ "nsm_parent_field": "parent_item_group_detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

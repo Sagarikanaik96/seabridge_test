@@ -1,20 +1,28 @@
 {
  "actions": [],
  "autoname": "naming_series:",
- "creation": "2021-04-29 20:31:04.386442",
+ "creation": "2021-07-23 16:41:22.095160",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
   "company",
+  "total_approvals_required",
+  "total_approves",
+  "total_current_approvers",
   "column_break_3",
   "date",
   "bank_account",
+  "mode_of_payment",
+  "approvers",
   "section_break_6",
   "bank_payment_advice_details",
   "filter_list",
-  "fields_multicheck"
+  "fields_multicheck",
+  "section_break_12",
+  "rejected_invoice_details",
+  "amended_from"
  ],
  "fields": [
   {
@@ -29,6 +37,7 @@
    "in_list_view": 1,
    "label": "Company",
    "options": "Company",
+   "read_only_depends_on": "eval:(doc.workflow_state!=\"Draft\" && !(frappe.user_roles.includes('MCST Member')))",
    "reqd": 1
   },
   {
@@ -40,6 +49,7 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Date",
+   "read_only_depends_on": "eval:(doc.workflow_state!=\"Draft\" && !(frappe.user_roles.includes('MCST Member')))",
    "reqd": 1
   },
   {
@@ -48,6 +58,7 @@
    "in_list_view": 1,
    "label": "Bank Account",
    "options": "Bank Account",
+   "read_only_depends_on": "eval:(doc.workflow_state!=\"Draft\" && !(frappe.user_roles.includes('MCST Member')))",
    "reqd": 1
   },
   {
@@ -58,7 +69,8 @@
    "fieldname": "bank_payment_advice_details",
    "fieldtype": "Table",
    "label": "Bank Payment Advice Details",
-   "options": "Bank Payment Advice Details"
+   "options": "Bank Payment Advice Details",
+   "read_only_depends_on": "eval:(doc.workflow_state!=\"Draft\" && !(frappe.user_roles.includes('MCST Member')))"
   },
   {
    "fieldname": "filter_list",
@@ -71,11 +83,67 @@
    "fieldtype": "HTML",
    "hidden": 1,
    "label": "Fields Multicheck"
+  },
+  {
+   "fieldname": "mode_of_payment",
+   "fieldtype": "Link",
+   "label": "Mode of Payment",
+   "options": "Mode of Payment",
+   "read_only_depends_on": "eval:(doc.workflow_state!=\"Draft\" && !(frappe.user_roles.includes('MCST Member')))",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Bank Payment Advice",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_12",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "rejected_invoice_details",
+   "fieldtype": "Table",
+   "label": "Rejected Invoice Details",
+   "options": "Rejected Invoice Details",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_approvals_required",
+   "fieldtype": "Int",
+   "label": "Total Approvals Required",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_approves",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Total Approves",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "approvers",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Approvers",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_current_approvers",
+   "fieldtype": "Int",
+   "label": "Total Current Approvers",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2021-05-04 18:50:27.726742",
+ "modified": "2021-08-20 18:43:52.674566",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Bank Payment Advice",

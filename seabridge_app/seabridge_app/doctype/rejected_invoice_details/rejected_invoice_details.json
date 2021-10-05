@@ -1,6 +1,6 @@
 {
  "actions": [],
- "creation": "2021-06-22 02:07:25.060171",
+ "creation": "2021-08-09 18:16:43.653291",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -39,9 +39,11 @@
    "reqd": 1
   },
   {
-   "fieldname": "due_date",
-   "fieldtype": "Date",
-   "label": "Due Date"
+   "columns": 1,
+   "fieldname": "overdue_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Overdue Days"
   },
   {
    "columns": 2,
@@ -53,6 +55,38 @@
   },
   {
    "columns": 1,
+   "default": "0",
+   "fieldname": "has_sbtfx_contract",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Has SBTFX Contract"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_funded",
+   "fieldtype": "Check",
+   "label": "Is Funded",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purchase_order",
+   "fieldtype": "Link",
+   "label": "Purchase Order",
+   "options": "Purchase Order"
+  },
+  {
+   "columns": 1,
+   "fieldname": "purchase_order_amount",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Purchase Order Amount"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
    "fieldname": "invoice_amount",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -60,10 +94,9 @@
    "read_only": 1
   },
   {
-   "columns": 1,
-   "fieldname": "outstanding_amount",
-   "fieldtype": "Float",
-   "label": "Outstanding Amount"
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "Due Date"
   },
   {
    "fieldname": "debit_note",
@@ -75,6 +108,12 @@
    "fieldname": "debit_note_amount",
    "fieldtype": "Float",
    "label": "Debit Note Amount"
+  },
+  {
+   "columns": 1,
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Float",
+   "label": "Outstanding Amount"
   },
   {
    "columns": 1,
@@ -96,6 +135,10 @@
    "read_only": 1
   },
   {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "cheque_date",
    "fieldtype": "Date",
    "label": "Cheque/Reference Date",
@@ -103,38 +146,9 @@
    "reqd": 1
   },
   {
-   "fieldname": "column_break_12",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "column_break_5",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "purchase_order",
-   "fieldtype": "Link",
-   "label": "Purchase Order",
-   "options": "Purchase Order"
-  },
-  {
-   "columns": 1,
-   "fieldname": "purchase_order_amount",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Purchase Order Amount"
-  },
-  {
-   "columns": 1,
-   "fieldname": "overdue_days",
-   "fieldtype": "Int",
-   "in_list_view": 1,
-   "label": "Overdue Days"
-  },
-  {
-   "fieldname": "bank_name",
-   "fieldtype": "Data",
-   "label": "Bank Name",
-   "read_only": 1
+   "fieldname": "account_details_section",
+   "fieldtype": "Section Break",
+   "label": "Account Details"
   },
   {
    "fieldname": "bank_account",
@@ -147,33 +161,18 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "account_details_section",
-   "fieldtype": "Section Break",
-   "label": "Account Details"
-  },
-  {
-   "columns": 1,
-   "default": "0",
-   "fieldname": "has_sbtfx_contract",
-   "fieldtype": "Check",
-   "in_list_view": 1,
-   "label": "Has SBTFX Contract",
-   "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "is_funded",
-   "fieldtype": "Check",
-   "label": "Is Funded",
+   "fieldname": "bank_name",
+   "fieldtype": "Data",
+   "label": "Bank Name",
    "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2021-08-20 20:51:42.953322",
+ "modified": "2021-08-09 18:18:48.730435",
  "modified_by": "Administrator",
  "module": "seabridge_app",
- "name": "Bank Payment Advice Details",
+ "name": "Rejected Invoice Details",
  "owner": "Administrator",
  "permissions": [],
  "quick_entry": 1,
