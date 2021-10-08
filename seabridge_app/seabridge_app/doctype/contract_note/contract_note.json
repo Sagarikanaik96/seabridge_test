@@ -15,7 +15,6 @@
   "total_disbursement",
   "payment_processed_to",
   "column_break_8",
-  "processing_date",
   "advance_to_value",
   "service_charge",
   "discount_charge",
@@ -67,11 +66,6 @@
   {
    "fieldname": "column_break_8",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "processing_date",
-   "fieldtype": "Date",
-   "label": "Processing Date"
   },
   {
    "fieldname": "advance_to_value",
@@ -153,7 +147,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-10-08 14:25:39.161541",
+ "modified": "2021-10-08 15:28:25.305312",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Contract Note",
