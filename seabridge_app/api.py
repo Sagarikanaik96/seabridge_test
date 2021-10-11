@@ -134,16 +134,17 @@ def create_contract_note(filters = None):
 					ctd_doc=frappe.get_doc(dict(doctype = transaction['doctype'],
 						parentfield=transaction['parentfield'],
 						parenttype=requestData['doctype'],
-						parent=cn_doc.name,
-						invoice_id= "yyss"
+						parent=cn_doc.name
 					)).insert(ignore_mandatory=True,ignore_permissions=True)
 					frappe.db.commit()
 					for key in childTableKeyList:
 						key_name="'"+key+"'"
 						ctd_doc.db_set(key,transaction[key])
 				cn_doc.db_set('docstatus',1)
-				frappe.response['status']="Success"
-				frappe.response['message']='Successfully created Contract Note '+cn_doc.name
+				frappe.response['Status']="Success"
+				frappe.response['Message']='Successfully created Contract Note '+cn_doc.name
+				data_list=[requestData['doctype']+" : "+cn_doc.name]
+				frappe.response['Data']=data_list
 		else:
 			frappe.local.response['http_status_code'] = 400
 			frappe.response['status']="FAILED"
