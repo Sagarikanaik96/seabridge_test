@@ -50,7 +50,7 @@
    "fieldname": "buyer_name",
    "fieldtype": "Link",
    "label": "Buyer Name",
-   "options": "Company"
+   "options": "Customer"
   },
   {
    "fieldname": "currency",
@@ -147,7 +147,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-10-08 15:28:25.305312",
+ "modified": "2021-10-11 19:40:08.378718",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Contract Note",
