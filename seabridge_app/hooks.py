@@ -44,7 +44,7 @@ website_context = {
 }
 
 
-fixtures = ["Server Script","Workflow State","Workflow Action Master",
+fixtures = ["Server Script","Workflow State","Workflow Action Master","Letter Head",
 {"dt": "Custom Field",
 		"filters": [
          [
@@ -233,7 +233,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 				"Quotation Print Format",
 				"PO Print Format",
 				"SI Print Format",
-				"RFQ Print Format"
+				"RFQ Print Format",
+				"Contract Note"
 			]
 	]
 ]

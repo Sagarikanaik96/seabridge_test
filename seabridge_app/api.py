@@ -87,7 +87,7 @@ def create_contract_note(filters = None):
 			for field in fieldsList:
 				mandatoryKeyList.append(field[0])
 			for key in mandatoryKeyList:
-				if not key in requestData.keys() and key!="terms_and_conditions":
+				if (not key in requestData.keys() or requestData[key]=="") and key!="terms_and_conditions":
 					if key=="terms":
 						if "terms_and_conditions" not in requestData.keys():
 							frappe.local.response['http_status_code'] = 400
