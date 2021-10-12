@@ -10,8 +10,7 @@
   "fund_disbursed_date",
   "due_date",
   "invoice_amount",
-  "funding_amount",
-  "serial_number"
+  "funding_amount"
  ],
  "fields": [
   {
@@ -43,13 +42,6 @@
   },
   {
    "columns": 1,
-   "fieldname": "serial_number",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Serial Number"
-  },
-  {
-   "columns": 1,
    "fieldname": "invoice_date",
    "fieldtype": "Date",
    "in_list_view": 1,
@@ -65,7 +57,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-10-11 18:07:56.124805",
+ "modified": "2021-10-12 15:24:27.783304",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Contract Transaction Details",
