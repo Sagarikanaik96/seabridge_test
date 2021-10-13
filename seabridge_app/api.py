@@ -16,6 +16,7 @@ from itertools import groupby
 from frappe.frappeclient import FrappeOAuth2Client,OAuth2Session
 import requests
 from datetime import timedelta, date
+from frappe.core.doctype.communication.email import make
 
 
 @frappe.whitelist()
@@ -172,6 +173,8 @@ def create_contract_note(filters = None):
 											frappe.delete_doc(requestData['doctype'],cn_doc.name)
 											frappe.delete_doc(transaction['doctype'],ctd_doc.name)
 											date=False
+									else:
+										ctd_doc.db_set(key,transaction[key])
 					if date==True:
 						cn_doc.db_set('docstatus',1)
 						frappe.response['Status']="Success"
@@ -182,6 +185,48 @@ def create_contract_note(filters = None):
 			frappe.local.response['http_status_code'] = 400
 			frappe.response['status']="FAILED"
 			frappe.response['message']='Mandatory field doctype not provided'
+	except:
+		frappe.local.response['http_status_code'] = 400
+		frappe.response['status']="FAILED"
+		frappe.response['message']='Something went wrong'
+
+@frappe.whitelist()
+def send_contract_note_report(filters = None):
+	try:
+		keys=True
+		requestData=json.loads(frappe.request.data.decode('utf-8'))
+		mandatoryKeyList=['document_type','document_number','format_name','subject','to','cc', 'bcc','distribution_method','message','distribution_format']
+		for key in mandatoryKeyList:
+			if not key in requestData.keys():
+				frappe.local.response['http_status_code'] = 400
+				frappe.response['status']="FAILED"
+				frappe.response['message']='Mandatory field '+ key+' not provided'
+				keys=False
+		if keys==True:
+			doc_exists=frappe.db.get_list(requestData['document_type'],filters={'name':requestData['document_number']},fields={'*'})
+			if doc_exists:
+				if requestData['distribution_method'].lower()=='email':
+					communication_medium='Email'
+					if requestData['distribution_format'].lower()=='pdf':
+						make(doctype=requestData['document_type'],name=requestData['document_number'], print_format=requestData['format_name'], attachments='[]',subject = requestData['subject'],recipients =requestData['to'], cc=requestData['cc'],bcc=requestData['bcc'], communication_medium = requestData['distribution_method'],content = requestData['message'], send_email = True,print_letterhead=True)
+						frappe.response['Status']="Success"
+						frappe.response['Message']='Successfully sent email'
+						data_list=[requestData['document_type']+" : "+requestData['document_number']]
+						frappe.response['Data']=data_list
+					else:
+						frappe.local.response['http_status_code'] = 400
+						frappe.response['status']="FAILED"
+						frappe.response['message']='Only PDF is supported as a distribution format'
+						keys=False
+				else:
+					frappe.local.response['http_status_code'] = 400
+					frappe.response['status']="FAILED"
+					frappe.response['message']='Only Email is supported as a distribution method'
+					keys=False
+			else:
+				frappe.local.response['http_status_code'] = 400
+				frappe.response['status']="FAILED"
+				frappe.response['message']=requestData['document_type']+' : '+requestData['document_number']+' does not exist'
 	except:
 		frappe.local.response['http_status_code'] = 400
 		frappe.response['status']="FAILED"
