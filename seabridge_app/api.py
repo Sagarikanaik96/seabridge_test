@@ -183,7 +183,7 @@ def create_contract_note(filters = None):
 			frappe.response['status']="FAILED"
 			frappe.response['message']='Mandatory field doctype not provided'
 	except:
--               frappe.local.response['http_status_code'] = 400
--               frappe.response['status']="FAILED"
--               frappe.response['message']='Something went wrong'
+		frappe.local.response['http_status_code'] = 400
+		frappe.response['status']="FAILED"
+		frappe.response['message']='Something went wrong'
 
