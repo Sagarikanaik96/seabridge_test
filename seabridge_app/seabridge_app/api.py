@@ -10,7 +10,6 @@ from frappe.desk.reportview import build_match_conditions, get_filters_cond
 import pandas as pd
 from frappe.core.doctype.communication.email import make
 from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import PurchaseInvoice
-from erpnext.regional.india.utils import update_grand_total_for_rcm
 from frappe.model.db_query import DatabaseQuery
 from datetime import datetime
 from itertools import groupby
