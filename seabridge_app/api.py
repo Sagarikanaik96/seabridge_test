@@ -77,6 +77,8 @@ def status_update(filters = None):
 def create_contract_note(filters = None):
 	try:
 		keys=True
+		date=True
+		date_format = "%Y-%m-%d"
 		requestData=json.loads(frappe.request.data.decode('utf-8'))
 		if 'doctype' in requestData.keys():
 			fieldsList = frappe.db.sql("""SELECT `COLUMN_NAME` FROM `INFORMATION_SCHEMA`.`COLUMNS` where `TABLE_NAME`=%s  and
@@ -87,6 +89,8 @@ def create_contract_note(filters = None):
 			for field in fieldsList:
 				mandatoryKeyList.append(field[0])
 			for key in mandatoryKeyList:
+				
+				
 				if (not key in requestData.keys() or requestData[key]=="") and key!="terms_and_conditions":
 					if key=="terms":
 						if "terms_and_conditions" not in requestData.keys():
@@ -95,6 +99,7 @@ def create_contract_note(filters = None):
 							frappe.response['message']='Either terms or terms_and_conditions is Mandatory'
 							keys=False
 					else:
+						
 						frappe.local.response['http_status_code'] = 400
 						frappe.response['status']="FAILED"
 						frappe.response['message']='Mandatory field '+ key+' not provided'
@@ -110,7 +115,7 @@ def create_contract_note(filters = None):
 				cn_doc=frappe.get_doc(dict(doctype = requestData['doctype']))
 				cn_doc.save(ignore_permissions=True)
 				for key in mandatoryKeyList:
-					if key not in ('transaction_information','doctype'):
+					if key not in ('transaction_information','doctype') and date==True:
 						
 						if key=="terms":
 							if key in requestData.keys():
@@ -119,40 +124,66 @@ def create_contract_note(filters = None):
 								cn_doc.db_set('terms_and_conditions',terms)
 						else:
 							if key!="terms_and_conditions":
-								cn_doc.db_set(key,requestData[key])
+								if key!='doctype':
+									field_type=frappe.db.sql("""SELECT `DATA_TYPE` FROM `INFORMATION_SCHEMA`.`COLUMNS` where `TABLE_NAME`=%s  and `COLUMN_NAME`=%s;""",('tab'+requestData['doctype'],key),as_list=True)
+									if field_type[0][0]=='date':
+										
+										try:
+											date_value=datetime.strptime(requestData[key], date_format)
+											cn_doc.db_set(key,requestData[key])
+										except:
+											frappe.local.response['http_status_code'] = 400
+											frappe.response['status']="FAILED"
+											frappe.response['message']="Date Format Incorrect for "+key+" (Must be 'YYYY-MM-DD')"
+											frappe.delete_doc(requestData['doctype'],cn_doc.name)
+											date=False
+									else:
+										cn_doc.db_set(key,requestData[key])
 							else:
 								if key in requestData.keys():
-									cn_doc.db_set(key,requestData[key])				
-				for transaction in transactions:
-					childTableFieldList = frappe.db.sql("""SELECT `COLUMN_NAME` FROM `INFORMATION_SCHEMA`.`COLUMNS` where `TABLE_NAME`=%s and `COLUMN_NAME` not in ('name','creation','modified','modified_by','owner','docstatus','parent',
-				'parentfield','parenttype','idx','naming_series','_liked_by','_assign','amended_from','_user_tags','_comments');
-				""",'tab'+transaction['doctype'],as_list=True)			
-					childTableKeyList=[]
-					
-					for field in childTableFieldList:
-						childTableKeyList.append(field[0])
-					ctd_doc=frappe.get_doc(dict(doctype = transaction['doctype'],
-						parentfield=transaction['parentfield'],
-						parenttype=requestData['doctype'],
-						parent=cn_doc.name
-					)).insert(ignore_mandatory=True,ignore_permissions=True)
-					frappe.db.commit()
-					for key in childTableKeyList:
-						key_name="'"+key+"'"
-						ctd_doc.db_set(key,transaction[key])
-				cn_doc.db_set('docstatus',1)
-				frappe.response['Status']="Success"
-				frappe.response['Message']='Successfully created Contract Note '+cn_doc.name
-				data_list=[requestData['doctype']+" : "+cn_doc.name]
-				frappe.response['Data']=data_list
+									cn_doc.db_set(key,requestData[key])
+				if date==True:				
+					for transaction in transactions:
+						if date==True:
+							childTableFieldList = frappe.db.sql("""SELECT `COLUMN_NAME` FROM `INFORMATION_SCHEMA`.`COLUMNS` where `TABLE_NAME`=%s and `COLUMN_NAME` not in ('name','creation','modified','modified_by','owner','docstatus','parent',
+						'parentfield','parenttype','idx','naming_series','_liked_by','_assign','amended_from','_user_tags','_comments');
+						""",'tab'+transaction['doctype'],as_list=True)			
+							childTableKeyList=[]
+							
+							for field in childTableFieldList:
+								childTableKeyList.append(field[0])
+							ctd_doc=frappe.get_doc(dict(doctype = transaction['doctype'],
+								parentfield=transaction['parentfield'],
+								parenttype=requestData['doctype'],
+								parent=cn_doc.name
+							)).insert(ignore_mandatory=True,ignore_permissions=True)
+							frappe.db.commit()
+							for key in childTableKeyList:
+								if date==True:
+									field_type=frappe.db.sql("""SELECT `DATA_TYPE` FROM `INFORMATION_SCHEMA`.`COLUMNS` where `TABLE_NAME`=%s  and `COLUMN_NAME`=%s;""",('tab'+transaction['doctype'],key),as_list=True)
+									if field_type[0][0]=='date':
+										try:
+											date_value=datetime.strptime(transaction[key], date_format)
+											ctd_doc.db_set(key,transaction[key])
+										except:
+											frappe.local.response['http_status_code'] = 400
+											frappe.response['status']="FAILED"
+											frappe.response['message']="Date Format Incorrect for "+key+" (Must be 'YYYY-MM-DD')"
+											frappe.delete_doc(requestData['doctype'],cn_doc.name)
+											frappe.delete_doc(transaction['doctype'],ctd_doc.name)
+											date=False
+					if date==True:
+						cn_doc.db_set('docstatus',1)
+						frappe.response['Status']="Success"
+						frappe.response['Message']='Successfully created Contract Note '+cn_doc.name
+						data_list=[requestData['doctype']+" : "+cn_doc.name]
+						frappe.response['Data']=data_list
 		else:
 			frappe.local.response['http_status_code'] = 400
 			frappe.response['status']="FAILED"
 			frappe.response['message']='Mandatory field doctype not provided'
 	except:
-		frappe.local.response['http_status_code'] = 400
-		frappe.response['status']="FAILED"
-		frappe.response['message']='Something went wrong'
-
-
+-               frappe.local.response['http_status_code'] = 400
+-               frappe.response['status']="FAILED"
+-               frappe.response['message']='Something went wrong'
 
