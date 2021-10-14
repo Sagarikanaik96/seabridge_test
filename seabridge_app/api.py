@@ -208,7 +208,7 @@ def send_contract_note_report(filters = None):
 				if requestData['distribution_method'].lower()=='email':
 					communication_medium='Email'
 					if requestData['distribution_format'].lower()=='pdf':
-						make(doctype=requestData['document_type'],name=requestData['document_number'], print_format=requestData['format_name'], attachments='[]',subject = requestData['subject'],recipients =requestData['to'], cc=requestData['cc'],bcc=requestData['bcc'], communication_medium = requestData['distribution_method'],content = requestData['message'], send_email = True,print_letterhead=True)
+						make(doctype=requestData['document_type'],name=requestData['document_number'], print_format=requestData['format_name'], attachments='[]',subject = requestData['subject'],recipients =requestData['to'], cc=requestData['cc'],bcc=requestData['bcc'], communication_medium = communication_medium, content = requestData['message'], send_email = True,print_letterhead=True)
 						frappe.response['Status']="Success"
 						frappe.response['Message']='Successfully sent email'
 						data_list=[requestData['document_type']+" : "+requestData['document_number']]
