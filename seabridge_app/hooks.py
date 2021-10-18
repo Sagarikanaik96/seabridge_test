@@ -44,7 +44,7 @@ website_context = {
 }
 
 
-fixtures = ["Server Script","Workflow State","Workflow Action Master",
+fixtures = ["Server Script","Workflow State","Workflow Action Master","Letter Head",
 {"dt": "Custom Field",
 		"filters": [
          [
@@ -140,8 +140,7 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Invoice-month_budget",
 		"Company-approval_details",
 		"Company-approval_amount_limit_details",
-		"Bank Payment Advice-workflow_state",
-		"Sales Invoice-sales_order"
+		"Bank Payment Advice-workflow_state"
 		]
 	]
 ]
@@ -233,7 +232,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 				"Quotation Print Format",
 				"PO Print Format",
 				"SI Print Format",
-				"RFQ Print Format"
+				"RFQ Print Format",
+				"Contract Note"
 			]
 	]
 ]
@@ -308,6 +308,7 @@ override_doctype_dashboards = {
 "Quotation": ["seabridge_app.seabridge_app.doctype.quotation.quotation_dashboard.get_dashboard_data"],
 "Supplier Quotation": ["seabridge_app.seabridge_app.doctype.supplier_quotation.supplier_quotation_dashboard.get_dashboard_data"]
 }
+
 
 
 # Includes in <head>
