@@ -206,7 +206,7 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master","Letter He
 {"dt": "Role", 
 		"filters":[
         [
-        "name","in",["Agent", "Accounts Payable","Finance Manager","MCST Member","Estate Manager"]
+        "name","in",["Agent", "Accounts Payable","Finance Manager","MCST Member","Estate Manager","Authorised to Claim"]
 	]
 	]
 },
