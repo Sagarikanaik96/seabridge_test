@@ -19,7 +19,7 @@
   "debit_note_amount",
   "outstanding_amount",
   "payment_transaction_amount",
-  "customer_invoice_document",
+  "sales_invoice_number",
   "payment_cheque_details_section",
   "cheque_no",
   "column_break_12",
@@ -199,15 +199,14 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "customer_invoice_document",
-   "fieldtype": "Link",
-   "label": "Customer Invoice Document",
-   "options": "Sales Invoice"
+   "fieldname": "sales_invoice_number",
+   "fieldtype": "Data",
+   "label": "Sales Invoice Number"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2021-10-22 02:22:47.781653",
+ "modified": "2021-10-22 20:58:47.307836",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Bank Payment Advice Details",
