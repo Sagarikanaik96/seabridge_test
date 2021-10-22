@@ -19,6 +19,7 @@ from datetime import timedelta, date
 from frappe import _
 from seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice import send_email
 import datetime
+from frappe.contacts.doctype.address.address import get_address_display
 
 #from flask import Flask, render_template
 #app = Flask(__name__)
@@ -771,11 +772,21 @@ def create_payment(invoices, account, company, mode_of_payment):
                     "Company", {'name': parent_company}, "bank_account")
                 bank_name = frappe.db.get_value(
                     "Company", {'name': parent_company}, "bank_name")
+                beneficiary_id= frappe.db.get_value(
+                    "Company", {'name': parent_company}, "registration_details")
+                address_name= frappe.db.get_list('Dynamic Link', filters={
+                                  'parenttype': 'Address', 'link_name': parent_company}, fields={'*'})
+                beneficiary_address= address_name[0]['parent']
+                address_display=get_address_display(address_name[0]['parent'])
             else:
                 bank_account = frappe.db.get_value(
                     "Supplier", {'name': inv['supplier_name']}, "bank_account")
                 bank_name = frappe.db.get_value(
                     "Supplier", {'name': inv['supplier_name']}, "bank_name")
+                beneficiary_id= frappe.db.get_value(
+                    "Company", {'name': inv['supplier_name']}, "registration_details")
+                beneficiary_address=doc.supplier_address
+                address_display=doc.address_display
             bpa_doc.append('bank_payment_advice_details', {
                 'invoice_document': inv['name'],
                 'overdue_days': days_val,
@@ -793,7 +804,11 @@ def create_payment(invoices, account, company, mode_of_payment):
                 'has_sbtfx_contract': has_sbtfx,
                 'bank_account': bank_account,
                 'bank_name': bank_name,
-                'is_funded': inv['is_funded']
+                'is_funded': inv['is_funded'],
+                'beneficiary_id':beneficiary_id,
+                'beneficiary_address':beneficiary_address,
+                'address_display':address_display,
+                'customer_invoice_document':doc.bill_no
             })
         bpa_doc.save()
         bpa_doc.db_set('workflow_state','Pending')
