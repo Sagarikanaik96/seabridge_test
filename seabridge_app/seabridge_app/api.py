@@ -19,6 +19,8 @@ from datetime import timedelta, date
 from frappe import _
 from seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice import send_email
 import datetime
+from frappe.contacts.doctype.address.address import get_address_display
+import itertools
 
 #from flask import Flask, render_template
 #app = Flask(__name__)
@@ -771,11 +773,24 @@ def create_payment(invoices, account, company, mode_of_payment):
                     "Company", {'name': parent_company}, "bank_account")
                 bank_name = frappe.db.get_value(
                     "Company", {'name': parent_company}, "bank_name")
+                beneficiary_id= frappe.db.get_value(
+                    "Company", {'name': parent_company}, "registration_details")
+                address_name= frappe.db.get_list('Dynamic Link', filters={
+                                  'parenttype': 'Address', 'link_name': parent_company}, fields={'*'})
+                beneficiary_address=""
+                address_display=""
+                if address_name:
+                    beneficiary_address= address_name[0]['parent']
+                    address_display=get_address_display(address_name[0]['parent'])
             else:
                 bank_account = frappe.db.get_value(
                     "Supplier", {'name': inv['supplier_name']}, "bank_account")
                 bank_name = frappe.db.get_value(
                     "Supplier", {'name': inv['supplier_name']}, "bank_name")
+                beneficiary_id= frappe.db.get_value(
+                    "Company", {'name': inv['supplier_name']}, "registration_details")
+                beneficiary_address=doc.supplier_address
+                address_display=doc.address_display
             bpa_doc.append('bank_payment_advice_details', {
                 'invoice_document': inv['name'],
                 'overdue_days': days_val,
@@ -793,9 +808,65 @@ def create_payment(invoices, account, company, mode_of_payment):
                 'has_sbtfx_contract': has_sbtfx,
                 'bank_account': bank_account,
                 'bank_name': bank_name,
-                'is_funded': inv['is_funded']
+                'is_funded': inv['is_funded'],
+                'beneficiary_id':beneficiary_id,
+                'beneficiary_address':beneficiary_address,
+                'address_display':address_display,
+                'sales_invoice_number':doc.bill_no
             })
         bpa_doc.save()
+        bpa_list=[]
+        bpa_list=frappe.db.get_list("Bank Payment Advice Details",filters={'parent':bpa_doc.name,'parenttype':'Bank Payment Advice'},fields={'*'})
+        grouped_by_supplier={}
+        for key, group in itertools.groupby(bpa_list, key=lambda x: (x['supplier_name'], x['is_funded'])):
+            grouped_by_supplier[key]=list(group)
+        for key,val in grouped_by_supplier.items():
+            if val[0].is_funded==1:
+                represents_company = frappe.db.get_value(
+                    'Supplier', {'name': val[0].supplier_name}, 'represents_company')
+                parent_company = frappe.db.get_value(
+                    'Company', {'name': represents_company}, "parent_company")
+                beneficiary_name= frappe.db.get_value(
+                    "Company", {'name': parent_company}, "company_name")
+            else:
+                beneficiary_name=val[0].supplier_name
+            cpd_doc=bpa_doc.append('cumulative_payment_details', {
+                'beneficiary_id':val[0].beneficiary_id,
+                'beneficiary_name':beneficiary_name,
+                'beneficiary_address':val[0].beneficiary_address,
+                'address_display':val[0].address_display,
+                'supplier_name': val[0].supplier_name,
+                'invoice_amount': val[0].invoice_amount,
+                'outstanding_amount':val[0].outstanding_Amount,
+                'amount':val[0].payment_transaction_amount,
+                'purchase_order': val[0].purchase_order,
+                'purchase_order_amount': val[0].purchase_order_amount,
+                'bank_account': val[0].bank_account,
+                'bank_name': val[0].bank_name,
+                'mode_of_payment':bpa_doc.mode_of_payment,
+                'payer_name':bpa_doc.company,
+                'is_funded': val[0].is_funded,
+                'sales_invoice_number':val[0].sales_invoice_number
+            })
+            cpd_doc.save()
+            amount=0
+            si_list=[]
+            outstanding_amount=0
+            invoice_amount=0
+            for row in val:
+                amount=amount+row.payment_transaction_amount
+                outstanding_amount=outstanding_amount+row.outstanding_amount
+                invoice_amount=invoice_amount+row.invoice_amount
+                si_list.append(row.sales_invoice_number)
+                sales_invoices=','.join(si_list)
+                cpd_doc.update({
+                        'amount':amount,
+                        'outstanding_amount': outstanding_amount,
+                        'invoice_amount':invoice_amount,
+                        'customer_invoice_document':sales_invoices
+                })
+                cpd_doc.save()
+
         bpa_doc.db_set('workflow_state','Pending')
         frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
                         "'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
@@ -817,6 +888,9 @@ def get_user_roles_dashboard():
     mcst_member=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""",frappe.session.user)
+    claimer=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'Authorised to Claim'""",frappe.session.user)
     role_count = 0
     for user_list in estate_user:
         for user in user_list:
@@ -834,6 +908,10 @@ def get_user_roles_dashboard():
         for user in user_list:
             if(user==frappe.session.user):
                 role_count+=4
+    for user_list in claimer:
+        for user in user_list:
+            if(user==frappe.session.user):
+                role_count=5
     return role_count
 
 
@@ -961,8 +1039,9 @@ def get_programs(status=None):
         """ SELECT represents_company from `tabUser` where name=%s""", frappe.session.user, as_list=True)
     supplier_list = frappe.db.sql(
         """SELECT supplier_name from `tabSupplier` where represents_company=%s and has_sbtfx_contract=1""", represents_company[0][0], as_list=True)
+    claimer=is_authorised_to_claim()
     response_data = []
-    if supplier_list:
+    if supplier_list and claimer==True:
         doc_posted = False
         headers = frappe.db.get_list("API Integration", fields={'*'})
         if headers:
@@ -1151,4 +1230,14 @@ def is_mcst_member():
 		return True
 	else:
 		return False
+
+@frappe.whitelist()
+def is_authorised_to_claim():
+    user = frappe.db.get_value('Has Role', {
+                               'parent':frappe.session.user , 'parenttype': 'User', 'role': 'Authorised to Claim'}, 'parent')
+    if user:
+        return True
+    else:
+        return False
+
 
