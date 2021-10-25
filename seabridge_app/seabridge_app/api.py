@@ -830,7 +830,7 @@ def create_payment(invoices, account, company, mode_of_payment):
                     "Company", {'name': parent_company}, "company_name")
             else:
                 beneficiary_name=val[0].supplier_name
-                
+
             cpd_doc=bpa_doc.append('cumulative_payment_details', {
                 'beneficiary_id':val[0].beneficiary_id,
                 'beneficiary_name':beneficiary_name,
@@ -864,7 +864,7 @@ def create_payment(invoices, account, company, mode_of_payment):
                         'amount':amount,
                         'outstanding_amount': outstanding_amount,
                         'invoice_amount':invoice_amount,
-                        'customer_invoice_document':sales_invoices
+                        'sales_invoice_number':sales_invoices
                 })
                 cpd_doc.save()
 
