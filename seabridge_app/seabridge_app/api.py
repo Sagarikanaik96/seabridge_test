@@ -830,42 +830,43 @@ def create_payment(invoices, account, company, mode_of_payment):
                     "Company", {'name': parent_company}, "company_name")
             else:
                 beneficiary_name=val[0].supplier_name
-                cpd_doc=bpa_doc.append('cumulative_payment_details', {
-                    'beneficiary_id':val[0].beneficiary_id,
-                    'beneficiary_name':beneficiary_name,
-                    'beneficiary_address':val[0].beneficiary_address,
-                    'address_display':val[0].address_display,
-                    'supplier_name': val[0].supplier_name,
-                    'invoice_amount': val[0].invoice_amount,
-                    'outstanding_amount':val[0].outstanding_Amount,
-                    'amount':val[0].payment_transaction_amount,
-                    'purchase_order': val[0].purchase_order,
-                    'purchase_order_amount': val[0].purchase_order_amount,
-                    'bank_account': val[0].bank_account,
-                    'bank_name': val[0].bank_name,
-                    'mode_of_payment':bpa_doc.mode_of_payment,
-                    'payer_name':bpa_doc.company,
-                    'is_funded': val[0].is_funded,
-                    'sales_invoice_number':val[0].sales_invoice_number
+                
+            cpd_doc=bpa_doc.append('cumulative_payment_details', {
+                'beneficiary_id':val[0].beneficiary_id,
+                'beneficiary_name':beneficiary_name,
+                'beneficiary_address':val[0].beneficiary_address,
+                'address_display':val[0].address_display,
+                'supplier_name': val[0].supplier_name,
+                'invoice_amount': val[0].invoice_amount,
+                'outstanding_amount':val[0].outstanding_Amount,
+                'amount':val[0].payment_transaction_amount,
+                'purchase_order': val[0].purchase_order,
+                'purchase_order_amount': val[0].purchase_order_amount,
+                'bank_account': val[0].bank_account,
+                'bank_name': val[0].bank_name,
+                'mode_of_payment':bpa_doc.mode_of_payment,
+                'payer_name':bpa_doc.company,
+                'is_funded': val[0].is_funded,
+                'sales_invoice_number':val[0].sales_invoice_number
+            })
+            cpd_doc.save()
+            amount=0
+            si_list=[]
+            outstanding_amount=0
+            invoice_amount=0
+            for row in val:
+                amount=amount+row.payment_transaction_amount
+                outstanding_amount=outstanding_amount+row.outstanding_amount
+                invoice_amount=invoice_amount+row.invoice_amount
+                si_list.append(row.sales_invoice_number)
+                sales_invoices=','.join(si_list)
+                cpd_doc.update({
+                        'amount':amount,
+                        'outstanding_amount': outstanding_amount,
+                        'invoice_amount':invoice_amount,
+                        'customer_invoice_document':sales_invoices
                 })
                 cpd_doc.save()
-                amount=0
-                si_list=[]
-                outstanding_amount=0
-                invoice_amount=0
-                for row in val:
-                    amount=amount+row.payment_transaction_amount
-                    outstanding_amount=outstanding_amount+row.outstanding_amount
-                    invoice_amount=invoice_amount+row.invoice_amount
-                    si_list.append(row.sales_invoice_number)
-                    sales_invoices=','.join(si_list)
-                    cpd_doc.update({
-                            'amount':amount,
-                            'outstanding_amount': outstanding_amount,
-                            'invoice_amount':invoice_amount,
-                            'customer_invoice_document':sales_invoices
-                    })
-                    cpd_doc.save()
 
         bpa_doc.db_set('workflow_state','Pending')
         frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
