@@ -817,6 +817,9 @@ def get_user_roles_dashboard():
     mcst_member=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""",frappe.session.user)
+    claimer=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'Authorised to Claim'""",frappe.session.user)
     role_count = 0
     for user_list in estate_user:
         for user in user_list:
@@ -834,6 +837,10 @@ def get_user_roles_dashboard():
         for user in user_list:
             if(user==frappe.session.user):
                 role_count+=4
+    for user_list in claimer:
+        for user in user_list:
+            if(user==frappe.session.user):
+                role_count=5
     return role_count
 
 
@@ -961,8 +968,9 @@ def get_programs(status=None):
         """ SELECT represents_company from `tabUser` where name=%s""", frappe.session.user, as_list=True)
     supplier_list = frappe.db.sql(
         """SELECT supplier_name from `tabSupplier` where represents_company=%s and has_sbtfx_contract=1""", represents_company[0][0], as_list=True)
+    claimer=is_authorised_to_claim()
     response_data = []
-    if supplier_list:
+    if supplier_list and claimer==True:
         doc_posted = False
         headers = frappe.db.get_list("API Integration", fields={'*'})
         if headers:
@@ -1151,4 +1159,14 @@ def is_mcst_member():
 		return True
 	else:
 		return False
+
+@frappe.whitelist()
+def is_authorised_to_claim():
+    user = frappe.db.get_value('Has Role', {
+                               'parent':frappe.session.user , 'parenttype': 'User', 'role': 'Authorised to Claim'}, 'parent')
+    if user:
+        return True
+    else:
+        return False
+
 

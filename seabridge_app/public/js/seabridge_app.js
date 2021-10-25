@@ -20,6 +20,9 @@ $(document).on("startup", function () {
 			else if(role==4){
 				frappe.set_route("#mcst-dashboard");		
 			}
+			else if(role==5){
+				frappe.set_route("#funding-opportunity");		
+			}
 		}
 	}
 });
