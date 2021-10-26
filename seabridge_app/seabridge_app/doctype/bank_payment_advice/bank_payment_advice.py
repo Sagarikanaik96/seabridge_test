@@ -81,30 +81,33 @@ def sort_details(doc):
 	return sorted_users
 
 @frappe.whitelist()
-def update_rejected_invoice(invoices,company):
+def update_rejected_invoice(invoices,company,name):
 	invoices_list=json.loads(invoices)
 	for doc in invoices_list:
 		bpa_doc=frappe.get_doc("Bank Payment Advice",doc['parent'])
-		bpa_doc.append('rejected_invoice_details', {
-								'invoice_document':doc['invoice_document'],
-								'overdue_days':doc['overdue_days'],
-								'debit_note':doc['debit_note'],
-								'debit_note_amount':doc['debit_note_amount'],
-								'supplier_name':doc['supplier_name'],
-								'invoice_amount':doc['invoice_amount'],
-								'due_date':doc['due_date'],
-								'outstanding_amount':doc['outstanding_amount'],
-								'payment_transaction_amount':doc['outstanding_amount'],
-								'cheque_no':doc['cheque_no'],
-								'cheque_date':doc['cheque_date'],
-								'purchase_order':doc['purchase_order'],
-								'purchase_order_amount':doc['purchase_order_amount'],
-								'has_sbtfx_contract':doc['has_sbtfx_contract'],
-								'bank_account':doc['bank_account'],
-								'bank_name':doc['bank_name'],
-								'is_funded':doc['is_funded']
-							})
-		bpa_doc.save()
+		if not frappe.db.exists({'doctype': 'Rejected Invoice Details','invoice_document':doc['invoice_document'],'parent':bpa_doc.name}):
+			bpa_doc.append('rejected_invoice_details', {
+									'invoice_document':doc['invoice_document'],
+									'overdue_days':doc['overdue_days'],
+									'debit_note':doc['debit_note'],
+									'debit_note_amount':doc['debit_note_amount'],
+									'supplier_name':doc['supplier_name'],
+									'invoice_amount':doc['invoice_amount'],
+									'due_date':doc['due_date'],
+									'outstanding_amount':doc['outstanding_amount'],
+									'payment_transaction_amount':doc['outstanding_amount'],
+									'cheque_no':doc['cheque_no'],
+									'cheque_date':doc['cheque_date'],
+									'purchase_order':doc['purchase_order'],
+									'purchase_order_amount':doc['purchase_order_amount'],
+									'has_sbtfx_contract':doc['has_sbtfx_contract'],
+									'bank_account':doc['bank_account'],
+									'bank_name':doc['bank_name'],
+									'is_funded':doc['is_funded']
+								})
+			bpa_doc.save()
+			update_cumulative_details(doc,name)
+
 		estate_manager=frappe.db.get_value("Company",{'name':company},'associate_agent')
 		full_name=frappe.db.get_value("User",{'name':estate_manager},'full_name') 
 		logged_in_user=frappe.db.get_value("User",{'name':frappe.session.user},'full_name')
@@ -114,7 +117,7 @@ def update_rejected_invoice(invoices,company):
 
 		pi_doc=frappe.get_doc("Purchase Invoice",doc['invoice_document'])
 		pi_doc.db_set('is_bpa_exists',0)  
-
+		
 @frappe.whitelist()
 def update_total_current_approvers(doc,total_current_approvers,approvers=None):
 	approvers_list=[]
@@ -139,3 +142,27 @@ def send_email(doc,company):
 	for row in mcst_member:
 		template='<h3> Dear '+row.full_name+',</h3><br><h4>The BPA: '+doc+' is successfully available with the outstanding invoices for your approval. Please approve the  '+doc+' from your end.</h4><br><br><h3>Thanks and Regards,</h3><h3>'+company+'</h3>'
 		make(subject = "Pending For Approval", content=template, recipients=row.email,send_email=True)
+
+def update_cumulative_details(doc,name):
+	if frappe.db.exists({'doctype': 'Cumulative Payment Details','parent':name,'supplier_name':doc['supplier_name'],'is_funded':doc['is_funded']}):
+		cpd_doc=frappe.get_doc("Cumulative Payment Details",{'parent':name,'supplier_name':doc['supplier_name'],'is_funded':doc['is_funded']},['name'])
+		
+		if doc['payment_transaction_amount']==cpd_doc.amount:
+			frappe.delete_doc("Cumulative Payment Details",cpd_doc.name)
+		else:
+			sales_invoices_list=cpd_doc.sales_invoice_number
+			si_list=list(sales_invoices_list.split(","))
+			if doc['sales_invoice_number'] in si_list:
+				si_list.remove(doc['sales_invoice_number'])
+
+			sales_invoices=','.join(si_list)
+			amount=cpd_doc.amount-doc['payment_transaction_amount']
+			outstanding_amount=cpd_doc.outstanding_amount-doc['outstanding_amount']
+			invoice_amount=cpd_doc.invoice_amount-doc['invoice_amount']
+			cpd_doc.update({
+					'amount':amount,
+					'outstanding_amount': outstanding_amount,
+					'invoice_amount':invoice_amount,
+					'sales_invoice_number':sales_invoices
+			})
+			cpd_doc.save()

@@ -283,7 +283,8 @@ if(invoices_list!=undefined){
 		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.update_rejected_invoice",
 		        args:{
 				invoices:invoices_list,
-				company:frm.doc.company	
+				company:frm.doc.company,
+				name:frm.doc.name
 			},
 		        async:false,
 		        callback: function(r){
