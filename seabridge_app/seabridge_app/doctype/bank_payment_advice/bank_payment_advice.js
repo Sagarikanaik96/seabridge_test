@@ -23,7 +23,7 @@ frm.set_query("company",function(){
 
 
 if(frm.doc.docstatus==1){
-frm.add_custom_button(__('Export'), function(){
+frm.add_custom_button(__('Basic Payment'), function(){
 //frm.set_value('reference_doctype',frm.doc.doctype)
 			const doctype = frm.doc.doctype;
 			if (doctype) {
@@ -33,7 +33,20 @@ frm.add_custom_button(__('Export'), function(){
 			}
 			can_export(frm) ? export_data(frm) : null;
 		
-})
+}, __('Export'));
+
+var mode=frm.doc.mode_of_payment;
+frm.add_custom_button(__(mode.concat(" Payment")), function(){
+//frm.set_value('reference_doctype',frm.doc.doctype)
+			const doctype = frm.doc.doctype;
+			if (doctype) {
+			frappe.model.with_doctype(doctype, () => set_field_options(frm));
+			} else {
+			reset_filter_and_field(frm);
+			}
+			can_export(frm) ? export_data_giro(frm) : null;
+		
+}, __('Export'));
 }
 
 
@@ -391,6 +404,37 @@ const export_data = frm => {
 		Object.keys(frm.fields_multicheck).forEach(dt => {
 			const options = frm.fields_multicheck[dt].get_checked_options();
 			columns[dt] = options;
+		});
+		return {
+			doctype: frm.doc.doctype,
+			select_columns: JSON.stringify(columns),
+			filters: {'name':frm.doc.name},
+			file_type: "CSV",
+			template: true,
+			with_data: 1
+		};
+	};
+
+	open_url_post(get_template_url, export_params());
+};
+
+
+const export_data_giro = frm => {
+	let get_template_url = '/api/method/seabridge_app.seabridge_app.doctype.bank_payment_advice.exporter.export_data';
+	var export_params = () => {
+		let columns = {};
+		Object.keys(frm.fields_multicheck).forEach(dt => {	
+		if(dt=="Bank Payment Advice"){
+				//const options = frm.fields_multicheck[dt].get_checked_options();
+				const options=["customer_reference_number", "payer_name", "date", "payer_bank_account", "mode_of_payment"]
+				columns[dt] = options;
+	}
+
+			else if(dt=="Cumulative Payment Details"){
+			//const options = frm.fields_multicheck[dt].get_checked_options();
+			const options=["beneficiary_id", "beneficiary_name", "beneficiary_address", "address_display", "bank_account", "bank_name","amount","sales_invoice_number"]	
+			columns[dt] = options;
+			}
 		});
 		return {
 			doctype: frm.doc.doctype,

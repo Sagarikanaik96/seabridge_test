@@ -730,14 +730,16 @@ def create_payment(invoices, account, company, mode_of_payment):
         for approvals in total_approvals:
             bpa_doc = frappe.get_doc(dict(doctype='Bank Payment Advice',
                                         company=company,
+                                        payer_name=company,
                                         date=date.today(),
                                         bank_account=bank_account,
+                                        payer_bank_account=bank_account,
                                         mode_of_payment=mode_of_payment,
                                         total_approvals_required=approvals['total_approvals_required'],
                                         total_approves=(approvals['total_approvals_required']-1)
                                         )).insert(ignore_mandatory=True)
             bpa_doc.save()
-        
+            bpa_doc.customer_reference_number=bpa_doc.name
         send_email(bpa_doc.name,bpa_doc.company)
         for inv in purchase_invoices:
             date_today=date.today()
@@ -782,6 +784,7 @@ def create_payment(invoices, account, company, mode_of_payment):
                 if address_name:
                     beneficiary_address= address_name[0]['parent']
                     address_display=get_address_display(address_name[0]['parent'])
+                    address_display=str(address_display).replace('<br>',' ')
             else:
                 bank_account = frappe.db.get_value(
                     "Supplier", {'name': inv['supplier_name']}, "bank_account")
@@ -790,7 +793,7 @@ def create_payment(invoices, account, company, mode_of_payment):
                 beneficiary_id= frappe.db.get_value(
                     "Company", {'name': inv['supplier_name']}, "registration_details")
                 beneficiary_address=doc.supplier_address
-                address_display=doc.address_display
+                address_display=str(doc.address_display).replace('<br>',' ')
             bpa_doc.append('bank_payment_advice_details', {
                 'invoice_document': inv['name'],
                 'overdue_days': days_val,
