@@ -86,6 +86,7 @@ def auto_create_payment_entry(doc, method):
             })
         pe_doc.submit()
 
+
 @frappe.whitelist()
 def sort_details(doc):
     bpad = frappe.db.get_list("Bank Payment Advice Details", filters={
@@ -169,48 +170,51 @@ def send_email(doc, company):
 
 
 def create_cumulative_details(doc):
-    bpa_list = []
-    bpa_list = frappe.db.get_list("Bank Payment Advice Details", filters={
-                                  'parent': doc.name, 'parenttype': 'Bank Payment Advice'}, fields={'*'})
-    grouped_by_supplier = {}
-    for key, group in itertools.groupby(bpa_list, key=lambda x: (x['supplier_name'], x['is_funded'])):
-        grouped_by_supplier[key] = list(group)
-    for key, val in grouped_by_supplier.items():
-        if key[1] == 1:
+    cpd_list = frappe.db.sql(""" select
+		beneficiary_id,
+		beneficiary_address,
+		supplier_name,
+		address_display,
+		sum(invoice_amount)as invoice_amount,
+		sum(payment_transaction_amount) as amount,
+		sum(outstanding_amount) as outstanding_amount,
+		sum(purchase_order_amount) as purchase_order_amount,
+		bank_account,
+		bank_name,
+		is_funded,
+		GROUP_CONCAT(DISTINCT purchase_order) as purchase_order,
+		GROUP_CONCAT(DISTINCT sales_invoice_number) as sales_invoice_number
+		from `tabBank Payment Advice Details`
+		where parent=%s group by supplier_name,is_funded""", doc.name, as_dict=True)
+
+    for val in cpd_list:
+        beneficiary_name = ''
+        if val.is_funded == 1:
             represents_company = frappe.db.get_value(
-                'Supplier', {'name': val[0].supplier_name}, 'represents_company')
+                'Supplier', {'name': val.supplier_name}, 'represents_company')
             parent_company = frappe.db.get_value(
                 'Company', {'name': represents_company}, "parent_company")
             beneficiary_name = frappe.db.get_value(
                 "Company", {'name': parent_company}, "company_name")
         else:
-            beneficiary_name = val[0].supplier_name
-        amount = 0
-        si_list = []
-        outstanding_amount = 0
-        invoice_amount = 0
-        for row in val:
-            amount = amount+row.payment_transaction_amount
-            outstanding_amount = outstanding_amount+row.outstanding_amount
-            invoice_amount = invoice_amount+row.invoice_amount
-            si_list.append(row.sales_invoice_number)
-            sales_invoices = ','.join(si_list)
+            beneficiary_name = val.supplier_name
+
         cpd_doc = doc.append('cumulative_payment_details', {
-            'beneficiary_id': val[0].beneficiary_id,
+            'beneficiary_id': val.beneficiary_id,
             'beneficiary_name': beneficiary_name,
-            'beneficiary_address': val[0].beneficiary_address,
-            'address_display': val[0].address_display,
-            'supplier_name': val[0].supplier_name,
-            'invoice_amount': invoice_amount,
-            'outstanding_amount': outstanding_amount,
-            'amount': amount,
-            'purchase_order': val[0].purchase_order,
-            'purchase_order_amount': val[0].purchase_order_amount,
-            'bank_account': val[0].bank_account,
-            'bank_name': val[0].bank_name,
+            'beneficiary_address': val.beneficiary_address,
+            'address_display': val.address_display,
+            'supplier_name': val.supplier_name,
+            'invoice_amount': val.invoice_amount,
+            'outstanding_amount': val.outstanding_amount,
+            'amount': val.amount,
+            'purchase_order': val.purchase_order,
+            'purchase_order_amount': val.purchase_order_amount,
+            'bank_account': val.bank_account,
+            'bank_name': val.bank_name,
             'mode_of_payment': doc.mode_of_payment,
             'payer_name': doc.company,
-            'is_funded': val[0].is_funded,
-            'sales_invoice_number': sales_invoices
+            'is_funded': val.is_funded,
+            'sales_invoice_number': val.sales_invoice_number
         })
         cpd_doc.save()
