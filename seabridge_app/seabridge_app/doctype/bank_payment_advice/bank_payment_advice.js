@@ -432,7 +432,7 @@ const export_data_giro = frm => {
 
 			else if(dt=="Cumulative Payment Details"){
 			//const options = frm.fields_multicheck[dt].get_checked_options();
-			const options=["beneficiary_id", "beneficiary_name", "beneficiary_address", "address_display", "bank_account", "bank_name","amount","sales_invoice_number"]	
+			const options=["beneficiary_id", "beneficiary_name", "address_display", "bank_account", "bank_name","amount","sales_invoice_number"]	
 			columns[dt] = options;
 			}
 		});
