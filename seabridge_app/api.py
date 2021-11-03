@@ -75,7 +75,7 @@ def status_update(filters = None):
 			frappe.response['message']="Invalid Status (Must be 'Funded')" 
 
 @frappe.whitelist()
-def create_contract_note(filters = None):
+def create_document(filters = None):
 	try:
 		keys=True
 		date=True
@@ -160,7 +160,7 @@ def create_contract_note(filters = None):
 							)).insert(ignore_mandatory=True,ignore_permissions=True)
 							frappe.db.commit()
 							for key in childTableKeyList:
-								if date==True:
+								if date==True and key in transaction.keys():
 									field_type=frappe.db.sql("""SELECT `DATA_TYPE` FROM `INFORMATION_SCHEMA`.`COLUMNS` where `TABLE_NAME`=%s  and `COLUMN_NAME`=%s;""",('tab'+transaction['doctype'],key),as_list=True)
 									if field_type[0][0]=='date':
 										try:
@@ -178,8 +178,8 @@ def create_contract_note(filters = None):
 					if date==True:
 						cn_doc.db_set('docstatus',1)
 						frappe.response['Status']="Success"
-						frappe.response['Message']='Successfully created Contract Note '+cn_doc.name
-						data_list=[requestData['doctype']+" : "+cn_doc.name]
+						frappe.response['Message']='Successfully created '+requestData['doctype']+' '+cn_doc.name
+						data_list=["Document Number : "+cn_doc.name]
 						frappe.response['Data']=data_list
 		else:
 			frappe.local.response['http_status_code'] = 400
@@ -188,7 +188,7 @@ def create_contract_note(filters = None):
 	except:
 		frappe.local.response['http_status_code'] = 400
 		frappe.response['status']="FAILED"
-		frappe.response['message']='Something went wrong'
+		frappe.response['message']='Something went wrong'	
 
 @frappe.whitelist()
 def send_contract_note_report(filters = None):
@@ -208,7 +208,7 @@ def send_contract_note_report(filters = None):
 				if requestData['distribution_method'].lower()=='email':
 					communication_medium='Email'
 					if requestData['distribution_format'].lower()=='pdf':
-						make(doctype=requestData['document_type'],name=requestData['document_number'], print_format=requestData['format_name'], attachments='[]',subject = requestData['subject'],recipients =requestData['to'], cc=requestData['cc'],bcc=requestData['bcc'], communication_medium = communication_medium, content = requestData['message'], send_email = True,print_letterhead=True)
+						make(doctype=requestData['document_type'],name=requestData['document_number'], print_format=requestData['format_name'], attachments='[]',subject = requestData['subject'],recipients =requestData['to'], cc=requestData['cc'],bcc=requestData['bcc'], communication_medium = communication_medium, content = requestData['message'], send_email = True,print_letterhead=True
 						frappe.response['Status']="Success"
 						frappe.response['Message']='Successfully sent email'
 						data_list=[requestData['document_type']+" : "+requestData['document_number']]
