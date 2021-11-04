@@ -202,6 +202,11 @@ def send_document_report(filters = None):
 				frappe.response['status']="FAILED"
 				frappe.response['message']='Mandatory field '+ key+' not provided'
 				keys=False
+		if requestData['document_type']!=requestData['format_name']:
+			frappe.local.response['http_status_code'] = 400
+			frappe.response['status']="FAILED"
+			frappe.response['message']='Invalid Print format'
+			keys=False
 		if keys==True:
 			doc_exists=frappe.db.get_list(requestData['document_type'],filters={'name':requestData['document_number']},fields={'*'})
 			if doc_exists:
