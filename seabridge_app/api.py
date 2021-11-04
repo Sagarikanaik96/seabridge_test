@@ -191,7 +191,7 @@ def create_document(filters = None):
 		frappe.response['message']='Something went wrong'	
 
 @frappe.whitelist()
-def send_contract_note_report(filters = None):
+def send_document_report(filters = None):
 	try:
 		keys=True
 		requestData=json.loads(frappe.request.data.decode('utf-8'))

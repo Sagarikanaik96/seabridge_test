@@ -234,7 +234,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master","Letter He
 				"PO Print Format",
 				"SI Print Format",
 				"RFQ Print Format",
-				"Contract Note"
+				"Contract Note",
+				"Settlement Note"
 			]
 	]
 ]
