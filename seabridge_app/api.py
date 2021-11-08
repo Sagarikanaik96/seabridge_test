@@ -75,7 +75,7 @@ def status_update(filters = None):
 			frappe.response['message']="Invalid Status (Must be 'Funded')" 
 
 @frappe.whitelist()
-def create_contract_note(filters = None):
+def create_document(filters = None):
 	try:
 		keys=True
 		date=True
@@ -160,7 +160,7 @@ def create_contract_note(filters = None):
 							)).insert(ignore_mandatory=True,ignore_permissions=True)
 							frappe.db.commit()
 							for key in childTableKeyList:
-								if date==True:
+								if date==True and key in transaction.keys():
 									field_type=frappe.db.sql("""SELECT `DATA_TYPE` FROM `INFORMATION_SCHEMA`.`COLUMNS` where `TABLE_NAME`=%s  and `COLUMN_NAME`=%s;""",('tab'+transaction['doctype'],key),as_list=True)
 									if field_type[0][0]=='date':
 										try:
@@ -178,8 +178,8 @@ def create_contract_note(filters = None):
 					if date==True:
 						cn_doc.db_set('docstatus',1)
 						frappe.response['Status']="Success"
-						frappe.response['Message']='Successfully created Contract Note '+cn_doc.name
-						data_list=[requestData['doctype']+" : "+cn_doc.name]
+						frappe.response['Message']='Successfully created '+requestData['doctype']+' '+cn_doc.name
+						data_list=["Document Number : "+cn_doc.name]
 						frappe.response['Data']=data_list
 		else:
 			frappe.local.response['http_status_code'] = 400
@@ -188,10 +188,10 @@ def create_contract_note(filters = None):
 	except:
 		frappe.local.response['http_status_code'] = 400
 		frappe.response['status']="FAILED"
-		frappe.response['message']='Something went wrong'
+		frappe.response['message']='Something went wrong'	
 
 @frappe.whitelist()
-def send_contract_note_report(filters = None):
+def send_document_report(filters = None):
 	try:
 		keys=True
 		requestData=json.loads(frappe.request.data.decode('utf-8'))
@@ -202,6 +202,11 @@ def send_contract_note_report(filters = None):
 				frappe.response['status']="FAILED"
 				frappe.response['message']='Mandatory field '+ key+' not provided'
 				keys=False
+		if requestData['document_type']!=requestData['format_name']:
+			frappe.local.response['http_status_code'] = 400
+			frappe.response['status']="FAILED"
+			frappe.response['message']='Invalid Print format'
+			keys=False
 		if keys==True:
 			doc_exists=frappe.db.get_list(requestData['document_type'],filters={'name':requestData['document_number']},fields={'*'})
 			if doc_exists:

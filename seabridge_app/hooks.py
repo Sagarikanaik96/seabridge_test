@@ -140,7 +140,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master","Letter He
 		"Purchase Invoice-month_budget",
 		"Company-approval_details",
 		"Company-approval_amount_limit_details",
-		"Bank Payment Advice-workflow_state"
+		"Bank Payment Advice-workflow_state",
+		"Sales Invoice-sales_order"
 		]
 	]
 ]
@@ -205,7 +206,7 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master","Letter He
 {"dt": "Role", 
 		"filters":[
         [
-        "name","in",["Agent", "Accounts Payable","Finance Manager","MCST Member","Estate Manager"]
+        "name","in",["Agent", "Accounts Payable","Finance Manager","MCST Member","Estate Manager","Authorised to Claim"]
 	]
 	]
 },
@@ -233,7 +234,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master","Letter He
 				"PO Print Format",
 				"SI Print Format",
 				"RFQ Print Format",
-				"Contract Note"
+				"Contract Note",
+				"Settlement Note"
 			]
 	]
 ]
