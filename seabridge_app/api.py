@@ -202,6 +202,11 @@ def send_document_report(filters = None):
 				frappe.response['status']="FAILED"
 				frappe.response['message']='Mandatory field '+ key+' not provided'
 				keys=False
+			if key=='to' and (requestData['to']=='' or requestData['to']==[]):
+				frappe.local.response['http_status_code'] = 400
+				frappe.response['status']="FAILED"
+				frappe.response['message']='Atleast one recepient is mandatory'
+				keys=False
 		if requestData['document_type']!=requestData['format_name']:
 			frappe.local.response['http_status_code'] = 400
 			frappe.response['status']="FAILED"
