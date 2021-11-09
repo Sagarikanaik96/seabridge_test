@@ -10,9 +10,18 @@ refresh:function(frm,cdt,cdn){
                     }
                 };
              });
-        }
+        }	
+	var agent_company=frm.doc.associate_agent_company
 
-
+	frm.set_query("estate_manager_user_id", "estate_manager_details", function(frm, cdt, cdn) {
+		return {
+                    query: "seabridge_app.seabridge_app.api.get_user_filter",
+                    filters:{
+                        "represents_company":agent_company
+                    },
+                
+            };
+	});
 	 frm.set_query("associate_agent", function() {
             return {
                     query: "seabridge_app.seabridge_app.api.get_user_filter",
@@ -283,3 +292,70 @@ function sendEmail(name,email,template){
                     }   
                 });
             }
+
+
+frappe.ui.form.on("Estate Manager Details", "estate_manager_user_id",function(frm, doctype, name) {
+	var row = locals[doctype][name];
+	if(row.estate_manager_user_id!==undefined){
+	const doc = frm.doc;
+	frappe.confirm(__("Do you want to assign the company "+frm.doc.associate_agent_company+" for the agent "+row.estate_manager_user_id+"?"),
+	function () {
+		if(row.estate_manager_user_id!==undefined){
+			delete_user_permission(row.estate_manager_user_id,frm.doc.company_name);
+			frappe.call({
+				method: "seabridge_app.seabridge_app.api.validate_user_permission",
+				async:false,
+				args: {
+					doctype: "User Permission",
+					user: row.estate_manager_user_id,
+					allow:'Company',
+					value:frm.doc.company_name
+				}
+			});
+			create_user_permission(row.estate_manager_user_id,frm.doc.company_name);
+			var emailTemplate='<h1><strong>  You are authorised to work for the company '+frm.doc.associate_agent_company+'</strong></h1>';
+			sendEmail(frm.doc.name,row.estate_manager_user_id,emailTemplate);
+			if(frm.doc.company_type=="Customer"){
+				frappe.db.get_value("Customer",{"represents_company":frm.doc.company_name}, "customer_name",(s)=>{
+					if(s.customer_name){
+						frappe.call({
+							method: "seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.create_user_permission",
+							async:false,
+							args: {
+								doctype: "User Permission",
+								user: row.estate_manager_user_id,
+								allow:'Customer',
+								value:s.customer_name,
+								check:1
+							}
+						   });	
+					}
+				})
+			}
+		}
+		else if(row.estate_manager_user_id!==undefined){
+			create_user_permission(row.estate_manager_user_id,frm.doc.company_name);
+			var emailTemplate='<h1><strong>  You are authorised to work for the company '+row.estate_manager_user_id+'</strong></h1>';
+			sendEmail(frm.doc.name,row.estate_manager_user_id,emailTemplate);
+			if(frm.doc.company_type=="Customer"){
+				frappe.db.get_value("Customer",{"represents_company":frm.doc.company_name}, "customer_name",(s)=>{
+					if(s.customer_name){
+						frappe.call({
+							method: "seabridge_app.seabridge_app.doctype.request_for_quotation.request_for_quotation.create_user_permission",
+							async:false,
+							args: {
+								doctype: "User Permission",
+								user: row.estate_manager_user_id,
+								allow:'Customer',
+								value:s.customer_name,
+								check:1
+							}
+						   });	
+					}
+				})
+			}
+		}
+	});
+	}
+})
+

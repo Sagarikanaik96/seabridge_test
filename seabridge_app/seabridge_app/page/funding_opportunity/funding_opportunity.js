@@ -7,7 +7,16 @@ frappe.pages['funding-opportunity'].on_page_load = function (wrapper) {
 	});
 	page.start = 0;
 	page.today_claim = 0;
-	display_cards(page.today_claim)
+	var claimer=false;
+	frappe.call({
+		method: "seabridge_app.seabridge_app.api.is_authorised_to_claim",
+		async: false,
+		callback: function (r) {
+			claimer=r.message
+		}
+	});
+	if(claimer==true){
+	display_cards(page.today_claim)}
 	$("<div style='padding-left: 920px;'></div>").appendTo('.page-form')
 	page.status_field = page.add_field({
 		fieldname: 'inv_status',

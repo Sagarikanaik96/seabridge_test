@@ -19,6 +19,8 @@ from datetime import timedelta, date
 from frappe import _
 from seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice import send_email
 import datetime
+from frappe.contacts.doctype.address.address import get_address_display
+import itertools
 
 #from flask import Flask, render_template
 #app = Flask(__name__)
@@ -728,14 +730,16 @@ def create_payment(invoices, account, company, mode_of_payment):
         for approvals in total_approvals:
             bpa_doc = frappe.get_doc(dict(doctype='Bank Payment Advice',
                                         company=company,
+                                        payer_name=company,
                                         date=date.today(),
                                         bank_account=bank_account,
+                                        payer_bank_account=bank_account,
                                         mode_of_payment=mode_of_payment,
                                         total_approvals_required=approvals['total_approvals_required'],
                                         total_approves=(approvals['total_approvals_required']-1)
                                         )).insert(ignore_mandatory=True)
             bpa_doc.save()
-        
+            bpa_doc.customer_reference_number=bpa_doc.name
         send_email(bpa_doc.name,bpa_doc.company)
         for inv in purchase_invoices:
             date_today=date.today()
@@ -771,11 +775,33 @@ def create_payment(invoices, account, company, mode_of_payment):
                     "Company", {'name': parent_company}, "bank_account")
                 bank_name = frappe.db.get_value(
                     "Company", {'name': parent_company}, "bank_name")
+                beneficiary_id= frappe.db.get_value(
+                    "Company", {'name': parent_company}, "registration_details")
+                address_name= frappe.db.get_list('Dynamic Link', filters={
+                                  'parenttype': 'Address', 'link_name': parent_company}, fields={'*'})
+                beneficiary_address=""
+                address_display=""
+                if address_name:
+                    beneficiary_address= address_name[0]['parent']
+                    address_display=get_address_display(address_name[0]['parent'])
+                    address_display=str(address_display).replace('<br>',' ')
             else:
                 bank_account = frappe.db.get_value(
                     "Supplier", {'name': inv['supplier_name']}, "bank_account")
                 bank_name = frappe.db.get_value(
                     "Supplier", {'name': inv['supplier_name']}, "bank_name")
+                beneficiary_id= frappe.db.get_value(
+                    "Company", {'name': inv['supplier_name']}, "registration_details")
+                beneficiary_address=""
+                address_display=""
+                address_name= frappe.db.get_list('Dynamic Link', filters={
+                                  'parenttype': 'Address','link_doctype':'Company', 'link_name': inv['supplier_name']}, fields={'*'})
+                if address_name:
+                    beneficiary_address= address_name[0]['parent']
+                    address_display=get_address_display(address_name[0]['parent'])
+                    address_display=str(address_display).replace('<br>',' ')
+		
+                #address_display=str(doc.address_display).replace('<br>',' ')
             bpa_doc.append('bank_payment_advice_details', {
                 'invoice_document': inv['name'],
                 'overdue_days': days_val,
@@ -793,9 +819,14 @@ def create_payment(invoices, account, company, mode_of_payment):
                 'has_sbtfx_contract': has_sbtfx,
                 'bank_account': bank_account,
                 'bank_name': bank_name,
-                'is_funded': inv['is_funded']
+                'is_funded': inv['is_funded'],
+                'beneficiary_id':beneficiary_id,
+                'beneficiary_address':beneficiary_address,
+                'address_display':address_display,
+                'sales_invoice_number':doc.bill_no
             })
         bpa_doc.save()
+        
         bpa_doc.db_set('workflow_state','Pending')
         frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
                         "'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
@@ -817,6 +848,9 @@ def get_user_roles_dashboard():
     mcst_member=frappe.db.sql("""select u.name 
 			from `tabUser` u,`tabHas Role` r where u.name=%s and
 			u.name=r.parent and u.enabled = 1 and r.role = 'MCST Member'""",frappe.session.user)
+    claimer=frappe.db.sql("""select u.name 
+			from `tabUser` u,`tabHas Role` r where u.name=%s and
+			u.name=r.parent and u.enabled = 1 and r.role = 'Authorised to Claim'""",frappe.session.user)
     role_count = 0
     for user_list in estate_user:
         for user in user_list:
@@ -834,6 +868,10 @@ def get_user_roles_dashboard():
         for user in user_list:
             if(user==frappe.session.user):
                 role_count+=4
+    for user_list in claimer:
+        for user in user_list:
+            if(user==frappe.session.user):
+                role_count=5
     return role_count
 
 
@@ -961,8 +999,9 @@ def get_programs(status=None):
         """ SELECT represents_company from `tabUser` where name=%s""", frappe.session.user, as_list=True)
     supplier_list = frappe.db.sql(
         """SELECT supplier_name from `tabSupplier` where represents_company=%s and has_sbtfx_contract=1""", represents_company[0][0], as_list=True)
+    claimer=is_authorised_to_claim()
     response_data = []
-    if supplier_list:
+    if supplier_list and claimer==True:
         doc_posted = False
         headers = frappe.db.get_list("API Integration", fields={'*'})
         if headers:
@@ -1151,4 +1190,14 @@ def is_mcst_member():
 		return True
 	else:
 		return False
+
+@frappe.whitelist()
+def is_authorised_to_claim():
+    user = frappe.db.get_value('Has Role', {
+                               'parent':frappe.session.user , 'parenttype': 'User', 'role': 'Authorised to Claim'}, 'parent')
+    if user:
+        return True
+    else:
+        return False
+
 

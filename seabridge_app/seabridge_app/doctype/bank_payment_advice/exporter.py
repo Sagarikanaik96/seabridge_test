@@ -81,7 +81,6 @@ class DataExporter:
 		if self.template:
 			self.add_main_header()
 
-		self.writer.writerow([''])
 		self.tablerow = [self.data_keys.doctype]
 		self.labelrow = [_("Column Labels:")]
 		self.fieldrow = [self.data_keys.columns]
@@ -113,26 +112,9 @@ class DataExporter:
 			frappe.response['doctype'] = self.doctype
 
 	def add_main_header(self):
-		self.writer.writerow([_('Data Import Template')])
-		self.writer.writerow([self.data_keys.main_table, self.doctype])
-
 		if self.parent_doctype != self.doctype:
 			self.writer.writerow([self.data_keys.parent_table, self.parent_doctype])
-		else:
-			self.writer.writerow([''])
 
-		self.writer.writerow([''])
-		self.writer.writerow([_('Notes:')])
-		self.writer.writerow([_('Please do not change the template headings.')])
-		self.writer.writerow([_('First data column must be blank.')])
-		self.writer.writerow([_('If you are uploading new records, leave the "name" (ID) column blank.')])
-		self.writer.writerow([_('If you are uploading new records, "Naming Series" becomes mandatory, if present.')])
-		self.writer.writerow([_('Only mandatory fields are necessary for new records. You can delete non-mandatory columns if you wish.')])
-		self.writer.writerow([_('For updating, you can update only selective columns.')])
-		self.writer.writerow([_('You can only upload upto 5000 records in one go. (may be less in some cases)')])
-		if self.name_field == "parent":
-			self.writer.writerow([_('"Parent" signifies the parent table in which this row must be added')])
-			self.writer.writerow([_('If you are updating, please select "Overwrite" else existing rows will not be deleted.')])
 
 	def build_field_columns(self, dt, parentfield=None):
 		meta = frappe.get_meta(dt)
@@ -216,13 +198,7 @@ class DataExporter:
 		self.columns.append(docfield.fieldname)
 
 	def append_empty_field_column(self):
-		self.tablerow.append("~")
-		self.fieldrow.append("~")
-		self.labelrow.append("")
-		self.mandatoryrow.append("")
-		self.typerow.append("")
-		self.inforow.append("")
-		self.columns.append("")
+		print('Append')
 
 	@staticmethod
 	def getinforow(docfield):
