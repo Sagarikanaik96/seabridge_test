@@ -81,13 +81,12 @@ class DataExporter:
 		if self.template:
 			self.add_main_header()
 
-		self.writer.writerow([''])
-		self.tablerow = [self.data_keys.doctype]
-		self.labelrow = [_("Column Labels:")]
-		self.fieldrow = [self.data_keys.columns]
-		self.mandatoryrow = [_("Mandatory:")]
-		self.typerow = [_('Type:')]
-		self.inforow = [_('Info:')]
+		#self.tablerow = [self.data_keys.doctype]
+		self.labelrow = [_("")]
+		#self.fieldrow = [self.data_keys.columns]
+		#self.mandatoryrow = [_("Mandatory:")]
+		#self.typerow = [_('Type:')]
+		#self.inforow = [_('Info:')]
 		self.columns = []
 
 		self.build_field_columns(self.doctype)
@@ -113,26 +112,9 @@ class DataExporter:
 			frappe.response['doctype'] = self.doctype
 
 	def add_main_header(self):
-		self.writer.writerow([_('Data Import Template')])
-		self.writer.writerow([self.data_keys.main_table, self.doctype])
-
 		if self.parent_doctype != self.doctype:
 			self.writer.writerow([self.data_keys.parent_table, self.parent_doctype])
-		else:
-			self.writer.writerow([''])
 
-		self.writer.writerow([''])
-		self.writer.writerow([_('Notes:')])
-		self.writer.writerow([_('Please do not change the template headings.')])
-		self.writer.writerow([_('First data column must be blank.')])
-		self.writer.writerow([_('If you are uploading new records, leave the "name" (ID) column blank.')])
-		self.writer.writerow([_('If you are uploading new records, "Naming Series" becomes mandatory, if present.')])
-		self.writer.writerow([_('Only mandatory fields are necessary for new records. You can delete non-mandatory columns if you wish.')])
-		self.writer.writerow([_('For updating, you can update only selective columns.')])
-		self.writer.writerow([_('You can only upload upto 5000 records in one go. (may be less in some cases)')])
-		if self.name_field == "parent":
-			self.writer.writerow([_('"Parent" signifies the parent table in which this row must be added')])
-			self.writer.writerow([_('If you are updating, please select "Overwrite" else existing rows will not be deleted.')])
 
 	def build_field_columns(self, dt, parentfield=None):
 		meta = frappe.get_meta(dt)
@@ -144,6 +126,7 @@ class DataExporter:
 			field = meta.get_field(f.name)
 			if field and ((self.select_columns and f.name in self.select_columns[dt]) or not self.select_columns):
 				tablecolumns.append(field)
+		
 
 		tablecolumns.sort(key = lambda a: int(a.idx))
 
@@ -172,10 +155,12 @@ class DataExporter:
 				self._append_name_column(dt)
 
 		for docfield in tablecolumns:
+			#print('docfield--------------',docfield)
 			self.append_field_column(docfield, True)
 
 		# all non mandatory fields
 		for docfield in tablecolumns:
+			#print('docfield--------------',docfield)
 			self.append_field_column(docfield, False)
 
 		# if there is one column, add a blank column (?)
@@ -183,16 +168,18 @@ class DataExporter:
 			self.append_empty_field_column()
 
 		# append DocType name
-		self.tablerow[_column_start_end.start + 1] = dt
+		#self.tablerow[_column_start_end.start + 1] = dt
 
-		if parentfield:
-			self.tablerow[_column_start_end.start + 2] = parentfield
+		#if parentfield:
+			#self.tablerow[_column_start_end.start + 2] = parentfield
 
 		_column_start_end.end = len(self.columns) + 1
 
 		self.column_start_end[(dt, parentfield)] = _column_start_end
 
 	def append_field_column(self, docfield, for_mandatory):
+		print('docfield--------------',docfield.name)
+		
 		if not docfield:
 			return
 		if for_mandatory and not docfield.reqd:
@@ -207,22 +194,16 @@ class DataExporter:
 			and docfield.fieldname!="name":
 			return
 
-		self.tablerow.append("")
-		self.fieldrow.append(docfield.fieldname)
+		#self.tablerow.append("")
+		#self.fieldrow.append(docfield.fieldname)
 		self.labelrow.append(_(docfield.label))
-		self.mandatoryrow.append(docfield.reqd and 'Yes' or 'No')
-		self.typerow.append(docfield.fieldtype)
-		self.inforow.append(self.getinforow(docfield))
+		#self.mandatoryrow.append(docfield.reqd and 'Yes' or 'No')
+		#self.typerow.append(docfield.fieldtype)
+		#self.inforow.append(self.getinforow(docfield))
 		self.columns.append(docfield.fieldname)
 
 	def append_empty_field_column(self):
-		self.tablerow.append("~")
-		self.fieldrow.append("~")
-		self.labelrow.append("")
-		self.mandatoryrow.append("")
-		self.typerow.append("")
-		self.inforow.append("")
-		self.columns.append("")
+		print('Append')
 
 	@staticmethod
 	def getinforow(docfield):
@@ -246,14 +227,14 @@ class DataExporter:
 			return ''
 
 	def add_field_headings(self):
-		self.writer.writerow(self.tablerow)
+		#self.writer.writerow(self.tablerow)
 		self.writer.writerow(self.labelrow)
-		self.writer.writerow(self.fieldrow)
-		self.writer.writerow(self.mandatoryrow)
-		self.writer.writerow(self.typerow)
-		self.writer.writerow(self.inforow)
-		if self.template:
-			self.writer.writerow([self.data_keys.data_separator])
+		#self.writer.writerow(self.fieldrow)
+		#self.writer.writerow(self.mandatoryrow)
+		#self.writer.writerow(self.typerow)
+		#self.writer.writerow(self.inforow)
+		#if self.template:
+			#self.writer.writerow([self.data_keys.data_separator])
 
 	def add_data(self):
 		if self.template and not self.with_data:
@@ -264,11 +245,12 @@ class DataExporter:
 		# sort nested set doctypes by `lft asc`
 		order_by = None
 		table_columns = frappe.db.get_table_columns(self.parent_doctype)
+		print('tablecolumns------------',table_columns)
 		if 'lft' in table_columns and 'rgt' in table_columns:
 			order_by = '`tab{doctype}`.`lft` asc'.format(doctype=self.parent_doctype)
 		# get permitted data only
 		self.data = frappe.get_list(self.doctype, fields=["*"], filters=self.filters, limit_page_length=None, order_by=order_by)
-
+		print('selfdata------------',self.data)
 		for doc in self.data:
 			op = self.docs_to_export.get("op")
 			names = self.docs_to_export.get("name")
@@ -300,10 +282,17 @@ class DataExporter:
 			if self.all_doctypes:
 				# add child tables
 				for c in self.child_doctypes:
-					for ci, child in enumerate(frappe.db.sql("""select * from `tab{0}`
-						where parent=%s and parentfield=%s order by idx""".format(c['doctype']),
-						(doc.name, c['parentfield']), as_dict=1)):
-						self.add_data_row(rows, c['doctype'], c['parentfield'], child, ci)
+					if c['doctype']=="Cumulative Payment Details":
+						for ci, child in enumerate(frappe.db.sql("""select * from `tab{0}`
+							where parent=%s and parentfield=%s order by idx""".format(c['doctype']),
+							(doc.name, c['parentfield']), as_dict=1)):
+							self.add_data_row(rows, c['doctype'], c['parentfield'], child, ci)
+					else:
+						print('doctype--------------',c['doctype'])
+						for ci, child in enumerate(frappe.db.sql("""select * from `tab{0}`
+							where parent=%s and parentfield=%s order by idx""".format(c['doctype']),
+							(doc.name, c['parentfield']), as_dict=1)):
+							self.add_data_row(rows, c['doctype'], c['parentfield'], child, ci)
 
 			for row in rows:
 				self.writer.writerow(row)
@@ -313,7 +302,7 @@ class DataExporter:
 		meta = frappe.get_meta(dt)
 		if self.all_doctypes:
 			d.name = '"'+ d.name+'"'
-
+			print('d.name============',d.name)
 		if len(rows) < rowidx + 1:
 			rows.append([""] * (len(self.columns) + 1))
 		row = rows[rowidx]
