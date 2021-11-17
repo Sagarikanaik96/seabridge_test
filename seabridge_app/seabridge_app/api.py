@@ -21,6 +21,13 @@ from seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice
 import datetime
 from frappe.contacts.doctype.address.address import get_address_display
 import itertools
+from pathlib import Path
+import csv, os
+from frappe.utils import cstr
+from frappe.utils.csvutils import UnicodeWriter
+import webbrowser
+import tempfile
+import itertools as IT
 
 #from flask import Flask, render_template
 #app = Flask(__name__)
@@ -1200,4 +1207,72 @@ def is_authorised_to_claim():
     else:
         return False
 
+@frappe.whitelist()
+def export_csv(doc):
+	column_names=get_csv_columns()
+	downloads_path = str(Path.home() / "Downloads")
+	parent_header = column_names[0]
+	child_header = column_names[1]
+	parent_records=frappe.db.sql("""
+                  select ROW_NUMBER() OVER (),'PI',c.receiving_bic_code,cpd.bank_account,cpd.beneficiary_name,cpd.amount,cpd.parent,'',
+'IVPT','','',cpd.parent,'Y', ad.city,'',ad.pincode,cpd.beneficiary_name,'','','',ad.address_line1,
+ad.address_line2,'','', ad.email_id,'',cpd.payer_name,''
+ from `tabCompany` c right join `tabCumulative Payment Details` cpd on c.company_name = cpd.beneficiary_name left join
+ `tabAddress` ad on cpd.beneficiary_address=ad.name 
+ where cpd.parent=%s
+        """, (doc), as_list=True)
+	parent_funded_details=frappe.db.sql("""
+                  select cpd.supplier_name,cpd.is_funded
+ from `tabCumulative Payment Details` cpd
+ where cpd.parent=%s
+        """, (doc), as_list=True)
+	new_file=(uniquify(downloads_path+'/Bank Payment Advice.csv'))
+	with open(new_file, 'w') as csvfile: 
+# creating a csv writer object 
+		csvwriter = csv.writer(csvfile) 
+        
+    # writing the fields 
+		csvwriter.writerow(parent_header) 
+		csvwriter.writerow(child_header)
+        
+    # writing the data rows 
+		#csvwriter.writerows(rows)
+		count=0
+		for record in parent_records:
+			csvwriter.writerow(record)
+			child_records=frappe.db.sql("""
+                  select '','BA',ROW_NUMBER() OVER (),CONCAT(sales_invoice_number,'-',TRUNCATE(payment_transaction_amount,2))
+ from `tabBank Payment Advice Details`
+ where parent=%s and supplier_name=%s and is_funded=%s
+        """, (doc,parent_funded_details[count][0],parent_funded_details[count][1]), as_list=True)
+			for child_record in child_records:
+				csvwriter.writerow(child_record)
+			count=count+1
+	webbrowser.open(new_file)
+	
+	frappe.response['filename'] = 'Bank Payment Advice' + '.xlsx'
+	frappe.response['filecontent'] = xlsx_file.getvalue()
+	frappe.response['type'] = 'binary'
+	
 
+@frappe.whitelist()
+def get_csv_columns():
+	parent_header=['Record No.','Payment Instruction','Receiving BIC Code','Receiving Bank A/C No.','Receiving A/C Name.','Amount','Beneficiary Reference','DDA Reference','Purpose Code','Remittance Information','Ultimate Payer/Beneficiary Name','Customer Reference','Beneficiary Advice Indicator','Beneficiary City','Beneficiary Country Code','Beneficiary Postal Code','Beneficiary Name Line 1','Beneficiary Name Line 2','Beneficiary Name Line 3','Beneficiary Name Line 4','Beneficiary Address Line 1','Beneficiary Address Line 2','Beneficiary Address Line 3','Beneficiary Address Line 4','Email Address of Beneficiary','Facsimile Address of Beneficiary','Payers Name Line 1','Payers Name Line 2']
+	child_header=['','Beneficiary Advice','Spacing Lines','Beneficiary Advice Details']
+	return parent_header,child_header
+
+def uniquify(path, sep = ''):
+    def name_sequence():
+        count = IT.count()
+        yield ''
+        while True:
+            yield '{s}{n:d}'.format(s = sep, n = next(count))
+    orig = tempfile._name_sequence 
+    with tempfile._once_lock:
+        tempfile._name_sequence = name_sequence()
+        path = os.path.normpath(path)
+        dirname, basename = os.path.split(path)
+        filename, ext = os.path.splitext(basename)
+        fd, filename = tempfile.mkstemp(dir = dirname, prefix = filename, suffix = ext)
+        tempfile._name_sequence = orig
+    return filename

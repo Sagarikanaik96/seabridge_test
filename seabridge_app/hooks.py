@@ -141,7 +141,8 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master","Letter He
 		"Company-approval_details",
 		"Company-approval_amount_limit_details",
 		"Bank Payment Advice-workflow_state",
-		"Sales Invoice-sales_order"
+		"Sales Invoice-sales_order",
+		"Company-receiving_bic_code"
 		]
 	]
 ]
@@ -287,8 +288,7 @@ doc_events = {
     },
 	"Purchase Invoice": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.update_status"],
-		"before_submit": ["seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.before_submit"],
-		"before_save": ["seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.on_save"]
+		"before_submit": ["seabridge_app.seabridge_app.doctype.purchase_invoice.purchase_invoice.before_submit"]
     },
 	"Payment Entry": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.payment_entry.payment_entry.update_status"],
