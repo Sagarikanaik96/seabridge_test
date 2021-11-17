@@ -37,15 +37,9 @@ frm.add_custom_button(__('Basic Payment'), function(){
 
 var mode=frm.doc.mode_of_payment;
 frm.add_custom_button(__(mode.concat(" Payment")), function(){
+	window.open("/api/method/seabridge_app.seabridge_app.api.export_csv?doc="+frm.doc.name);
 //frm.set_value('reference_doctype',frm.doc.doctype)
-			const doctype = frm.doc.doctype;
-			if (doctype) {
-			frappe.model.with_doctype(doctype, () => set_field_options(frm));
-			} else {
-			reset_filter_and_field(frm);
-			}
-			can_export(frm) ? export_data_giro(frm) : null;
-		
+					
 }, __('Export'));
 }
 
@@ -413,7 +407,6 @@ const export_data = frm => {
 			with_data: 1
 		};
 	};
-
 	open_url_post(get_template_url, export_params());
 };
 
@@ -431,7 +424,7 @@ const export_data_giro = frm => {
 
 			else if(dt=="Cumulative Payment Details"){
 			//const options = frm.fields_multicheck[dt].get_checked_options();
-			const options=["beneficiary_id", "beneficiary_name", "address_display", "bank_account", "bank_name","amount","sales_invoice_number"]	
+			const options=["beneficiary_id", "beneficiary_name", "test","address_display", "bank_account", "bank_name","amount","sales_invoice_number"]	
 			columns[dt] = options;
 			}
 		});
