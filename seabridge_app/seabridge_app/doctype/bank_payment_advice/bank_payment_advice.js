@@ -37,18 +37,9 @@ frm.add_custom_button(__('Basic Payment'), function(){
 
 var mode=frm.doc.mode_of_payment;
 frm.add_custom_button(__(mode.concat(" Payment")), function(){
+	window.open("/api/method/seabridge_app.seabridge_app.api.export_csv?doc="+frm.doc.name);
 //frm.set_value('reference_doctype',frm.doc.doctype)
-			frappe.call({
-                method:"seabridge_app.seabridge_app.api.export_csv",
-		args:{
-			doc:frm.doc.name		
-		},
-                async:false,
-                callback: function(r){
-		
-		}
-	})
-		
+					
 }, __('Export'));
 }
 
