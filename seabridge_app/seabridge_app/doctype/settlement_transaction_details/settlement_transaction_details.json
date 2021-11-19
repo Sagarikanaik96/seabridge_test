@@ -16,7 +16,7 @@
   "service_charge",
   "discounting_charge",
   "late_charges",
-  "balance_amount"
+  "balance_refunded"
  ],
  "fields": [
   {
@@ -85,15 +85,15 @@
    "label": "Late Charges"
   },
   {
-   "fieldname": "balance_amount",
+   "fieldname": "balance_refunded",
    "fieldtype": "Float",
-   "label": "Balance Amount"
+   "label": "Balance Refunded"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-11-09 21:05:08.246650",
+ "modified": "2021-11-19 14:03:53.797594",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Settlement Transaction Details",

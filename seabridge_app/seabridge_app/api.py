@@ -1226,12 +1226,12 @@ def export_csv(doc):
 ad.address_line2,'','', ad.email_id,'',cpd.payer_name,''
  from `tabCompany` c right join `tabCumulative Payment Details` cpd on c.company_name = cpd.beneficiary_name left join
  `tabAddress` ad on cpd.beneficiary_address=ad.name 
- where cpd.parent=%s
+ where cpd.parent=%s order by cpd.idx
         """, (doc), as_list=True)
 	parent_funded_details=frappe.db.sql("""
                   select cpd.supplier_name,cpd.is_funded
  from `tabCumulative Payment Details` cpd
- where cpd.parent=%s
+ where cpd.parent=%s order by cpd.idx
         """, (doc), as_list=True)
 	with open('/tmp/test.csv', 'w') as csvfile: 
 # creating a csv writer object 
