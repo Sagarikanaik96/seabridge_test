@@ -1239,11 +1239,12 @@ def export_csv(doc):
 	parent_header = column_names[0]
 	child_header = column_names[1]
 	parent_records=frappe.db.sql("""
-                  select ROW_NUMBER() OVER (),'PI',c.receiving_bic_code,cpd.bank_account,cpd.beneficiary_name,cpd.amount,cpd.parent,'',
+                  select ROW_NUMBER() OVER (),'PI',b.swift_number,ba.bank_account_no,cpd.beneficiary_name,cpd.amount,cpd.parent,'',
 'IVPT','','',cpd.parent,'Y', ad.city,'',ad.pincode,cpd.beneficiary_name,'','','',ad.address_line1,
 ad.address_line2,'','', ad.email_id,'',cpd.payer_name,''
  from `tabCompany` c right join `tabCumulative Payment Details` cpd on c.company_name = cpd.beneficiary_name left join
- `tabAddress` ad on cpd.beneficiary_address=ad.name
+ `tabAddress` ad on cpd.beneficiary_address=ad.name left join `tabBank Account` ba on ba.name=cpd.bank_account_name left join `tabBank` b
+ON b.name=ba.bank
  where cpd.parent=%s order by cpd.idx
         """, (doc), as_list=True)
 	parent_funded_details=frappe.db.sql("""
