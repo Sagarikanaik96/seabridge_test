@@ -293,6 +293,9 @@ doc_events = {
 	"Payment Entry": {
 		"on_submit": ["seabridge_app.seabridge_app.doctype.payment_entry.payment_entry.update_status"],
 		"on_cancel": ["seabridge_app.seabridge_app.doctype.payment_entry.payment_entry.update_status_on_cancel"]
+    },
+	"Company": {
+		"before_save": ["seabridge_app.seabridge_app.doctype.company.company.before_save"]
     }
 }
 
