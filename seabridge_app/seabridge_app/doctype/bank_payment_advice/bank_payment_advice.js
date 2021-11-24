@@ -37,15 +37,9 @@ frm.add_custom_button(__('Basic Payment'), function(){
 
 var mode=frm.doc.mode_of_payment;
 frm.add_custom_button(__(mode.concat(" Payment")), function(){
+	window.open("/api/method/seabridge_app.seabridge_app.api.export_csv?doc="+frm.doc.name);
 //frm.set_value('reference_doctype',frm.doc.doctype)
-			const doctype = frm.doc.doctype;
-			if (doctype) {
-			frappe.model.with_doctype(doctype, () => set_field_options(frm));
-			} else {
-			reset_filter_and_field(frm);
-			}
-			can_export(frm) ? export_data_giro(frm) : null;
-		
+					
 }, __('Export'));
 }
 
@@ -251,6 +245,22 @@ cur_frm.save();
 	 }   
 	},
 	before_save:function(frm,cdt,cdn){
+	var count=0;
+	if(frm.doc.__islocal == 1){
+		frappe.model.with_doc("Company", frm.doc.company, function() {
+		    var tabletransfer= frappe.model.get_doc("Company", frm.doc.company)
+		    $.each(tabletransfer.series, function(index, row){
+		        if(row.reference_document==frm.doc.doctype){
+		            frm.set_value("naming_series",row.series)
+		            count++;
+		        }
+		    })
+		    if(count==0){
+		        frappe.validated = false;
+		        msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
+		    }
+		})
+	}
 		$.each(frm.doc.bank_payment_advice_details, function(idx, item){
 			item.cheque_date=frappe.datetime.nowdate()
 			if(item.bank_account || item.bank_name){}
@@ -413,7 +423,6 @@ const export_data = frm => {
 			with_data: 1
 		};
 	};
-
 	open_url_post(get_template_url, export_params());
 };
 
@@ -431,7 +440,7 @@ const export_data_giro = frm => {
 
 			else if(dt=="Cumulative Payment Details"){
 			//const options = frm.fields_multicheck[dt].get_checked_options();
-			const options=["beneficiary_id", "beneficiary_name", "address_display", "bank_account", "bank_name","amount","sales_invoice_number"]	
+			const options=["beneficiary_id", "beneficiary_name", "test","address_display", "bank_account", "bank_name","amount","sales_invoice_number"]	
 			columns[dt] = options;
 			}
 		});

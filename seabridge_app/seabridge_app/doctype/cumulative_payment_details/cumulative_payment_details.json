@@ -12,6 +12,7 @@
   "beneficiary_address",
   "address_display",
   "account_details_section",
+  "bank_account_name",
   "bank_account",
   "column_break_24",
   "bank_name",
@@ -139,11 +140,17 @@
    "fieldname": "sales_invoice_number",
    "fieldtype": "Text",
    "label": "Sales Invoice Number"
+  },
+  {
+   "fieldname": "bank_account_name",
+   "fieldtype": "Link",
+   "label": "Bank Account Name",
+   "options": "Bank Account"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2021-10-22 20:57:49.409526",
+ "modified": "2021-11-23 14:32:20.148605",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Cumulative Payment Details",

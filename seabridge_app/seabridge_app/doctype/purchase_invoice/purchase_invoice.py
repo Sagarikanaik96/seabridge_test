@@ -11,7 +11,11 @@ import requests
 from seabridge_app.seabridge_app.api import create_api_interacion_tracker
 from datetime import datetime
 from frappe.core.doctype.communication.email import make
-
+from frappe.utils.print_format import download_pdf
+import csv, os
+from frappe.utils import cstr
+from frappe.utils.csvutils import UnicodeWriter
+from pathlib import Path
 class PurchaseInvoice(Document):
 	pass
 
@@ -119,4 +123,47 @@ def get_approver(company,workflow_state):
             u.name = r.parent and u.name=%s and r.role = 'Accounts Payable'
                 and u.enabled = 1 """, (name), as_dict=True)
 
+@frappe.whitelist()
+def on_save(doc,method):
+	print('ONSAVE--------------')
+	
 
+	# open the file in the write mode
+	f = open('/home/sagarika/seabridge_erptest/frappe-bench/apps/seabridge_app/seabridge_app/test.csv', 'w')
+
+	fieldnames = ['Name', 'Branch', 'Year', 'CGPA'] 
+
+	# csv data
+	rows = [ ['Nikhil', 'COE', '2', '9.0'], 
+         ['Sanchit', 'COE', '2', '9.1'], 
+         ['Aditya', 'IT', '2', '9.3'], 
+         ['Sagar', 'SE', '1', '9.5'], 
+         ['Prateek', 'MCE', '3', '7.8'], 
+         ['Sahil', 'EP', '2', '9.1']]
+	#rows.append(['test', 'new', 'yes', 'try']) 
+
+	rows = frappe.db.sql(""" SELECT beneficiary_id,beneficiary_name,bank_account,bank_name from `tabCumulative Payment Details` where parent='BPA00126'""",as_list=True)
+	print('BPADETAILS-------------',rows)
+	downloads_path = str(Path.home() / "Downloads")
+	print('downloads_path-------------',downloads_path)
+	
+
+	url = 'http://i3.ytimg.com/vi/J---aiyznGQ/mqdefault.jpg'
+	r = requests.get(url)
+
+	#open(downloads_path+'/cat3.csv', 'wb').writerows(rows)
+	with open(downloads_path+'/cat3.csv', 'w') as csvfile: 
+# creating a csv writer object 
+		csvwriter = csv.writer(csvfile) 
+        
+    # writing the fields 
+		csvwriter.writerow(fieldnames) 
+        
+    # writing the data rows 
+		csvwriter.writerows(rows)
+		csvwriter.writerow(['test', 'new', 'yes', 'try'])
+	i = 0
+	while os.path.exists(downloads_path+'/cat%s.csv' % i):
+		print('Beginning file download with requests------------')
+		i += 1
+	print('i------------',i)
