@@ -1239,9 +1239,9 @@ def export_csv(doc):
 	parent_header = column_names[0]
 	child_header = column_names[1]
 	parent_records=frappe.db.sql("""
-                  select ROW_NUMBER() OVER (),'PI',b.swift_number,ba.bank_account_no,cpd.beneficiary_name,cpd.amount,cpd.parent,'',
-'IVPT','','',cpd.parent,'Y', ad.city,'',ad.pincode,cpd.beneficiary_name,'','','',ad.address_line1,
-ad.address_line2,'','', ad.email_id,'',cpd.payer_name,''
+                  select ROW_NUMBER() OVER (),'PI',b.swift_number,ba.bank_account_no,substring(cpd.beneficiary_name,1,35),cpd.amount,cpd.parent,'',
+'IVPT','','',cpd.parent,'Y', ad.city,'',ad.pincode,substring(cpd.beneficiary_name,1,35),substring(cpd.beneficiary_name,36,35),substring(cpd.beneficiary_name,71,35),substring(cpd.beneficiary_name,106,35), substring(concat(ad.address_line1,ad.address_line2),1,35),
+substring(concat(ad.address_line1,ad.address_line2),36,35),substring(concat(ad.address_line1,ad.address_line2),71,35),substring(concat(ad.address_line1,ad.address_line2),106,35), ad.email_id,'',substring(cpd.payer_name,1,35),substring(cpd.payer_name,36,35)
  from `tabCompany` c right join `tabCumulative Payment Details` cpd on c.company_name = cpd.beneficiary_name left join
  `tabAddress` ad on cpd.beneficiary_address=ad.name left join `tabBank Account` ba on ba.name=cpd.bank_account_name left join `tabBank` b
 ON b.name=ba.bank
