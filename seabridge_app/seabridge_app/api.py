@@ -719,126 +719,134 @@ def get_data_for_payment(name=None, supplier=None, company=None,
 
 @frappe.whitelist()
 def create_payment(invoices, account, company, mode_of_payment):
-    mode_of_payment = mode_of_payment.strip()
-    bank_account = account.strip()
-    invoice_list = json.loads(invoices)
-    supplier_list = {}
-    purchase_invoices = frappe.db.get_all("Purchase Invoice", filters={
-                                           'name': ['in', invoice_list]}, fields={'*'})
-    for inv in purchase_invoices:
-            if not inv['supplier_name'] in supplier_list:
-                supplier_list[inv['supplier_name']] = inv['grand_total']
-            else:
-                supplier_list[inv['supplier_name']] += inv['grand_total']
-    Keymax = max(supplier_list, key=lambda x: supplier_list[x])
-    total_approvals = frappe.db.sql(
-        """SELECT total_approvals_required FROM `tabApproval Amount Limit Details` WHERE %s BETWEEN minimum_limit AND maximum_limit and parent=%s """, (supplier_list[Keymax], company), as_dict=True)
-    if total_approvals:
-        for approvals in total_approvals:
-            bpa_doc = frappe.get_doc(dict(doctype='Bank Payment Advice',
-                                        company=company,
-                                        payer_name=company,
-                                        date=date.today(),
-                                        bank_account=bank_account,
-                                        payer_bank_account=bank_account,
-                                        mode_of_payment=mode_of_payment,
-                                        total_approvals_required=approvals['total_approvals_required'],
-                                        total_approves=(approvals['total_approvals_required']-1)
-                                        )).insert(ignore_mandatory=True)
-            bpa_doc.save()
-            bpa_doc.customer_reference_number=bpa_doc.name
-        send_email(bpa_doc.name,bpa_doc.company)
+    naming_series=frappe.db.get_all("Document Specific Naming Series", {
+    'parent':company,'reference_document':'Bank Payment Advice'}, "series")
+    if naming_series:
+        mode_of_payment = mode_of_payment.strip()
+        bank_account = account.strip()
+        invoice_list = json.loads(invoices)
+        supplier_list = {}
+        purchase_invoices = frappe.db.get_all("Purchase Invoice", filters={
+                                            'name': ['in', invoice_list]}, fields={'*'})
         for inv in purchase_invoices:
-            date_today=date.today()
-            doc=frappe.get_doc("Purchase Invoice",inv['name'])
-            doc.db_set('is_bpa_exists',1)
-            number = date.today()-inv['due_date']
-            days_val = number.days
-            return_invoices = frappe.db.get_list("Purchase Invoice", filters={
-                                                'return_against': inv['name']}, fields={'*'})
-            if return_invoices:
-                return_inv = return_invoices[0]['name']
-                return_total = return_invoices[0]['grand_total']
-            else:
-                return_inv = ''
-                return_total = 0
-            purchase_order = frappe.db.get_value(
-                'Purchase Invoice', {'name': inv['name']}, 'purchase_order')
-            if purchase_order:
-                po = purchase_order
-                purchase_amount = frappe.db.get_value(
-                    'Purchase Order', {'name': po}, 'grand_total')
-            else:
-                po = ''
-                purchase_amount = 0
-            has_sbtfx = frappe.db.get_value(
-                'Supplier', {'name': inv['supplier_name']}, 'has_sbtfx_contract')
-            if has_sbtfx == 1 and inv['is_funded'] == 1:
-                represents_company = frappe.db.get_value(
-                    'Supplier', {'name': inv['supplier_name']}, 'represents_company')
-                parent_company = frappe.db.get_value(
-                    'Company', {'name': represents_company}, "parent_company")
-                bank_account = frappe.db.get_value(
-                    "Company", {'name': parent_company}, "bank_account")
-                bank_name = frappe.db.get_value(
-                    "Company", {'name': parent_company}, "bank_name")
-                beneficiary_id= frappe.db.get_value(
-                    "Company", {'name': parent_company}, "registration_details")
-                address_name= frappe.db.get_list('Dynamic Link', filters={
-                                  'parenttype': 'Address', 'link_name': parent_company}, fields={'*'})
-                beneficiary_address=""
-                address_display=""
-                if address_name:
-                    beneficiary_address= address_name[0]['parent']
-                    address_display=get_address_display(address_name[0]['parent'])
-                    address_display=str(address_display).replace('<br>',' ')
-            else:
-                bank_account = frappe.db.get_value(
-                    "Supplier", {'name': inv['supplier_name']}, "bank_account")
-                bank_name = frappe.db.get_value(
-                    "Supplier", {'name': inv['supplier_name']}, "bank_name")
-                beneficiary_id= frappe.db.get_value(
-                    "Company", {'name': inv['supplier_name']}, "registration_details")
-                beneficiary_address=""
-                address_display=""
-                address_name= frappe.db.get_list('Dynamic Link', filters={
-                                  'parenttype': 'Address','link_doctype':'Company', 'link_name': inv['supplier_name']}, fields={'*'})
-                if address_name:
-                    beneficiary_address= address_name[0]['parent']
-                    address_display=get_address_display(address_name[0]['parent'])
-                    address_display=str(address_display).replace('<br>',' ')
-		
-                #address_display=str(doc.address_display).replace('<br>',' ')
-            bpa_doc.append('bank_payment_advice_details', {
-                'invoice_document': inv['name'],
-                'overdue_days': days_val,
-                'debit_note': return_inv,
-                'debit_note_amount': return_total,
-                'supplier_name': inv['supplier_name'],
-                'invoice_amount': inv['grand_total'],
-                'due_date': inv['due_date'],
-                'outstanding_amount': inv['outstanding_amount'],
-                'payment_transaction_amount': inv['outstanding_amount'],
-                'cheque_no': bpa_doc.name,
-                'cheque_date': date.today(),
-                'purchase_order': po,
-                'purchase_order_amount': purchase_amount,
-                'has_sbtfx_contract': has_sbtfx,
-                'bank_account': bank_account,
-                'bank_name': bank_name,
-                'is_funded': inv['is_funded'],
-                'beneficiary_id':beneficiary_id,
-                'beneficiary_address':beneficiary_address,
-                'address_display':address_display,
-                'sales_invoice_number':doc.bill_no
-            })
-        bpa_doc.save()
-        
-        bpa_doc.db_set('workflow_state','Pending')
-        frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
-                        "'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
+                if not inv['supplier_name'] in supplier_list:
+                    supplier_list[inv['supplier_name']] = inv['grand_total']
+                else:
+                    supplier_list[inv['supplier_name']] += inv['grand_total']
+        Keymax = max(supplier_list, key=lambda x: supplier_list[x])
+        total_approvals = frappe.db.sql(
+            """SELECT total_approvals_required FROM `tabApproval Amount Limit Details` WHERE %s BETWEEN minimum_limit AND maximum_limit and parent=%s """, (supplier_list[Keymax], company), as_dict=True)
+        if total_approvals:
+            for approvals in total_approvals:
+                bpa_doc = frappe.get_doc(dict(doctype='Bank Payment Advice',
+                                            naming_series=naming_series[0]['series'],
+                                            company=company,
+                                            payer_name=company,
+                                            date=date.today(),
+                                            bank_account=bank_account,
+                                            payer_bank_account=bank_account,
+                                            mode_of_payment=mode_of_payment,
+                                            total_approvals_required=approvals['total_approvals_required'],
+                                            total_approves=(approvals['total_approvals_required']-1)
+                                            )).insert(ignore_mandatory=True)
+                bpa_doc.save()
+                bpa_doc.customer_reference_number=bpa_doc.name
+            send_email(bpa_doc.name,bpa_doc.company)
+            for inv in purchase_invoices:
+                date_today=date.today()
+                doc=frappe.get_doc("Purchase Invoice",inv['name'])
+                doc.db_set('is_bpa_exists',1)
+                number = date.today()-inv['due_date']
+                days_val = number.days
+                return_invoices = frappe.db.get_list("Purchase Invoice", filters={
+                                                    'return_against': inv['name']}, fields={'*'})
+                if return_invoices:
+                    return_inv = return_invoices[0]['name']
+                    return_total = return_invoices[0]['grand_total']
+                else:
+                    return_inv = ''
+                    return_total = 0
+                purchase_order = frappe.db.get_value(
+                    'Purchase Invoice', {'name': inv['name']}, 'purchase_order')
+                if purchase_order:
+                    po = purchase_order
+                    purchase_amount = frappe.db.get_value(
+                        'Purchase Order', {'name': po}, 'grand_total')
+                else:
+                    po = ''
+                    purchase_amount = 0
+                has_sbtfx = frappe.db.get_value(
+                    'Supplier', {'name': inv['supplier_name']}, 'has_sbtfx_contract')
+                if has_sbtfx == 1 and inv['is_funded'] == 1:
+                    represents_company = frappe.db.get_value(
+                        'Supplier', {'name': inv['supplier_name']}, 'represents_company')
+                    parent_company = frappe.db.get_value(
+                        'Company', {'name': represents_company}, "parent_company")
+                    bank_account = frappe.db.get_value(
+                        "Company", {'name': parent_company}, "bank_account")
+                    bank_name = frappe.db.get_value(
+                        "Company", {'name': parent_company}, "bank_name")
+                    beneficiary_id= frappe.db.get_value(
+                        "Company", {'name': parent_company}, "registration_details")
+                    address_name= frappe.db.get_list('Dynamic Link', filters={
+                                    'parenttype': 'Address', 'link_name': parent_company}, fields={'*'})
+                    beneficiary_address=""
+                    address_display=""
+                    if address_name:
+                        beneficiary_address= address_name[0]['parent']
+                        address_display=get_address_display(address_name[0]['parent'])
+                        address_display=str(address_display).replace('<br>',' ')
+                else:
+                    bank_account = frappe.db.get_value(
+                        "Supplier", {'name': inv['supplier_name']}, "bank_account")
+                    bank_name = frappe.db.get_value(
+                        "Supplier", {'name': inv['supplier_name']}, "bank_name")
+                    beneficiary_id= frappe.db.get_value(
+                        "Company", {'name': inv['supplier_name']}, "registration_details")
+                    supplier_company=frappe.db.get_value(
+                        "Supplier", {'name': inv['supplier_name']}, "represents_company")
+                    beneficiary_address=""
+                    address_display=""
+                    address_name= frappe.db.get_list('Dynamic Link', filters={
+                                    'parenttype': 'Address','link_doctype':'Company', 'link_name': inv['supplier_name']}, fields={'*'})
+                    if address_name:
+                        beneficiary_address= address_name[0]['parent']
+                        address_display=get_address_display(address_name[0]['parent'])
+                        address_display=str(address_display).replace('<br>',' ')
+            
+                    #address_display=str(doc.address_display).replace('<br>',' ')
+                bpa_doc.append('bank_payment_advice_details', {
+                    'invoice_document': inv['name'],
+                    'overdue_days': days_val,
+                    'debit_note': return_inv,
+                    'debit_note_amount': return_total,
+                    'supplier_name': inv['supplier_name'],
+                    'invoice_amount': inv['grand_total'],
+                    'due_date': inv['due_date'],
+                    'outstanding_amount': inv['outstanding_amount'],
+                    'payment_transaction_amount': inv['outstanding_amount'],
+                    'cheque_no': bpa_doc.name,
+                    'cheque_date': date.today(),
+                    'purchase_order': po,
+                    'purchase_order_amount': purchase_amount,
+                    'has_sbtfx_contract': has_sbtfx,
+                    'bank_account': bank_account,
+                    'bank_name': bank_name,
+                    'is_funded': inv['is_funded'],
+                    'beneficiary_id':beneficiary_id,
+                    'beneficiary_address':beneficiary_address,
+                    'address_display':address_display,
+                    'sales_invoice_number':doc.bill_no
+                })
+            bpa_doc.save()
+            
+            bpa_doc.db_set('workflow_state','Pending')
+            frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
+                            "'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
+        else:
+            frappe.throw(_("Unable to create the BPA.Please define the Total Approvals Required for the amount '{0}' at company '{1}'.").format(supplier_list[Keymax], company))
     else:
-        frappe.throw(_("Unable to create the BPA.Please define the Total Approvals Required for the amount '{0}' at company '{1}'.").format(supplier_list[Keymax], company))
+        frappe.throw(_('Unable to save the Bank Payment Advice as the naming series are unavailable. Please provide the naming series at the Company: '+company+' to save the document.'))
 
 @frappe.whitelist()
 def get_user_roles_dashboard():

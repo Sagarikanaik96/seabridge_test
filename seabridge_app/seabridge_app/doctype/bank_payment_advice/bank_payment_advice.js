@@ -245,6 +245,22 @@ cur_frm.save();
 	 }   
 	},
 	before_save:function(frm,cdt,cdn){
+	var count=0;
+	if(frm.doc.__islocal == 1){
+		frappe.model.with_doc("Company", frm.doc.company, function() {
+		    var tabletransfer= frappe.model.get_doc("Company", frm.doc.company)
+		    $.each(tabletransfer.series, function(index, row){
+		        if(row.reference_document==frm.doc.doctype){
+		            frm.set_value("naming_series",row.series)
+		            count++;
+		        }
+		    })
+		    if(count==0){
+		        frappe.validated = false;
+		        msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
+		    }
+		})
+	}
 		$.each(frm.doc.bank_payment_advice_details, function(idx, item){
 			item.cheque_date=frappe.datetime.nowdate()
 			if(item.bank_account || item.bank_name){}
