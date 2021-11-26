@@ -7,12 +7,15 @@
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
+  "customer_reference_number",
+  "payer_name",
   "company",
   "total_approvals_required",
   "total_approves",
   "total_current_approvers",
   "column_break_3",
   "date",
+  "payer_bank_account",
   "bank_account",
   "mode_of_payment",
   "approvers",
@@ -22,6 +25,8 @@
   "fields_multicheck",
   "section_break_12",
   "rejected_invoice_details",
+  "section_break_17",
+  "cumulative_payment_details",
   "amended_from"
  ],
  "fields": [
@@ -139,11 +144,41 @@
    "fieldtype": "Int",
    "label": "Total Current Approvers",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_17",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "cumulative_payment_details",
+   "fieldtype": "Table",
+   "label": "Cumulative Payment Details",
+   "options": "Cumulative Payment Details",
+   "read_only": 1
+  },
+  {
+   "depends_on": "1==2",
+   "fieldname": "customer_reference_number",
+   "fieldtype": "Data",
+   "label": "Customer Reference Number"
+  },
+  {
+   "depends_on": "1==2",
+   "fieldname": "payer_name",
+   "fieldtype": "Data",
+   "label": "Payer Name"
+  },
+  {
+   "depends_on": "1==2",
+   "fieldname": "payer_bank_account",
+   "fieldtype": "Data",
+   "label": "Payer_Bank Account",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2021-08-20 18:43:52.674566",
+ "modified": "2021-10-27 19:41:32.309366",
  "modified_by": "Administrator",
  "module": "seabridge_app",
  "name": "Bank Payment Advice",

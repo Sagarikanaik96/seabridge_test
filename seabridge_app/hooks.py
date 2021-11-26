@@ -15,7 +15,6 @@ app_include_css = [
 ]
 app_include_js = [
 	"/assets/seabridge_app/js/seabridge_app/form/multi_select_dialog.js",
-	"/assets/seabridge_app/js/seabridge_app/utils",
 	"/assets/seabridge_app/js/bootstrap-selectpicker.js",
 	"/assets/seabridge_app/js/jquery.datatables.js",
 	"/assets/seabridge_app/js/bootstrap-notify.js",
@@ -45,7 +44,7 @@ website_context = {
 }
 
 
-fixtures = ["Server Script","Workflow State","Workflow Action Master",
+fixtures = ["Server Script","Workflow State","Workflow Action Master","Letter Head",
 {"dt": "Custom Field",
 		"filters": [
          [
@@ -141,7 +140,9 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 		"Purchase Invoice-month_budget",
 		"Company-approval_details",
 		"Company-approval_amount_limit_details",
-		"Bank Payment Advice-workflow_state"
+		"Bank Payment Advice-workflow_state",
+		"Sales Invoice-sales_order",
+		"Company-receiving_bic_code"
 		]
 	]
 ]
@@ -206,7 +207,7 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 {"dt": "Role", 
 		"filters":[
         [
-        "name","in",["Agent", "Accounts Payable","Finance Manager","MCST Member","Estate Manager"]
+        "name","in",["Agent", "Accounts Payable","Finance Manager","MCST Member","Estate Manager","Authorised to Claim"]
 	]
 	]
 },
@@ -233,7 +234,9 @@ fixtures = ["Server Script","Workflow State","Workflow Action Master",
 				"Quotation Print Format",
 				"PO Print Format",
 				"SI Print Format",
-				"RFQ Print Format"
+				"RFQ Print Format",
+				"Contract Note",
+				"Settlement Note"
 			]
 	]
 ]

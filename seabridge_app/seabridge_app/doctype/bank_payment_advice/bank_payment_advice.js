@@ -23,7 +23,7 @@ frm.set_query("company",function(){
 
 
 if(frm.doc.docstatus==1){
-frm.add_custom_button(__('Export'), function(){
+frm.add_custom_button(__('Basic Payment'), function(){
 //frm.set_value('reference_doctype',frm.doc.doctype)
 			const doctype = frm.doc.doctype;
 			if (doctype) {
@@ -33,7 +33,14 @@ frm.add_custom_button(__('Export'), function(){
 			}
 			can_export(frm) ? export_data(frm) : null;
 		
-})
+}, __('Export'));
+
+var mode=frm.doc.mode_of_payment;
+frm.add_custom_button(__(mode.concat(" Payment")), function(){
+	window.open("/api/method/seabridge_app.seabridge_app.api.export_csv?doc="+frm.doc.name);
+//frm.set_value('reference_doctype',frm.doc.doctype)
+					
+}, __('Export'));
 }
 
 
@@ -238,6 +245,22 @@ cur_frm.save();
 	 }   
 	},
 	before_save:function(frm,cdt,cdn){
+	var count=0;
+	if(frm.doc.__islocal == 1){
+		frappe.model.with_doc("Company", frm.doc.company, function() {
+		    var tabletransfer= frappe.model.get_doc("Company", frm.doc.company)
+		    $.each(tabletransfer.series, function(index, row){
+		        if(row.reference_document==frm.doc.doctype){
+		            frm.set_value("naming_series",row.series)
+		            count++;
+		        }
+		    })
+		    if(count==0){
+		        frappe.validated = false;
+		        msgprint('Unable to save the '+frm.doc.doctype+' as the naming series are unavailable. Please provide the naming series at the Company: '+frm.doc.company+' to save the document.','Alert')
+		    }
+		})
+	}
 		$.each(frm.doc.bank_payment_advice_details, function(idx, item){
 			item.cheque_date=frappe.datetime.nowdate()
 			if(item.bank_account || item.bank_name){}
@@ -283,7 +306,7 @@ if(invoices_list!=undefined){
 		        method:"seabridge_app.seabridge_app.doctype.bank_payment_advice.bank_payment_advice.update_rejected_invoice",
 		        args:{
 				invoices:invoices_list,
-				company:frm.doc.company	
+				company:frm.doc.company
 			},
 		        async:false,
 		        callback: function(r){
@@ -390,6 +413,36 @@ const export_data = frm => {
 		Object.keys(frm.fields_multicheck).forEach(dt => {
 			const options = frm.fields_multicheck[dt].get_checked_options();
 			columns[dt] = options;
+		});
+		return {
+			doctype: frm.doc.doctype,
+			select_columns: JSON.stringify(columns),
+			filters: {'name':frm.doc.name},
+			file_type: "CSV",
+			template: true,
+			with_data: 1
+		};
+	};
+	open_url_post(get_template_url, export_params());
+};
+
+
+const export_data_giro = frm => {
+	let get_template_url = '/api/method/seabridge_app.seabridge_app.doctype.bank_payment_advice.exporter.export_data';
+	var export_params = () => {
+		let columns = {};
+		Object.keys(frm.fields_multicheck).forEach(dt => {	
+		if(dt=="Bank Payment Advice"){
+				//const options = frm.fields_multicheck[dt].get_checked_options();
+				const options=["customer_reference_number", "payer_name", "date", "payer_bank_account", "mode_of_payment"]
+				columns[dt] = options;
+	}
+
+			else if(dt=="Cumulative Payment Details"){
+			//const options = frm.fields_multicheck[dt].get_checked_options();
+			const options=["beneficiary_id", "beneficiary_name", "test","address_display", "bank_account", "bank_name","amount","sales_invoice_number"]	
+			columns[dt] = options;
+			}
 		});
 		return {
 			doctype: frm.doc.doctype,
