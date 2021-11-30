@@ -88,41 +88,45 @@ def auto_create_payment_entry(doc, method):
 
 #Sales Invoice Payment Entry creation
     for key, val in grouped_by_supplier.items():
-        pe_doc = frappe.get_doc(dict(doctype='Payment Entry',
-                                     payment_type="Receive",
-                                     posting_date=doc.date,
-                                     company=key,
-                                     mode_of_payment=doc.mode_of_payment,
-                                     paid_to= frappe.db.get_value('Bank Account', {'is_company_account':1,'company': key,'is_default':1}, 'account'),
-                                     paid_to_account_currency="SGD",
-                                     paid_from_account_currency="SGD",
-                                     party_type="Customer",
-                                     paid_amount="0",
-                                     received_amount="0",
-                                     party=doc.company,
-                                     reference_no=doc.name,
-                                     reference_date=date.today(),
-                                     source_exchange_rate=1,
-                                     target_exchange_rate=1
-                                     )).insert(ignore_mandatory=True,ignore_permissions=True)
-        amount = 0
-        for row in val:
-            amount = amount+row.payment_transaction_amount
-            pe_doc.update({
-                "paid_from": frappe.db.get_value('Sales Invoice', {'name': row.sales_invoice_number}, 'debit_to'),
-                "paid_amount": amount,
-                "received_amount": amount
-            })
-            pe_doc.append('references', {
-                'reference_doctype': "Sales Invoice",
-                'reference_name': row.sales_invoice_number,
-                'due_date': row.due_date,
-                'total_amount': row.invoice_amount,
-                'outstanding_amount': row.outstanding_amount-row.payment_transaction_amount,
-                'allocated_amount': row.payment_transaction_amount
+        if (frappe.db.get_value('Bank Account', {'is_company_account':1,'company': key,'is_default':1}, 'account')):
+            pe_doc = frappe.get_doc(dict(doctype='Payment Entry',
+                                        payment_type="Receive",
+                                        posting_date=doc.date,
+                                        company=key,
+                                        mode_of_payment=doc.mode_of_payment,
+                                        paid_to= frappe.db.get_value('Bank Account', {'is_company_account':1,'company': key,'is_default':1}, 'account'),
+                                        paid_to_account_currency="SGD",
+                                        paid_from_account_currency="SGD",
+                                        party_type="Customer",
+                                        paid_amount="0",
+                                        received_amount="0",
+                                        party=doc.company,
+                                        reference_no=doc.name,
+                                        reference_date=date.today(),
+                                        source_exchange_rate=1,
+                                        target_exchange_rate=1
+                                        )).insert(ignore_mandatory=True,ignore_permissions=True)
+            amount = 0
+            for row in val:
+                amount = amount+row.payment_transaction_amount
+                pe_doc.update({
+                    "paid_from": frappe.db.get_value('Sales Invoice', {'name': row.sales_invoice_number}, 'debit_to'),
+                    "paid_amount": amount,
+                    "received_amount": amount
+                })
+                pe_doc.append('references', {
+                    'reference_doctype': "Sales Invoice",
+                    'reference_name': row.sales_invoice_number,
+                    'due_date': row.due_date,
+                    'total_amount': row.invoice_amount,
+                    'outstanding_amount': row.outstanding_amount-row.payment_transaction_amount,
+                    'allocated_amount': row.payment_transaction_amount
 
-            })
-        pe_doc.submit()
+                })
+            pe_doc.submit()
+        else:
+            frappe.throw(("Please create a default Bank Account for the company '{0}'.").format(key))
+
 
 @frappe.whitelist()
 def sort_details(doc):
