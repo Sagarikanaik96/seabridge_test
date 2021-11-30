@@ -841,13 +841,12 @@ def create_payment(invoices, account, company, mode_of_payment):
             bpa_doc.save()
             
             bpa_doc.db_set('workflow_state','Pending')
-            frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
-                            "'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
+            frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +"'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
         else:
             frappe.throw(_("Unable to create the BPA.Please define the Total Approvals Required for the amount '{0}' at company '{1}'.").format(supplier_list[Keymax], company))
     else:
         frappe.throw(_('Unable to save the Bank Payment Advice as the naming series are unavailable. Please provide the naming series at the Company: '+company+' to save the document.'))
-
+        
 @frappe.whitelist()
 def get_user_roles_dashboard():
     estate_user = frappe.db.sql("""select u.name 
@@ -1041,6 +1040,11 @@ def get_programs(status=None):
                     program_list = response['Data']['programs']
                     for val in program_list:
                         for row in val['invoices']:
+                            if row['invoice_status']=="ELIGIBLE FOR FUNDING":
+                                invoice_status=frappe.db.get_value('Purchase Invoice', {'name':row['invoice_id']}, 'status')
+                                if invoice_status:
+                                    if invoice_status=="Paid":
+                                        row['invoice_status']="PAID"
                             if status == '':
                                 row['status'] = "NaN"
                             else:
