@@ -1051,6 +1051,11 @@ def get_programs(status=None):
                     program_list = response['Data']['programs']
                     for val in program_list:
                         for row in val['invoices']:
+                            if row['invoice_status']=="ELIGIBLE FOR FUNDING":
+                                invoice_status=frappe.db.get_value('Purchase Invoice', {'name':row['invoice_id']}, 'status')
+                                if invoice_status:
+                                    if invoice_status=="Paid":
+                                        row['invoice_status']="PAID"
                             if status == '':
                                 row['status'] = "NaN"
                             else:
