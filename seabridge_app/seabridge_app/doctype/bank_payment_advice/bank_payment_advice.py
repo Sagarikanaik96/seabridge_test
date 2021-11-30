@@ -94,6 +94,8 @@ def auto_create_payment_entry(doc, method):
                                      company=key,
                                      mode_of_payment=doc.mode_of_payment,
                                      paid_to= frappe.db.get_value('Bank Account', {'is_company_account':1,'company': key,'is_default':1}, 'account'),
+                                     paid_to_account_currency="SGD",
+                                     paid_from_account_currency="SGD",
                                      party_type="Customer",
                                      paid_amount="0",
                                      received_amount="0",
@@ -102,16 +104,15 @@ def auto_create_payment_entry(doc, method):
                                      reference_date=date.today(),
                                      source_exchange_rate=1,
                                      target_exchange_rate=1
-                                     )).insert(ignore_mandatory=True)
+                                     )).insert(ignore_mandatory=True,ignore_permissions=True)
         amount = 0
         for row in val:
             amount = amount+row.payment_transaction_amount
             pe_doc.update({
                 "paid_from": frappe.db.get_value('Sales Invoice', {'name': row.sales_invoice_number}, 'debit_to'),
                 "paid_amount": amount,
-                "received_amount": amount,
+                "received_amount": amount
             })
-
             pe_doc.append('references', {
                 'reference_doctype': "Sales Invoice",
                 'reference_name': row.sales_invoice_number,
