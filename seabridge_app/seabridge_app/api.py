@@ -842,10 +842,13 @@ def create_payment(invoices, account, company, mode_of_payment):
             
             bpa_doc.db_set('workflow_state','Pending')
             frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +"'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
+            return bpa_doc.name
         else:
             frappe.throw(_("Unable to create the BPA.Please define the Total Approvals Required for the amount '{0}' at company '{1}'.").format(supplier_list[Keymax], company))
+            return 0
     else:
         frappe.throw(_('Unable to save the Bank Payment Advice as the naming series are unavailable. Please provide the naming series at the Company: '+company+' to save the document.'))
+        return 0
         
 @frappe.whitelist()
 def get_user_roles_dashboard():

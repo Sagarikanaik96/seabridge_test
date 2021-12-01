@@ -22,7 +22,7 @@ frappe.pages['funding-opportunity'].on_page_load = function (wrapper) {
 		fieldname: 'inv_status',
 		label: __('Status'),
 		fieldtype: 'Select',
-		options: ["", "ELIGIBLE FOR FUNDING", "SUBMITTED FOR FUNDING", "FUNDED"],
+		options: ["", "ELIGIBLE FOR FUNDING", "SUBMITTED FOR FUNDING", "FUNDED","PAID"],
 		change: function () {
 			page.invoice_dashboard.start = 0;
 			page.invoice_dashboard.refresh();
