@@ -851,12 +851,14 @@ def create_payment(invoices, account, company, mode_of_payment):
             bpa_doc.save()
             
             bpa_doc.db_set('workflow_state','Pending')
-            frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +
-                            "'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
+            frappe.msgprint("Payment Batch <a href='/desk#Form/Bank%20Payment%20Advice/"+bpa_doc.name +"'  target='_blank'>"+bpa_doc.name+"</a>  successfully created for selected invoices")
+            return bpa_doc.name
         else:
             frappe.throw(_("Unable to create the BPA.Please define the Total Approvals Required for the amount '{0}' at company '{1}'.").format(supplier_list[Keymax], company))
+            return 0
     else:
         frappe.throw(_('Unable to save the Bank Payment Advice as the naming series are unavailable. Please provide the naming series at the Company: '+company+' to save the document.'))
+        return 0
         
 @frappe.whitelist()
 def get_user_roles_dashboard():
@@ -1051,6 +1053,11 @@ def get_programs(status=None):
                     program_list = response['Data']['programs']
                     for val in program_list:
                         for row in val['invoices']:
+                            if row['invoice_status']=="ELIGIBLE FOR FUNDING":
+                                invoice_status=frappe.db.get_value('Purchase Invoice', {'name':row['invoice_id']}, 'status')
+                                if invoice_status:
+                                    if invoice_status=="Paid":
+                                        row['invoice_status']="PAID"
                             if status == '':
                                 row['status'] = "NaN"
                             else:
@@ -1239,9 +1246,9 @@ def export_csv(doc):
 	parent_header = column_names[0]
 	child_header = column_names[1]
 	parent_records=frappe.db.sql("""
-                  select ROW_NUMBER() OVER (),'PI',b.swift_number,ba.bank_account_no,cpd.beneficiary_name,cpd.amount,cpd.parent,'',
-'IVPT','','',cpd.parent,'Y', ad.city,'',ad.pincode,cpd.beneficiary_name,'','','',ad.address_line1,
-ad.address_line2,'','', ad.email_id,'',cpd.payer_name,''
+                  select ROW_NUMBER() OVER (),'PI',b.swift_number,ba.bank_account_no,substring(cpd.beneficiary_name,1,35),cpd.amount,cpd.parent,'',
+'IVPT','','',cpd.parent,'Y', ad.city,'',ad.pincode,substring(cpd.beneficiary_name,1,35),substring(cpd.beneficiary_name,36,35),substring(cpd.beneficiary_name,71,35),substring(cpd.beneficiary_name,106,35), substring(concat(ad.address_line1,ad.address_line2),1,35),
+substring(concat(ad.address_line1,ad.address_line2),36,35),substring(concat(ad.address_line1,ad.address_line2),71,35),substring(concat(ad.address_line1,ad.address_line2),106,35), ad.email_id,'',substring(cpd.payer_name,1,35),substring(cpd.payer_name,36,35)
  from `tabCompany` c right join `tabCumulative Payment Details` cpd on c.company_name = cpd.beneficiary_name left join
  `tabAddress` ad on cpd.beneficiary_address=ad.name left join `tabBank Account` ba on ba.name=cpd.bank_account_name left join `tabBank` b
 ON b.name=ba.bank
