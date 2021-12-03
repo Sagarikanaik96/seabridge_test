@@ -188,11 +188,11 @@ def create_document(filters = None):
 	except:
 		frappe.local.response['http_status_code'] = 400
 		frappe.response['status']="FAILED"
-		frappe.response['message']='Something went wrong'	
+		frappe.response['message']='Something went wrong'
+		
 
 @frappe.whitelist()
 def send_document_report(filters = None):
-	try:
 		keys=True
 		requestData=json.loads(frappe.request.data.decode('utf-8'))
 		mandatoryKeyList=['document_type','document_number','format_name','subject','to','cc', 'bcc','distribution_method','message','distribution_format']
@@ -237,8 +237,4 @@ def send_document_report(filters = None):
 				frappe.local.response['http_status_code'] = 400
 				frappe.response['status']="FAILED"
 				frappe.response['message']=requestData['document_type']+' : '+requestData['document_number']+' does not exist'
-	except:
-		frappe.local.response['http_status_code'] = 400
-		frappe.response['status']="FAILED"
-		frappe.response['message']='Something went wrong'
 
