@@ -77,6 +77,7 @@ def status_update(filters = None):
 @frappe.whitelist()
 def create_document(filters = None):
 	try:
+
 		keys=True
 		date=True
 		date_format = "%Y-%m-%d"
